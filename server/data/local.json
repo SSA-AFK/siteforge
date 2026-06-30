@@ -1,0 +1,171 @@
+{
+  "user": {
+    "email": "3200840552@qq.com",
+    "username": "creator",
+    "displayName": "网站名称",
+    "avatarUrl": "http://localhost:4000/uploads/1782788991830-j46cw4-1f8b424b7927eec34fc6ef3c9924879e.jpg",
+    "title": "设计师 / 开发者",
+    "bio": "用创意和技术构建美好数字体验",
+    "fullBio": "我是一名热爱设计和开发的全栈创作者，致力于打造优雅、实用的数字产品。",
+    "location": "中国 · 杭州"
+  },
+  "projects": [
+    {
+      "id": 1,
+      "title": "Vortex Quantum Dashboard",
+      "slug": "vortex-quantum-dashboard",
+      "category": "Creative Engineering",
+      "coverImage": "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1200&q=80",
+      "description": "一套面向实时数据可视化的沉浸式仪表盘体验。",
+      "content": "Web3D telemetry platform with polished motion, dashboard primitives, and responsive layouts.",
+      "role": "Product Designer / Frontend",
+      "tools": "React, Three.js, Figma",
+      "projectUrl": "#",
+      "displayOrder": 0,
+      "isFeatured": true,
+      "viewCount": 0,
+      "status": "published",
+      "images": [
+        {
+          "id": 1,
+          "imageUrl": "https://images.unsplash.com/photo-1550684848-fac1c5b4e853?auto=format&fit=crop&w=900&q=80",
+          "caption": "Gallery image 1",
+          "displayOrder": 0,
+          "isCover": false
+        },
+        {
+          "id": 2,
+          "imageUrl": "https://images.unsplash.com/photo-1550684848-fac1c5b4e853?auto=format&fit=crop&w=900&q=80",
+          "caption": "Gallery image 2",
+          "displayOrder": 1,
+          "isCover": false
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "新项目 3",
+      "slug": "project-3",
+      "category": "Portfolio",
+      "coverImage": "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=80",
+      "description": "描述这个项目的目标、过程和成果。",
+      "content": "",
+      "displayOrder": 2,
+      "isFeatured": false,
+      "viewCount": 0,
+      "status": "published",
+      "role": "负责人"
+    }
+  ],
+  "experiences": [
+    {
+      "id": 1,
+      "type": "work",
+      "company": "Independent Studio",
+      "position": "Creative Technologist",
+      "description": "为早期团队和个人品牌构建高质量网站、设计系统和交互动效。\n222222222222222\n2222222",
+      "startDate": "2022-01",
+      "isCurrent": true,
+      "displayOrder": 0,
+      "endDate": ""
+    }
+  ],
+  "skills": [
+    {
+      "id": 1,
+      "name": "Figma",
+      "category": "Design",
+      "proficiency": 5,
+      "displayOrder": 0
+    },
+    {
+      "id": 2,
+      "name": "React",
+      "category": "Frontend",
+      "proficiency": 5,
+      "displayOrder": 1
+    },
+    {
+      "id": 3,
+      "name": "Motion Design",
+      "category": "Interaction",
+      "proficiency": 4,
+      "displayOrder": 2
+    }
+  ],
+  "awards": [
+    {
+      "id": 1,
+      "title": "Awwwards Honorable Mention",
+      "issuer": "Awwwards",
+      "date": "2025",
+      "description": "Recognized for visual craft, interaction detail, and responsive portfolio storytelling.",
+      "awardUrl": "https://www.awwwards.com",
+      "displayOrder": 0
+    },
+    {
+      "id": 2,
+      "title": "Design System Challenge Finalist",
+      "issuer": "Independent Studio Review",
+      "date": "2024",
+      "description": "Selected for a polished component system and clear product thinking.",
+      "displayOrder": 1,
+      "awardUrl": ""
+    }
+  ],
+  "socialLinks": [
+    {
+      "id": 1,
+      "platform": "GitHub",
+      "url": "https://github.com",
+      "icon": "github",
+      "displayOrder": 0
+    },
+    {
+      "id": 2,
+      "platform": "LinkedIn",
+      "url": "https://linkedin.com",
+      "icon": "linkedin",
+      "displayOrder": 1
+    }
+  ],
+  "blogPosts": [],
+  "videos": [
+    {
+      "id": 1,
+      "title": "Portfolio Walkthrough",
+      "platform": "youtube",
+      "videoUrl": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+      "thumbnailUrl": "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=900&q=80",
+      "description": "A short walkthrough of the design system, portfolio structure, and interaction direction.",
+      "displayOrder": 0,
+      "isFeatured": true
+    },
+    {
+      "id": 2,
+      "title": "视频 2",
+      "platform": "youtube",
+      "videoUrl": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+      "thumbnailUrl": "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=900&q=80",
+      "description": "补充视频简介、幕后过程或项目演示。",
+      "displayOrder": 1,
+      "isFeatured": false
+    }
+  ],
+  "config": {
+    "theme": "light",
+    "primaryColor": "#7413c3",
+    "layout": "list",
+    "heroImages": [
+      "http://localhost:4000/uploads/1782797752353-uvs8kc-2.jpg",
+      "http://localhost:4000/uploads/1782795600836-qymofb-E3-80-90-E5-93-B2-E9-A3-8E-E5-A3-81-E7-BA-B8-E3-80-91-E4-BA-B2-E5-AF-86-E4-BA-92.png"
+    ],
+    "showBlog": true,
+    "showExperience": true,
+    "showSkills": true,
+    "showVideos": true,
+    "showAwards": true,
+    "seoTitle": "",
+    "seoDescription": ""
+  }
+}
