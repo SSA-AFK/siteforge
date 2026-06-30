@@ -1,8 +1,8 @@
-import { Download, Plus, RotateCcw, Save, Trash2 } from 'lucide-react';
-import type { ReactNode } from 'react';
-import type { Award, Experience, Project, ProjectImage, Skill, SocialLink, VideoItem } from '@siteforge/shared';
+import { ExternalLink, Plus, RotateCcw, Save, Trash2 } from 'lucide-react';
+import { useState, type ReactNode } from 'react';
+import type { Award, Experience, Project, ProjectImage, Skill, SocialLink, TemplateId, VideoItem } from '@siteforge/shared';
 import { useSiteStore } from '../store/siteStore';
-import { exportSiteHtml } from '../utils/exportHtml';
+import { publishSite } from '../utils/exportHtml';
 import { ImageUploadField } from './ImageUploadField';
 import { VideoUploadField } from './VideoUploadField';
 
@@ -30,7 +30,12 @@ function Field({ label, children }: { label: string; children: ReactNode }) {
 const inputClass = 'w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm font-medium text-slate-800 outline-none transition focus:border-purple-700 focus:ring-4 focus:ring-purple-100';
 
 export function EditorPanel() {
-  const { data, templateId, updateUser, updateConfig, upsertProject, removeProject, upsertExperience, removeExperience, upsertSkill, removeSkill, upsertAward, removeAward, upsertSocialLink, removeSocialLink, upsertVideo, removeVideo, reset } = useSiteStore();
+  const { data, templateId, setTemplateId, updateUser, updateConfig, upsertProject, removeProject, upsertExperience, removeExperience, upsertSkill, removeSkill, upsertAward, removeAward, upsertSocialLink, removeSocialLink, upsertVideo, removeVideo, reset } = useSiteStore();
+  const [publishedUrl, setPublishedUrl] = useState('');
+  const templateCapabilities = {
+    snowly: { heroImages: true, awards: true, videos: true, blog: true },
+    elena: { heroImages: false, awards: true, videos: true, blog: false }
+  }[templateId];
 
   async function saveToServer() {
     const response = await fetch('/api/site/local', {
@@ -41,6 +46,14 @@ export function EditorPanel() {
 
     if (!response.ok) {
       throw new Error('保存失败，请确认后端服务正在运行。');
+    }
+  }
+
+  async function publishCurrentSite() {
+    const result = await publishSite(data, templateId);
+    setPublishedUrl(result.url);
+    if (navigator.clipboard) {
+      await navigator.clipboard.writeText(result.url).catch(() => undefined);
     }
   }
 
@@ -191,10 +204,15 @@ export function EditorPanel() {
           <button className="inline-flex items-center justify-center gap-2 rounded-lg bg-slate-950 px-3 py-2.5 text-xs font-extrabold text-white transition hover:bg-slate-800" onClick={() => saveToServer().catch((error) => alert(error.message))}>
             <Save className="h-4 w-4" /> 保存
           </button>
-          <button className="inline-flex items-center justify-center gap-2 rounded-lg px-3 py-2.5 text-xs font-extrabold text-white transition hover:opacity-90" style={{ backgroundColor: data.config.primaryColor }} onClick={() => exportSiteHtml(data, templateId).catch((error) => alert(error.message))}>
-            <Download className="h-4 w-4" /> 导出
+          <button className="inline-flex items-center justify-center gap-2 rounded-lg px-3 py-2.5 text-xs font-extrabold text-white transition hover:opacity-90" style={{ backgroundColor: data.config.primaryColor }} onClick={() => publishCurrentSite().catch((error) => alert(error.message))}>
+            <ExternalLink className="h-4 w-4" /> 发布
           </button>
         </div>
+        {publishedUrl ? (
+          <a className="mt-3 block truncate rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-bold text-slate-600 transition hover:border-slate-300 hover:bg-white" href={publishedUrl} target="_blank" rel="noreferrer" title={publishedUrl}>
+            {publishedUrl}
+          </a>
+        ) : null}
       </div>
 
       <div className="sf-scrollbar min-h-0 flex-1 space-y-6 overflow-y-auto p-5">
@@ -212,6 +230,12 @@ export function EditorPanel() {
 
         <section className="space-y-3">
           <h2 className="text-sm font-black text-slate-950">网站配置</h2>
+          <Field label="模板">
+            <select className={inputClass} value={templateId} onChange={(event) => setTemplateId(event.target.value as TemplateId)}>
+              <option value="snowly">Snowly / 亮色紫色作品集</option>
+              <option value="elena">Elena / 暗色荧光交互作品集</option>
+            </select>
+          </Field>
           <Field label="主色"><input className={`${inputClass} h-12`} type="color" value={data.config.primaryColor} onChange={(event) => updateConfig({ primaryColor: event.target.value })} /></Field>
           <Field label="布局">
             <select className={inputClass} value={data.config.layout} onChange={(event) => updateConfig({ layout: event.target.value as typeof data.config.layout })}>
@@ -222,12 +246,12 @@ export function EditorPanel() {
           </Field>
           <label className="flex items-center justify-between rounded-lg border border-slate-200 p-3 text-sm font-bold text-slate-700">显示经历 <input type="checkbox" checked={data.config.showExperience} onChange={(event) => updateConfig({ showExperience: event.target.checked })} /></label>
           <label className="flex items-center justify-between rounded-lg border border-slate-200 p-3 text-sm font-bold text-slate-700">显示技能 <input type="checkbox" checked={data.config.showSkills} onChange={(event) => updateConfig({ showSkills: event.target.checked })} /></label>
-          <label className="flex items-center justify-between rounded-lg border border-slate-200 p-3 text-sm font-bold text-slate-700">显示视频 <input type="checkbox" checked={data.config.showVideos} onChange={(event) => updateConfig({ showVideos: event.target.checked })} /></label>
-          <label className="flex items-center justify-between rounded-lg border border-slate-200 p-3 text-sm font-bold text-slate-700">显示荣誉奖项 <input type="checkbox" checked={data.config.showAwards} onChange={(event) => updateConfig({ showAwards: event.target.checked })} /></label>
-          <label className="flex items-center justify-between rounded-lg border border-slate-200 p-3 text-sm font-bold text-slate-700">显示博客 <input type="checkbox" checked={data.config.showBlog} onChange={(event) => updateConfig({ showBlog: event.target.checked })} /></label>
+          {templateCapabilities.videos ? <label className="flex items-center justify-between rounded-lg border border-slate-200 p-3 text-sm font-bold text-slate-700">显示视频 <input type="checkbox" checked={data.config.showVideos} onChange={(event) => updateConfig({ showVideos: event.target.checked })} /></label> : null}
+          {templateCapabilities.awards ? <label className="flex items-center justify-between rounded-lg border border-slate-200 p-3 text-sm font-bold text-slate-700">显示荣誉奖项 <input type="checkbox" checked={data.config.showAwards} onChange={(event) => updateConfig({ showAwards: event.target.checked })} /></label> : null}
+          {templateCapabilities.blog ? <label className="flex items-center justify-between rounded-lg border border-slate-200 p-3 text-sm font-bold text-slate-700">显示博客 <input type="checkbox" checked={data.config.showBlog} onChange={(event) => updateConfig({ showBlog: event.target.checked })} /></label> : null}
         </section>
 
-        <section className="space-y-3">
+        {templateCapabilities.heroImages ? <section className="space-y-3">
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-sm font-black text-slate-950">Hero 背景图</h2>
@@ -243,7 +267,7 @@ export function EditorPanel() {
               </div>
             </div>
           ))}
-        </section>
+        </section> : null}
 
         <section className="space-y-3">
           <div className="flex items-center justify-between">
@@ -295,7 +319,7 @@ export function EditorPanel() {
           ))}
         </section>
 
-        <section className="space-y-3">
+        {templateCapabilities.awards ? <section className="space-y-3">
           <div className="flex items-center justify-between">
             <h2 className="text-sm font-black text-slate-950">荣誉奖项</h2>
             <button className="rounded-lg bg-slate-100 p-2 text-slate-600 hover:bg-slate-200" onClick={addAward}><Plus className="h-4 w-4" /></button>
@@ -311,9 +335,9 @@ export function EditorPanel() {
               <textarea className={inputClass} rows={2} placeholder="例如：说明获奖原因或认可内容" value={award.description || ''} onChange={(event) => upsertAward({ ...award, description: event.target.value })} />
             </div>
           ))}
-        </section>
+        </section> : null}
 
-        <section className="space-y-3">
+        {templateCapabilities.videos ? <section className="space-y-3">
           <div className="flex items-center justify-between">
             <h2 className="text-sm font-black text-slate-950">视频</h2>
             <button className="rounded-lg bg-slate-100 p-2 text-slate-600 hover:bg-slate-200" onClick={addVideo}><Plus className="h-4 w-4" /></button>
@@ -336,7 +360,7 @@ export function EditorPanel() {
               <label className="flex items-center justify-between rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-xs font-bold text-slate-600">精选视频 <input type="checkbox" checked={video.isFeatured} onChange={(event) => upsertVideo({ ...video, isFeatured: event.target.checked })} /></label>
             </div>
           ))}
-        </section>
+        </section> : null}
 
         <section className="space-y-3">
           <div className="flex items-center justify-between">
@@ -372,10 +396,19 @@ export function EditorPanel() {
             <button className="rounded-lg bg-slate-100 p-2 text-slate-600 hover:bg-slate-200" onClick={addSkill}><Plus className="h-4 w-4" /></button>
           </div>
           {data.skills.map((skill) => (
-            <div key={skill.id || skill.name} className="grid grid-cols-[1fr_74px_36px] gap-2 rounded-xl border border-slate-200 bg-slate-50 p-3">
-              <input className={inputClass} placeholder="例如：React" value={skill.name} onChange={(event) => upsertSkill({ ...skill, name: event.target.value })} />
-              <input className={inputClass} type="number" min={1} max={5} placeholder="1-5" title="熟练度：1-5" value={skill.proficiency} onChange={(event) => upsertSkill({ ...skill, proficiency: Number(event.target.value) as Skill['proficiency'] })} />
-              <button className="rounded-lg p-2 text-red-500 hover:bg-red-50" onClick={() => skill.id && removeSkill(skill.id)}><Trash2 className="h-4 w-4" /></button>
+            <div key={skill.id || skill.name} className="space-y-3 rounded-xl border border-slate-200 bg-slate-50 p-3">
+              <div className="flex justify-between gap-2">
+                <input className={inputClass} placeholder="例如：React / Figma / 品牌设计" value={skill.name} onChange={(event) => upsertSkill({ ...skill, name: event.target.value })} />
+                <button className="rounded-lg p-2 text-red-500 hover:bg-red-50" onClick={() => skill.id && removeSkill(skill.id)}><Trash2 className="h-4 w-4" /></button>
+              </div>
+              <input className={inputClass} placeholder="例如：Frontend / Design / Interaction" value={skill.category || ''} onChange={(event) => upsertSkill({ ...skill, category: event.target.value })} />
+              <Field label="熟练度">
+                <input className={inputClass} type="range" min={1} max={5} value={skill.proficiency} onChange={(event) => upsertSkill({ ...skill, proficiency: Number(event.target.value) as Skill['proficiency'] })} />
+              </Field>
+              <div className="flex items-center justify-between rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-500">
+                <span>当前等级</span>
+                <span>{skill.proficiency}/5</span>
+              </div>
             </div>
           ))}
         </section>

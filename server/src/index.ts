@@ -12,9 +12,11 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const dataDir = path.resolve(__dirname, '..', 'data');
 const publicDir = path.resolve(__dirname, '..', 'public');
 const uploadsDir = path.join(publicDir, 'uploads');
+const sitesDir = path.join(publicDir, 'sites');
 
 app.use(cors());
 app.use('/uploads', express.static(uploadsDir));
+app.use('/sites', express.static(sitesDir));
 app.post('/api/upload', express.raw({ type: ['image/*', 'video/*'], limit: '80mb' }), async (request, response) => {
   try {
     if (!Buffer.isBuffer(request.body) || request.body.length === 0) {
@@ -104,6 +106,10 @@ app.put('/api/site/:userId', async (request, response) => {
 });
 
 app.post('/api/export/html', (request, response) => {
+  response.status(410).json({ error: 'HTML file export is disabled. Use /api/publish/site for an online URL.' });
+});
+
+app.post('/api/publish/site', async (request, response) => {
   const body = request.body as { data?: unknown; templateId?: string };
   if (!isSiteData(body.data) || !body.templateId) {
     response.status(400).json({ error: 'Expected { data: SiteData, templateId: string }' });
@@ -112,10 +118,16 @@ app.post('/api/export/html', (request, response) => {
 
   try {
     const html = renderStaticHtml(body.data, body.templateId);
-    response.setHeader('Content-Type', 'text/html; charset=utf-8');
-    response.send(html);
+    const baseSlug = sanitizeFileName(`${body.data.user.username || body.data.user.displayName || 'site'}-${body.templateId}`).toLowerCase() || 'site';
+    const siteId = `${baseSlug}-${Date.now().toString(36)}`;
+    const siteDir = path.join(sitesDir, siteId);
+    await mkdir(siteDir, { recursive: true });
+    await writeFile(path.join(siteDir, 'index.html'), html, 'utf8');
+
+    const url = `${request.protocol}://${request.get('host')}/sites/${siteId}/`;
+    response.status(201).json({ ok: true, siteId, url });
   } catch (error) {
-    response.status(400).json({ error: error instanceof Error ? error.message : 'Export failed' });
+    response.status(400).json({ error: error instanceof Error ? error.message : 'Publish failed' });
   }
 });
 

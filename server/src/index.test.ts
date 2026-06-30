@@ -14,14 +14,28 @@ describe('SiteForge API', () => {
     expect(response.body.error).toContain('Invalid');
   });
 
-  it('exports static HTML', async () => {
+  it('disables static HTML file export', async () => {
     const response = await request(app)
       .post('/api/export/html')
       .send({ data: defaultSiteData, templateId: 'snowly' })
-      .expect(200);
+      .expect(410);
 
-    expect(response.text).toContain('<!doctype html>');
-    expect(response.text).toContain(defaultSiteData.user.displayName);
+    expect(response.body.error).toContain('disabled');
+  });
+
+  it('publishes a site and returns an online URL', async () => {
+    const publishResponse = await request(app)
+      .post('/api/publish/site')
+      .send({ data: defaultSiteData, templateId: 'snowly' })
+      .expect(201);
+
+    expect(publishResponse.body.url).toContain('/sites/');
+    expect(publishResponse.body.siteId).toContain('snowly');
+
+    const url = new URL(publishResponse.body.url);
+    const pageResponse = await request(app).get(url.pathname).expect(200);
+    expect(pageResponse.text).toContain('<!doctype html>');
+    expect(pageResponse.text).toContain(defaultSiteData.user.displayName);
   });
 
   it('uploads image binaries and returns a public URL', async () => {

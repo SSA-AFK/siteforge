@@ -2,7 +2,7 @@
   "user": {
     "email": "3200840552@qq.com",
     "username": "creator",
-    "displayName": "网站名称",
+    "displayName": "个人作品集",
     "avatarUrl": "http://localhost:4000/uploads/1782788991830-j46cw4-1f8b424b7927eec34fc6ef3c9924879e.jpg",
     "title": "设计师 / 开发者",
     "bio": "用创意和技术构建美好数字体验",
@@ -20,7 +20,7 @@
       "content": "Web3D telemetry platform with polished motion, dashboard primitives, and responsive layouts.",
       "role": "Product Designer / Frontend",
       "tools": "React, Three.js, Figma",
-      "projectUrl": "#",
+      "projectUrl": "",
       "displayOrder": 0,
       "isFeatured": true,
       "viewCount": 0,
@@ -49,9 +49,9 @@
       "category": "Portfolio",
       "coverImage": "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=80",
       "description": "描述这个项目的目标、过程和成果。",
-      "content": "",
+      "content": "个性化配置（主题、布局）：采用手动选择+AI推荐，让用户通过点选完成定制，同时提供智能建议，避免选择困难。",
       "displayOrder": 2,
-      "isFeatured": false,
+      "isFeatured": true,
       "viewCount": 0,
       "status": "published",
       "role": "负责人"
@@ -75,22 +75,29 @@
       "id": 1,
       "name": "Figma",
       "category": "Design",
-      "proficiency": 5,
+      "proficiency": 3,
       "displayOrder": 0
     },
     {
       "id": 2,
       "name": "React",
       "category": "Frontend",
-      "proficiency": 5,
+      "proficiency": 3,
       "displayOrder": 1
     },
     {
       "id": 3,
       "name": "Motion Design",
       "category": "Interaction",
-      "proficiency": 4,
+      "proficiency": 3,
       "displayOrder": 2
+    },
+    {
+      "id": 4,
+      "name": "python",
+      "category": "qweqwewq",
+      "proficiency": 4,
+      "displayOrder": 3
     }
   ],
   "awards": [
@@ -98,7 +105,7 @@
       "id": 1,
       "title": "Awwwards Honorable Mention",
       "issuer": "Awwwards",
-      "date": "2025",
+      "date": "2025-06",
       "description": "Recognized for visual craft, interaction detail, and responsive portfolio storytelling.",
       "awardUrl": "https://www.awwwards.com",
       "displayOrder": 0

@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AURA // 赛博朋克三维自转终端</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lenis 平滑滚动 CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@studio-freight/lenis@1.0.42/dist/lenis.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Space Mono', monospace;
+            background-color: #030208;
+            overflow-x: hidden;
+            cursor: none;
+        }
+        
+        /* 复古 CRT 屏幕扫描线 */
+        #crt-scanlines {
+            background: linear-gradient(
+                to bottom,
+                rgba(255, 255, 255, 0),
+                rgba(255, 255, 255, 0) 50%,
+                rgba(0, 243, 255, 0.015) 50%,
+                rgba(0, 243, 255, 0.015)
+            );
+            background-size: 100% 4px;
+        }
+
+        /* 动态向下扫描光栅 */
+        @keyframes scan {
+            0% { transform: translateY(-100%); }
+            100% { transform: translateY(100%); }
+        }
+        .sweep-line {
+            background: linear-gradient(to bottom, transparent, rgba(73, 197, 182, 0.08), transparent);
+            animation: scan 10s linear infinite;
+        }
+
+        /* 数字化几何网格背景 */
+        #grid-overlay {
+            background-size: 50px 50px;
+            background-image: 
+                linear-gradient(to right, rgba(73, 197, 182, 0.02) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(73, 197, 182, 0.02) 1px, transparent 1px);
+        }
+
+        /* 滚动条 */
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #030208;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #49c5b6;
+            border-radius: 2px;
+        }
+
+        /* 赛博朋克高亮边框 */
+        .border-neon {
+            border-color: rgba(73, 197, 182, 0.15);
+            background: rgba(4, 3, 10, 0.75);
+            backdrop-filter: blur(16px);
+            transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .border-neon:hover {
+            border-color: rgba(73, 197, 182, 0.8);
+            box-shadow: 0 0 45px rgba(73, 197, 182, 0.2);
+        }
+    </style>
+</head>
+<body class="text-slate-300 antialiased">
+
+    <!-- 赛博朋克屏幕视效层 -->
+    <div id="crt-scanlines" class="fixed inset-0 pointer-events-none z-50"></div>
+    <div class="fixed inset-y-0 left-0 w-full sweep-line pointer-events-none z-50"></div>
+
+    <!-- 全局科技感定位角装饰 -->
+    <div class="fixed top-4 left-4 w-6 h-6 border-t-2 border-l-2 border-[#49c5b6]/30 z-30 pointer-events-none"></div>
+    <div class="fixed top-4 right-4 w-6 h-6 border-t-2 border-r-2 border-[#49c5b6]/30 z-30 pointer-events-none"></div>
+    <div class="fixed bottom-4 left-4 w-6 h-6 border-b-2 border-l-2 border-[#49c5b6]/30 z-30 pointer-events-none"></div>
+    <div class="fixed bottom-4 right-4 w-6 h-6 border-b-2 border-r-2 border-[#49c5b6]/30 z-30 pointer-events-none"></div>
+
+    <!-- 自定义平滑指针 -->
+    <div id="custom-cursor" class="hidden md:block fixed w-5 h-5 rounded-full border border-[#49c5b6]/50 pointer-events-none z-50 transform -translate-x-1/2 -translate-y-1/2 transition-all duration-300"></div>
+    <div id="custom-cursor-dot" class="hidden md:block fixed w-1.5 h-1.5 bg-[#49c5b6] rounded-full pointer-events-none z-50 transform -translate-x-1/2 -translate-y-1/2"></div>
+
+    <!-- 几何网格 & 鼠标动态光晕追踪背景 -->
+    <div id="grid-overlay" class="fixed inset-0 pointer-events-none -z-20"></div>
+    <div id="bg-glow" class="fixed inset-0 pointer-events-none -z-20 opacity-60 transition-opacity duration-1000" style="background: radial-gradient(circle 350px at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(73, 197, 182, 0.12), transparent 80%);"></div>
+
+    <!-- WebGL Canvas 渲染容器（包含背景倾斜网格、星空微尘、3D多维浮球） -->
+    <canvas id="webgl-bg" class="fixed top-0 left-0 w-full h-full -z-10 pointer-events-none"></canvas>
+
+    <!-- 实时遥测数据终端窗口 -->
+    <div class="fixed bottom-6 left-6 z-30 font-mono text-[9px] text-[#49c5b6]/50 hidden lg:block select-none pointer-events-none bg-[#04030a]/80 p-4 border border-[#49c5b6]/15 backdrop-blur-md rounded max-w-xs">
+        <div class="border-b border-[#49c5b6]/20 pb-1 mb-2 text-[#49c5b6] flex justify-between">
+            <span>SYS_MONITOR //</span>
+            <span class="animate-pulse">● LIVE</span>
+        </div>
+        <div class="space-y-1 text-slate-400">
+            <div>SPIN_SPEED: <span id="spin-feed">ROT_Y: ACTIVE</span></div>
+            <div>MESH_BREATHING: <span class="text-[#ff9398]">ACTIVE</span></div>
+            <div class="truncate">PROCESS_LOG: <span id="log-feed" class="text-yellow-400/80">RENDER_V3.0.0</span></div>
+        </div>
+    </div>
+
+    <!-- 导航栏 -->
+    <nav class="fixed top-0 left-0 w-full z-40 flex justify-between items-center px-10 py-6 border-b border-white/5 backdrop-blur-md">
+        <div class="text-md font-bold text-white tracking-widest scramble-target interactive-item">AURA_CORP</div>
+        <div class="hidden md:flex space-x-12 text-xs tracking-widest">
+            <a href="#home" class="hover:text-[#49c5b6] transition-colors duration-300 scramble-target interactive-item">INDEX</a>
+            <a href="#projects" class="hover:text-[#49c5b6] transition-colors duration-300 scramble-target interactive-item">PROJECTS</a>
+            <a href="#video-section" class="hover:text-[#49c5b6] transition-colors duration-300 scramble-target interactive-item">REELS</a>
+            <a href="#resume" class="hover:text-[#49c5b6] transition-colors duration-300 scramble-target interactive-item">BIOGRAPHY</a>
+        </div>
+        <div class="text-xs text-[#49c5b6] border border-[#49c5b6]/30 px-3 py-1 rounded">CORE_V3.0</div>
+    </nav>
+
+    <!-- 主体内容 -->
+    <main class="relative z-10 max-w-6xl mx-auto px-6">
+
+        <!-- 1. HERO SECTION -->
+        <section id="home" class="min-h-screen flex flex-col justify-center items-start pt-20">
+            <div class="border-l-2 border-[#49c5b6] pl-6 mb-8 opacity-0 gs-reveal">
+                <p class="text-xs text-[#49c5b6] tracking-[0.4em] uppercase mb-1">SYSTEM ONLINE // CORE_V3</p>
+                <span class="text-[10px] text-slate-500">GPU MULTI-AXIS WAVE DEFORMATION // SCROLL GRADIENT</span>
+            </div>
+            <h1 class="text-5xl md:text-8xl font-bold text-white tracking-tighter leading-none mb-6 opacity-0 gs-reveal">
+                CYBERNETIC<br>
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-[#49c5b6] via-[#a3e635] to-[#ff9398]">METAVERSE</span>
+            </h1>
+            <p class="max-w-md text-xs text-slate-400 mb-8 leading-relaxed opacity-0 gs-reveal">
+                欢迎接入塞博朋克数字终端。空间背景中部署了缓动的透视电子网格与星尘尘埃，3D 能量核心已升级为多维谐波漂移动态体系。
+            </p>
+            <div class="opacity-0 gs-reveal">
+                <a href="#projects" class="border-neon border px-8 py-4 text-xs tracking-widest text-[#49c5b6] hover:text-white inline-block interactive-item relative">
+                    <span class="absolute top-0 left-0 w-2 h-2 border-t border-l border-[#49c5b6]"></span>
+                    <span class="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-[#49c5b6]"></span>
+                    INITIALIZE SCAN //
+                </a>
+            </div>
+        </section>
+
+        <!-- 2. PROJECTS SECTION -->
+        <section id="projects" class="py-32 border-t border-white/5">
+            <div class="mb-20">
+                <p class="text-xs text-[#49c5b6] tracking-widest mb-2">// SELECTED TELEMETRY</p>
+                <h2 class="text-4xl font-bold text-white scramble-target">核心数据矩阵</h2>
+            </div>
+
+            <!-- 全宽矩阵网格 -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- 模块 1 -->
+                <div class="border-neon border p-8 rounded relative group cursor-none interactive-item project-card" data-index="0">
+                    <span class="absolute top-0 left-0 w-3 h-3 border-t-2 border-l-2 border-[#49c5b6]/30 group-hover:border-[#49c5b6]"></span>
+                    <span class="absolute bottom-0 right-0 w-3 h-3 border-b-2 border-r-2 border-[#49c5b6]/30 group-hover:border-[#49c5b6]"></span>
+                    <span class="text-[10px] text-[#49c5b6] font-bold tracking-widest">[NODE_01_SYS]</span>
+                    <h3 class="text-xl font-bold text-white mt-6 group-hover:text-[#49c5b6] transition-colors">SYNAPSE FLOW</h3>
+                    <p class="text-xs text-slate-400 mt-4 leading-relaxed">
+                        基于三维力导向图模型的虚拟突触数据传输系统。利用多线程技术同步解析大型网络节点结构，在前端实现高速流式交互。
+                    </p>
+                </div>
+
+                <!-- 模块 2 -->
+                <div class="border-neon border p-8 rounded relative group cursor-none interactive-item project-card" data-index="1">
+                    <span class="absolute top-0 left-0 w-3 h-3 border-t-2 border-l-2 border-[#ff9398]/30 group-hover:border-[#ff9398]"></span>
+                    <span class="absolute bottom-0 right-0 w-3 h-3 border-b-2 border-r-2 border-[#ff9398]/30 group-hover:border-[#ff9398]"></span>
+                    <span class="text-[10px] text-[#ff9398] font-bold tracking-widest">[NODE_02_ENG]</span>
+                    <h3 class="text-xl font-bold text-white mt-6 group-hover:text-[#ff9398] transition-colors">ECHO SPECTRUM</h3>
+                    <p class="text-xs text-slate-400 mt-4 leading-relaxed">
+                        多频声波几何解构引擎。将高精音频输入转化为动态数学拓扑网格，展示声音传播在虚拟介质中的回响形态。
+                    </p>
+                </div>
+
+                <!-- 模块 3 -->
+                <div class="border-neon border p-8 rounded relative group cursor-none interactive-item project-card" data-index="2">
+                    <span class="absolute top-0 left-0 w-3 h-3 border-t-2 border-l-2 border-[#a3e635]/30 group-hover:border-[#a3e635]"></span>
+                    <span class="absolute bottom-0 right-0 w-3 h-3 border-b-2 border-r-2 border-[#a3e635]/30 group-hover:border-[#a3e635]"></span>
+                    <span class="text-[10px] text-[#a3e635] font-bold tracking-widest">[NODE_03_NET]</span>
+                    <h3 class="text-xl font-bold text-white mt-6 group-hover:text-[#a3e635] transition-colors">VOID INTERFACE</h3>
+                    <p class="text-xs text-slate-400 mt-4 leading-relaxed">
+                        专为深空探索与数据可视化打造的无界微端。底层完全由轻量化矢量图形搭建，保障极高硬件兼容性。
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. VIDEO SHOWCASE SECTION -->
+        <section id="video-section" class="py-32 border-t border-white/5">
+            <div class="mb-16">
+                <p class="text-xs text-[#49c5b6] tracking-widest mb-2">// REELS & DEMOS</p>
+                <h2 class="text-4xl font-bold text-white scramble-target">多媒体运行终端</h2>
+            </div>
+
+            <!-- 视频卡片容器 -->
+            <div id="video-card" class="border-neon border p-4 bg-black/60 relative group cursor-none interactive-item overflow-hidden rounded">
+                <span class="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-[#49c5b6]"></span>
+                <span class="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-[#49c5b6]"></span>
+                <span class="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-[#49c5b6]"></span>
+                <span class="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-[#49c5b6]"></span>
+
+                <div class="aspect-video w-full bg-slate-900/80 relative flex items-center justify-center overflow-hidden">
+                    <div class="absolute inset-0 bg-gradient-to-tr from-slate-950 to-slate-900 flex flex-col justify-center items-center">
+                        <div class="w-16 h-16 rounded-full border border-[#49c5b6] flex items-center justify-center group-hover:scale-110 transition-transform duration-500">
+                            <svg class="w-6 h-6 text-[#49c5b6] fill-current translate-x-0.5" viewBox="0 0 24 24">
+                                <path d="M8 5v14l11-7z" />
+                            </svg>
+                        </div>
+                        <span class="text-[10px] text-slate-500 tracking-widest mt-4 group-hover:text-[#49c5b6] transition-colors">CLICK TO RUN SHADER_DEMO.MP4</span>
+                    </div>
+                    <div class="absolute top-4 left-4 text-[10px] text-[#49c5b6]/40">REC [●] 1080P</div>
+                    <div class="absolute bottom-4 right-4 text-[10px] text-slate-500 font-bold">SOURCE: MIXKIT-CYBER</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 4. CHRONICLE RESUME SECTION -->
+        <section id="resume" class="py-32 border-t border-white/5">
+            <div class="mb-20">
+                <p class="text-xs text-[#49c5b6] tracking-widest mb-2">// EXPERIENCE CHRONOLOGY</p>
+                <h2 class="text-4xl font-bold text-white scramble-target">个人履历数据库</h2>
+            </div>
+
+            <div class="relative pl-6 md:pl-12 border-l border-white/10 space-y-16">
+                <!-- 履历节点 1 -->
+                <div class="relative">
+                    <div class="absolute -left-[31px] md:-left-[55px] top-1.5 w-4 h-4 bg-[#030208] border-2 border-[#49c5b6] rounded-full flex items-center justify-center">
+                        <div class="w-1.5 h-1.5 bg-[#49c5b6] rounded-full animate-ping"></div>
+                    </div>
+                    <div class="flex flex-col md:flex-row md:items-center justify-between mb-2">
+                        <span class="text-xs text-[#49c5b6] tracking-wider font-bold">2024.10 - PRESENT</span>
+                        <span class="text-[10px] text-slate-500 uppercase mt-1 md:mt-0">MATRIX DIGITAL INC.</span>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-3">高级创意研发专家 (Senior Creative Developer)</h3>
+                    <p class="text-xs text-slate-400 leading-relaxed max-w-3xl">
+                        主导 Web 端高渲染效能项目的架构设计。配合 3D 物理引擎，优化数百万粒子的 GPU 运算管道性能。负责高端数字品牌官网的交互策略制定。
+                    </p>
+                </div>
+
+                <!-- 履历节点 2 -->
+                <div class="relative">
+                    <div class="absolute -left-[31px] md:-left-[55px] top-1.5 w-4 h-4 bg-[#030208] border-2 border-[#ff9398]/50 rounded-full flex items-center justify-center">
+                        <div class="w-1.5 h-1.5 bg-[#ff9398] rounded-full"></div>
+                    </div>
+                    <div class="flex flex-col md:flex-row md:items-center justify-between mb-2">
+                        <span class="text-xs text-[#ff9398] tracking-wider font-bold">2022.04 - 2024.09</span>
+                        <span class="text-[10px] text-slate-500 uppercase mt-1 md:mt-0">NEON HORIZON STUDIO</span>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-3">创意交互工程师 (Interactive UX Engineer)</h3>
+                    <p class="text-xs text-slate-400 leading-relaxed max-w-3xl">
+                        负责基于 Vue 3 和 React 的复杂单页交互。运用 GLSL 自定义着色器渲染动态材质与物理反射，重塑数字体验流畅度。
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 5. CONTACT SECTION -->
+        <section id="contact" class="py-32 border-t border-white/5 text-center">
+            <h2 class="text-3xl md:text-6xl font-bold text-white mb-6 scramble-target">CONNECT TO PORT</h2>
+            <p class="text-xs text-slate-500 max-w-sm mx-auto mb-12">建立安全数据连接传输通道，向实验室传送讯息。</p>
+            <a href="mailto:aura@domain.com" class="border border-[#49c5b6] text-[#49c5b6] px-10 py-5 text-xs tracking-widest hover:bg-[#49c5b6] hover:text-black transition-all duration-300 cursor-none interactive-item inline-block relative">
+                <span class="absolute top-0 left-0 w-2.5 h-2.5 border-t border-l border-[#49c5b6]"></span>
+                <span class="absolute bottom-0 right-0 w-2.5 h-2.5 border-b border-r border-[#49c5b6]"></span>
+                ESTABLISH CONNECTION ->
+            </a>
+        </section>
+    </main>
+
+    <!-- 视频模态播放器 -->
+    <div id="video-modal" class="fixed inset-0 z-50 bg-black/95 backdrop-blur-md opacity-0 pointer-events-none transition-opacity duration-500 flex items-center justify-center p-4">
+        <button id="close-modal" class="absolute top-8 right-8 text-white hover:text-[#49c5b6] tracking-widest text-xs border border-white/10 px-4 py-2 hover:border-[#49c5b6] transition-colors cursor-none interactive-item">
+            CLOSE_STREAM [X]
+        </button>
+        <div class="w-full max-w-4xl aspect-video bg-black border border-white/10 shadow-2xl relative">
+            <video id="modal-video" class="w-full h-full object-cover" controls loop playsinline>
+                <source src="https://assets.mixkit.co/videos/preview/mixkit-cyberpunk-neon-city-lights-at-night-42171-large.mp4" type="video/mp4">
+            </video>
+        </div>
+    </div>
+
+    <!-- 页脚 -->
+    <footer class="border-t border-white/5 py-12 text-center text-[10px] text-slate-600 tracking-widest relative">
+        © 2026 AURA STUDIO. CORE ENGINE POWERED BY WEBGL & GSAP.
+    </footer>
+
+    <!-- 外部依赖 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@studio-freight/lenis@1.0.42/dist/lenis.min.js"></script>
+
+    <script>
+        // ==========================================
+        // 1. MOUSE GLOW & CUSTOM CURSOR (光标追踪)
+        // ==========================================
+        const cursor = document.getElementById('custom-cursor');
+        const cursorDot = document.getElementById('custom-cursor-dot');
+        
+        let mouseX = window.innerWidth / 2;
+        let mouseY = window.innerHeight / 2;
+        let targetCX = mouseX, targetCY = mouseY;
+
+        window.addEventListener('mousemove', (e) => {
+            targetCX = e.clientX;
+            targetCY = e.clientY;
+
+            document.documentElement.style.setProperty('--mouse-x', `${targetCX}px`);
+            document.documentElement.style.setProperty('--mouse-y', `${targetCY}px`);
+
+            cursorDot.style.left = `${targetCX}px`;
+            cursorDot.style.top = `${targetCY}px`;
+        });
+
+        function updateCursor() {
+            mouseX += (targetCX - mouseX) * 0.12;
+            mouseY += (targetCY - mouseY) * 0.12;
+            cursor.style.left = `${mouseX}px`;
+            cursor.style.top = `${mouseY}px`;
+            requestAnimationFrame(updateCursor);
+        }
+        updateCursor();
+
+        document.querySelectorAll('.interactive-item').forEach(el => {
+            el.addEventListener('mouseenter', () => {
+                cursor.style.width = '55px';
+                cursor.style.height = '55px';
+                cursor.style.borderColor = '#ff9398';
+                cursor.style.backgroundColor = 'rgba(255,147,152,0.06)';
+            });
+            el.addEventListener('mouseleave', () => {
+                cursor.style.width = '20px';
+                cursor.style.height = '20px';
+                cursor.style.borderColor = 'rgba(73, 197, 182, 0.5)';
+                cursor.style.backgroundColor = 'transparent';
+            });
+        });
+
+        // ==========================================
+        // 2. LIVE SYSTEM TELEMETRY (左下角数据遥测)
+        // ==========================================
+        const processes = [
+            "DRFT_X: OSC_0.6Hz", "DRFT_Y: OSC_0.8Hz", "DRFT_Z: OSC_0.4Hz", 
+            "MESH_BREATH: SINE_1.5Hz", "WAVE_VERT_DIR: THREE_AXIS_COMPUTE", 
+            "LENIS_LERP: 12%", "CYBER_GRID: OSC_Z_ROT"
+        ];
+        const logFeed = document.getElementById('log-feed');
+        const spinFeed = document.getElementById('spin-feed');
+
+        setInterval(() => {
+            const randomProc = processes[Math.floor(Math.random() * processes.length)];
+            logFeed.innerText = randomProc;
+            
+            // 展示实时动态角度和自主旋转帧
+            const currentRotY = (liquidMesh ? liquidMesh.rotation.y % (Math.PI * 2) : 0).toFixed(2);
+            spinFeed.innerText = `ROT_Y: ${currentRotY} rad`;
+        }, 1500);
+
+        // ==========================================
+        // 3. VIDEO MODAL (视频播放)
+        // ==========================================
+        const videoCard = document.getElementById('video-card');
+        const videoModal = document.getElementById('video-modal');
+        const closeModal = document.getElementById('close-modal');
+        const modalVideo = document.getElementById('modal-video');
+
+        videoCard.addEventListener('click', () => {
+            videoModal.classList.remove('pointer-events-none');
+            videoModal.classList.add('opacity-100');
+            modalVideo.play();
+        });
+
+        closeModal.addEventListener('click', () => {
+            videoModal.classList.add('pointer-events-none');
+            videoModal.classList.remove('opacity-100');
+            modalVideo.pause();
+            modalVideo.currentTime = 0;
+        });
+
+        // ==========================================
+        // 4. TEXT SCRAMBLER (字符故障动效)
+        // ==========================================
+        class TextScrambler {
+            constructor(el) {
+                this.el = el;
+                this.chars = '!<>-_\\/[]{}—=+*^?#________';
+                this.update = this.update.bind(this);
+            }
+            setText(newText) {
+                const oldText = this.el.innerText;
+                const length = Math.max(oldText.length, newText.length);
+                const promise = new Promise((resolve) => this.resolve = resolve);
+                this.queue = [];
+                for (let i = 0; i < length; i++) {
+                    const from = oldText[i] || '';
+                    const to = newText[i] || '';
+                    const start = Math.floor(Math.random() * 20);
+                    const end = start + Math.floor(Math.random() * 20);
+                    this.queue.push({ from, to, start, end });
+                }
+                cancelAnimationFrame(this.frameId);
+                this.frame = 0;
+                this.update();
+                return promise;
+            }
+            update() {
+                let output = '';
+                let complete = 0;
+                for (let i = 0, n = this.queue.length; i < n; i++) {
+                    let { from, to, start, end, char } = this.queue[i];
+                    if (this.frame >= end) {
+                        complete++;
+                        output += to;
+                    } else if (this.frame >= start) {
+                        if (!char || Math.random() < 0.28) {
+                            char = this.randomChar();
+                            this.queue[i].char = char;
+                        }
+                        output += `<span class="text-[#49c5b6]">${char}</span>`;
+                    } else {
+                        output += from;
+                    }
+                }
+                this.el.innerHTML = output;
+                if (complete === this.queue.length) {
+                    this.resolve();
+                } else {
+                    this.frameId = requestAnimationFrame(this.update);
+                    this.frame++;
+                }
+            }
+            randomChar() {
+                return this.chars[Math.floor(Math.random() * this.chars.length)];
+            }
+        }
+
+        document.querySelectorAll('.scramble-target').forEach(el => {
+            const originalText = el.innerText;
+            const scrambler = new TextScrambler(el);
+            el.addEventListener('mouseenter', () => {
+                scrambler.setText(originalText);
+            });
+        });
+
+        // ==========================================
+        // 5. LENIS INERTIA SCROLL (平滑滚动)
+        // ==========================================
+        const lenis = new Lenis({
+            duration: 1.2,
+            easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+            smoothWheel: true
+        });
+
+        function raf(time) {
+            lenis.raf(time);
+            requestAnimationFrame(raf);
+        }
+        requestAnimationFrame(raf);
+
+
+        // ==========================================
+        // 6. THREE.JS ENGINE (赛博朋克渲染与物理运动引擎)
+        // ==========================================
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.1, 100);
+        camera.position.z = 3.5;
+
+        const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('webgl-bg'), antialias: true, alpha: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+        // 三维赛博透视网格
+        const cyberGrid = new THREE.GridHelper(50, 40, 0x49c5b6, 0x181033);
+        cyberGrid.position.y = -3;
+        cyberGrid.position.z = -5;
+        cyberGrid.rotation.x = Math.PI / 8;
+        scene.add(cyberGrid);
+
+        // 浮动电子微尘
+        const dustCount = 350;
+        const dustGeometry = new THREE.BufferGeometry();
+        const dustPositions = new Float32Array(dustCount * 3);
+        for (let i = 0; i < dustCount * 3; i++) {
+            dustPositions[i] = (Math.random() - 0.5) * 15;
+        }
+        dustGeometry.setAttribute('position', new THREE.BufferAttribute(dustPositions, 3));
+        const dustMaterial = new THREE.PointsMaterial({
+            color: 0x49c5b6,
+            size: 0.02,
+            transparent: true,
+            opacity: 0.35
+        });
+        const dustParticles = new THREE.Points(dustGeometry, dustMaterial);
+        scene.add(dustParticles);
+
+
+        // 多轴向交叉干涉形变着色器
+        const sphereVertex = `
+            uniform float uTime;
+            uniform vec2 uMouse;
+            varying vec2 vUv;
+            varying vec3 vNormal;
+            varying float vDisplacement;
+
+            void main() {
+                vUv = uv;
+                vNormal = normalize(normalMatrix * normal);
+                
+                float waveX = sin(position.x * 3.0 + uTime * 1.2) * cos(position.y * 2.0 - uTime * 0.8);
+                float waveY = sin(position.y * 3.5 - uTime * 1.5) * cos(position.z * 2.5 + uTime * 1.1);
+                float waveZ = sin(position.z * 4.0 + uTime * 1.0) * cos(position.x * 3.0 - uTime * 1.3);
+                
+                float displacement = (waveX * 0.35 + waveY * 0.35 + waveZ * 0.3) * 0.7;
+
+                float distToMouse = distance(uv, uMouse);
+                displacement += (1.0 - smoothstep(0.0, 0.7, distToMouse)) * 0.15;
+                
+                vDisplacement = displacement;
+                vec3 newPosition = position + normal * displacement;
+                gl_Position = projectionMatrix * modelViewMatrix * vec4(newPosition, 1.0);
+            }
+        `;
+
+        const sphereFragment = `
+            uniform float uTime;
+            varying vec3 vNormal;
+            varying float vDisplacement;
+
+            void main() {
+                vec3 viewDirection = normalize(vec3(0.0, 0.0, 1.0));
+                float fresnel = pow(1.0 - dot(vNormal, viewDirection), 3.0);
+
+                vec3 colorCyan = vec3(0.28, 0.77, 0.71); 
+                vec3 colorPink = vec3(1.0, 0.57, 0.59); 
+                
+                vec3 baseColor = mix(colorCyan, colorPink, vDisplacement + 0.5);
+                vec3 finalColor = mix(baseColor * 0.4, colorPink, fresnel * 1.5);
+                
+                finalColor += colorCyan * (fresnel * 0.6);
+                gl_FragColor = vec4(finalColor, 0.9);
+            }
+        `;
+
+        const sphereGeometry = new THREE.IcosahedronGeometry(1.4, 64);
+        const sphereMaterial = new THREE.ShaderMaterial({
+            vertexShader: sphereVertex,
+            fragmentShader: sphereFragment,
+            uniforms: {
+                uTime: { value: 0 },
+                uMouse: { value: new THREE.Vector2(0, 0) }
+            },
+            transparent: true
+        });
+
+        const liquidMesh = new THREE.Mesh(sphereGeometry, sphereMaterial);
+        scene.add(liquidMesh);
+
+
+        // ==========================================
+        // 7. 物理引力偏摆交互 (Hover Attraction)
+        // ==========================================
+        let hoverOffset = { x: 0, y: 0 };
+
+        document.querySelectorAll('.project-card').forEach((card) => {
+            card.addEventListener('mouseenter', () => {
+                const index = parseInt(card.getAttribute('data-index'));
+                if (index === 0) {
+                    hoverOffset.x = -0.5; 
+                    hoverOffset.y = -0.1;
+                } else if (index === 1) {
+                    hoverOffset.x = 0;    
+                    hoverOffset.y = -0.4; 
+                } else if (index === 2) {
+                    hoverOffset.x = 0.5;  
+                    hoverOffset.y = -0.1;
+                }
+            });
+            card.addEventListener('mouseleave', () => {
+                hoverOffset.x = 0;
+                hoverOffset.y = 0;
+            });
+        });
+
+
+        // ==========================================
+        // 8. GSAP SCROLLTRIGGER (控制解耦旋转与S型位置变量)
+        // ==========================================
+        gsap.registerPlugin(ScrollTrigger);
+
+        const isMobile = window.innerWidth < 768;
+
+        // 1. 底层解耦坐标对象
+        const basePos = { x: 0, y: 0, z: 0 };
+        // 2. 【新增】底层解耦旋转对象：彻底解决自转和滚动扭转冲突的核心！
+        const scrollRot = { x: 0, y: 0, z: 0 };
+
+        if(isMobile) {
+            basePos.x = 0;
+            basePos.y = 0.4;
+            basePos.z = -0.5;
+        } else {
+            basePos.x = 0;
+            basePos.y = 0;
+            basePos.z = 0;
+        }
+
+        // 3. 构建位置滚动时间轴
+        const scrollTimeline = gsap.timeline({
+            scrollTrigger: {
+                trigger: "body",
+                start: "top top",
+                end: "bottom bottom",
+                scrub: 1.5
+            }
+        });
+
+        scrollTimeline
+            .to(basePos, { x: isMobile ? 0 : -1.8, y: isMobile ? -0.5 : -0.8, z: isMobile ? -1.0 : -0.5, ease: "power1.inOut" })
+            .to(basePos, { x: isMobile ? 0 : 1.8, y: isMobile ? -0.8 : 0.4, z: isMobile ? -1.2 : -0.8, ease: "power1.inOut" })
+            .to(basePos, { x: 0, y: isMobile ? -0.5 : -0.2, z: -1.2, ease: "power1.inOut" });
+
+        // 4. 【修改】将滚动旋转绑定在解耦的 scrollRot 变量上，彻底不干扰 liquidMesh 本身的增量自转
+        gsap.to(scrollRot, {
+            x: Math.PI * 1.5,
+            y: Math.PI * 2,
+            scrollTrigger: {
+                trigger: "body",
+                start: "top top",
+                end: "bottom bottom",
+                scrub: 1.5
+            }
+        });
+
+        // 基础出场
+        gsap.to('.gs-reveal', {
+            opacity: 1,
+            y: 0,
+            duration: 1.4,
+            stagger: 0.15,
+            ease: 'power4.out',
+            startAt: { y: 60 }
+        });
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+
+        // ==========================================
+        // 9. RENDER LOOP (整合时间自主旋转与滚动旋转的帧循环)
+        // ==========================================
+        const clock = new THREE.Clock();
+
+        let shMouseX = 0, shMouseY = 0;
+        let targetShX = 0, targetShY = 0;
+
+        window.addEventListener('mousemove', (e) => {
+            shMouseX = (e.clientX / window.innerWidth);
+            shMouseY = 1.0 - (e.clientY / window.innerHeight);
+        });
+
+        function animate() {
+            const elapsed = clock.getElapsedTime();
+
+            // 1. 更新球体 Shader Uniforms
+            sphereMaterial.uniforms.uTime.value = elapsed;
+            targetShX += (shMouseX - targetShX) * 0.1;
+            targetShY += (shMouseY - targetShY) * 0.1;
+            sphereMaterial.uniforms.uMouse.value.set(targetShX, targetShY);
+
+            // 2. 多维度谐波空间三维漂移 (3D Harmonic Drift)
+            const driftX = Math.sin(elapsed * 0.6) * 0.18;
+            const driftY = Math.cos(elapsed * 0.8) * 0.18;
+            const driftZ = Math.sin(elapsed * 0.4) * 0.12;
+
+            // 3. 缩放呼吸效应 (Scale Breathing)
+            const breathScale = 1.0 + Math.sin(elapsed * 1.5) * 0.08;
+
+            // 4. 应用位置叠加：S型曲线位移 + 三维漂移 + 卡片交互引力
+            liquidMesh.position.x = basePos.x + driftX + hoverOffset.x;
+            liquidMesh.position.y = basePos.y + driftY + hoverOffset.y;
+            liquidMesh.position.z = basePos.z + driftZ;
+
+            liquidMesh.scale.setScalar(breathScale);
+
+            // 5. 【核心优化点】应用解耦旋转叠加：
+            // 让浮球旋转值 = 滚动引起的扭转角(scrollRot) + 时间维度的匀速自主旋转(elapsed * 速度)
+            // 如此便能完美共存：既能在不滚动时无休止丝滑旋转，又能在滚动时顺畅扭转！
+            liquidMesh.rotation.x = scrollRot.x + elapsed * 0.15;
+            liquidMesh.rotation.y = scrollRot.y + elapsed * 0.25;
+
+            // 空间背景粒子与网格运动
+            cyberGrid.rotation.z = elapsed * 0.015;
+            dustParticles.rotation.y = elapsed * 0.01;
+            dustParticles.rotation.x = Math.sin(elapsed * 0.1) * 0.05;
+
+            renderer.render(scene, camera);
+            requestAnimationFrame(animate);
+        }
+
+        animate();
+    </script>
+</body>
+</html>

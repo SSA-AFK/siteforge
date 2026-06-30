@@ -249,7 +249,7 @@ export function TemplateSnowly({ data }: TemplateSnowlyProps) {
                 Awards
               </a>
             ) : null}
-            {config.showSkills ? (
+            {config.showSkills && visibleSkills.length > 0 ? (
               <a href="#skills" className={navLinkClass('skills')} style={activeSection === 'skills' ? ({ color: '#0f172a' } as CSSProperties) : undefined}>
                 <span className="absolute inset-x-0 -bottom-1 h-0.5 rounded-full" style={{ backgroundColor: activeSection === 'skills' ? primaryColor : 'transparent' }} />
                 Skills
@@ -526,7 +526,7 @@ export function TemplateSnowly({ data }: TemplateSnowlyProps) {
                 <a href="#about" className="transition-colors duration-300 hover:text-purple-400">About</a>
                 <a href="#work" className="transition-colors duration-300 hover:text-purple-400">Work</a>
                 {config.showAwards && visibleAwards.length > 0 ? <a href="#awards" className="transition-colors duration-300 hover:text-purple-400">Awards</a> : null}
-                {config.showSkills ? <a href="#skills" className="transition-colors duration-300 hover:text-purple-400">Skills</a> : null}
+                {config.showSkills && visibleSkills.length > 0 ? <a href="#skills" className="transition-colors duration-300 hover:text-purple-400">Skills</a> : null}
               </div>
             </div>
             <div className="space-y-4 lg:col-span-4">

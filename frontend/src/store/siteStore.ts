@@ -1,12 +1,14 @@
 import { create } from 'zustand';
-import { defaultSiteData, type Award, type BlogPost, type Experience, type Project, type SiteConfig, type SiteData, type Skill, type SocialLink, type User, type VideoItem } from '@siteforge/shared';
+import { defaultSiteData, type Award, type BlogPost, type Experience, type Project, type SiteConfig, type SiteData, type Skill, type SocialLink, type TemplateId, type User, type VideoItem } from '@siteforge/shared';
 
 const STORAGE_KEY = 'siteforge:data:v1';
+const TEMPLATE_STORAGE_KEY = 'siteforge:template:v1';
 
 interface SiteStore {
   data: SiteData;
-  templateId: 'snowly';
+  templateId: TemplateId;
   setData: (data: SiteData) => void;
+  setTemplateId: (templateId: TemplateId) => void;
   updateUser: (patch: Partial<User>) => void;
   updateConfig: (patch: Partial<SiteConfig>) => void;
   upsertProject: (project: Project) => void;
@@ -52,6 +54,12 @@ function loadInitialData(): SiteData {
   }
 }
 
+function loadInitialTemplateId(): TemplateId {
+  if (typeof window === 'undefined') return 'snowly';
+  const templateId = window.localStorage.getItem(TEMPLATE_STORAGE_KEY);
+  return templateId === 'elena' || templateId === 'snowly' ? templateId : 'snowly';
+}
+
 function persist(data: SiteData) {
   window.localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
 }
@@ -62,7 +70,11 @@ function byOrder<T extends { displayOrder: number }>(items: T[]) {
 
 export const useSiteStore = create<SiteStore>((set, get) => ({
   data: loadInitialData(),
-  templateId: 'snowly',
+  templateId: loadInitialTemplateId(),
+  setTemplateId: (templateId) => {
+    window.localStorage.setItem(TEMPLATE_STORAGE_KEY, templateId);
+    set({ templateId });
+  },
   setData: (data) => {
     persist(data);
     set({ data });

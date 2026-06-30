@@ -13,6 +13,8 @@ describe('renderStaticHtml', () => {
     expect(html).toContain('Portfolio Walkthrough');
     expect(html).toContain('Interface system overview');
     expect(html).toContain('hero-slide');
+    expect(html).toContain('Contact Me');
+    expect(html).toContain('button secondary');
     expect(html).toContain('padding-left: clamp(24px, 7vw, 160px)');
     expect(html).toContain('margin: 80px auto 80px 0');
     expect(html).toContain('hero-dots');
@@ -27,5 +29,113 @@ describe('renderStaticHtml', () => {
 
   it('rejects unsupported templates', () => {
     expect(() => renderStaticHtml(defaultSiteData, 'unknown')).toThrow('Unsupported template');
+  });
+
+  it('exports project list layout when configured', () => {
+    const html = renderStaticHtml(
+      {
+        ...defaultSiteData,
+        config: { ...defaultSiteData.config, layout: 'list' }
+      },
+      'snowly'
+    );
+
+    expect(html).toContain('class="project-grid project-grid-list"');
+  });
+
+  it('exports Elena HTML without hero carousel controls', () => {
+    const html = renderStaticHtml(defaultSiteData, 'elena');
+
+    expect(html).toContain('tilt-card');
+    expect(html).toContain('scramble-trigger');
+    expect(html).toContain('SELECTED PORTFOLIO');
+    expect(html).toContain(defaultSiteData.projects[0].title);
+    expect(html).toContain('project-gallery');
+    expect(html).toContain('Interface system overview');
+    expect(html).toContain('MOTION PROOF');
+    expect(html).toContain('video-grid');
+    expect(html).toContain('Portfolio Walkthrough');
+    expect(html).toContain('RECOGNITION');
+    expect(html).toContain('elena-award-grid');
+    expect(html).toContain('Awwwards Honorable Mention');
+    expect(html).toContain('SKILL STACK');
+    expect(html).toContain('skill-grid-elena');
+    expect(html).toContain('Frontend');
+    expect(html).toContain('5/5');
+    expect(html).toContain('width:100%');
+    expect(html).not.toContain('hero-slide');
+    expect(html).not.toContain('hero-dots');
+  });
+
+  it('omits Elena video section when videos are disabled or empty', () => {
+    const disabledHtml = renderStaticHtml(
+      {
+        ...defaultSiteData,
+        config: { ...defaultSiteData.config, showVideos: false }
+      },
+      'elena'
+    );
+    const emptyHtml = renderStaticHtml(
+      {
+        ...defaultSiteData,
+        videos: []
+      },
+      'elena'
+    );
+
+    expect(disabledHtml).not.toContain('MOTION PROOF');
+    expect(disabledHtml).not.toContain('id="videos"');
+    expect(disabledHtml).not.toContain('Portfolio Walkthrough');
+    expect(emptyHtml).not.toContain('MOTION PROOF');
+    expect(emptyHtml).not.toContain('id="videos"');
+    expect(emptyHtml).not.toContain('Portfolio Walkthrough');
+  });
+
+  it('omits Elena skill sections when skills are disabled or empty', () => {
+    const disabledHtml = renderStaticHtml(
+      {
+        ...defaultSiteData,
+        config: { ...defaultSiteData.config, showSkills: false }
+      },
+      'elena'
+    );
+    const emptyHtml = renderStaticHtml(
+      {
+        ...defaultSiteData,
+        skills: []
+      },
+      'elena'
+    );
+
+    expect(disabledHtml).not.toContain('SKILL STACK');
+    expect(disabledHtml).not.toContain('id="skills"');
+    expect(disabledHtml).not.toContain('data-text="SKILLS"');
+    expect(emptyHtml).not.toContain('SKILL STACK');
+    expect(emptyHtml).not.toContain('id="skills"');
+    expect(emptyHtml).not.toContain('data-text="SKILLS"');
+  });
+
+  it('omits Elena awards section when awards are disabled or empty', () => {
+    const disabledHtml = renderStaticHtml(
+      {
+        ...defaultSiteData,
+        config: { ...defaultSiteData.config, showAwards: false }
+      },
+      'elena'
+    );
+    const emptyHtml = renderStaticHtml(
+      {
+        ...defaultSiteData,
+        awards: []
+      },
+      'elena'
+    );
+
+    expect(disabledHtml).not.toContain('RECOGNITION');
+    expect(disabledHtml).not.toContain('id="awards"');
+    expect(disabledHtml).not.toContain('Awwwards Honorable Mention');
+    expect(emptyHtml).not.toContain('RECOGNITION');
+    expect(emptyHtml).not.toContain('id="awards"');
+    expect(emptyHtml).not.toContain('Awwwards Honorable Mention');
   });
 });

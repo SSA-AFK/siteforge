@@ -29,6 +29,16 @@ function isDirectVideoUrl(url: string) {
   return /\.(mp4|webm|ogg|ogv|mov)(\?|#|$)/i.test(url);
 }
 
+function elenaHighlightedHeroTitle(text: string) {
+  const keyword = '创意和技术';
+  if (!text.includes(keyword)) {
+    return escapeHtml(text);
+  }
+
+  const [before, after] = text.split(keyword);
+  return `${escapeHtml(before)}<span>${escapeHtml(keyword)}</span>${escapeHtml(after)}`;
+}
+
 function projectCard(project: Project, primaryColor: string, index = 0) {
   const animation = index % 2 === 0 ? 'fade-right' : 'fade-left';
   const delay = (index % 3) * 100;
@@ -97,6 +107,10 @@ function awardCard(award: Award, primaryColor: string, index = 0) {
 }
 
 export function renderStaticHtml(data: SiteData, templateId: string) {
+  if (templateId === 'elena') {
+    return renderElenaHtml(data);
+  }
+
   if (templateId !== 'snowly') {
     throw new Error(`Unsupported template: ${templateId}`);
   }
@@ -110,6 +124,7 @@ export function renderStaticHtml(data: SiteData, templateId: string) {
   const videos = sortByOrder(data.videos ?? []);
   const heroImages = (data.config.heroImages ?? []).filter(Boolean);
   const heroImage = heroImages[0] || 'https://images.unsplash.com/photo-1612240498936-65f5101365d2?auto=format&fit=crop&w=1920&q=80';
+  const projectGridClass = data.config.layout === 'list' ? 'project-grid project-grid-list' : 'project-grid';
   const title = data.config.seoTitle || `${data.user.displayName} - Personal Website`;
   const description = data.config.seoDescription || data.user.bio || 'Built with SiteForge';
   const navMark = data.user.avatarUrl
@@ -163,8 +178,11 @@ export function renderStaticHtml(data: SiteData, templateId: string) {
     .hero-card { position: relative; z-index: 2; max-width: 640px; margin: 80px auto 80px 0; padding: 56px; color: white; background: linear-gradient(135deg, color-mix(in srgb, var(--primary) 60%, transparent), color-mix(in srgb, var(--primary) 52%, transparent) 54%, rgba(36,0,68,.56)); border: 1px solid rgba(255,255,255,.25); border-radius: 28px; box-shadow: inset 0 1px 0 rgba(255,255,255,.18), 0 28px 80px rgba(0,0,0,.35); backdrop-filter: blur(24px); animation: sfFadeRight .85s cubic-bezier(.16,1,.3,1) both, sfSoftPulse 7s ease-in-out 1s infinite; }
     .hero-card h1 { margin: 16px 0; font-size: clamp(40px, 8vw, 68px); line-height: .98; letter-spacing: -.03em; }
     .hero-card p { color: rgba(255,255,255,.82); line-height: 1.75; }
-    .button { display: inline-flex; margin-top: 20px; padding: 15px 22px; border-radius: 14px; background: white; color: var(--primary); font-weight: 800; box-shadow: 0 14px 30px rgba(15,23,42,.16); transition: transform .2s ease, background .2s ease; }
+    .hero-actions { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 32px; }
+    .button { display: inline-flex; align-items: center; justify-content: center; min-width: 170px; padding: 16px 28px; border-radius: 14px; background: white; color: var(--primary); font-weight: 800; box-shadow: 0 14px 30px rgba(15,23,42,.16); transition: transform .2s ease, background .2s ease; }
     .button:hover { transform: translateY(-2px) scale(1.03); background: #f8fafc; }
+    .button.secondary { border: 1px solid rgba(255,255,255,.22); background: rgba(0,0,0,.2); color: white; box-shadow: none; }
+    .button.secondary:hover { background: rgba(0,0,0,.3); }
     .hero-dots { position: absolute; z-index: 2; left: clamp(24px, 7vw, 160px); bottom: 32px; display: flex; align-items: center; gap: 8px; }
     .hero-dot { width: 8px; height: 8px; border: 0; border-radius: 999px; background: rgba(255,255,255,.45); cursor: pointer; transition: width .25s ease, background .25s ease, transform .25s ease; }
     .hero-dot.active { width: 48px; background: white; box-shadow: 0 10px 24px rgba(0,0,0,.18); }
@@ -184,6 +202,7 @@ export function renderStaticHtml(data: SiteData, templateId: string) {
     .stat strong { display: block; color: var(--primary); font-size: 42px; }
     .work { background: white; border-top: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0; }
     .project-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; }
+    .project-grid-list { grid-template-columns: 1fr; }
     .project-card { overflow: hidden; }
     .project-card > .image-preview-trigger { width: 100%; height: 280px; }
     .media-placeholder { width: 100%; height: 280px; display: grid; place-items: center; background: #f1f5f9; color: #94a3b8; font-size: 12px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; text-align: center; }
@@ -302,7 +321,7 @@ export function renderStaticHtml(data: SiteData, templateId: string) {
     <div class="nav-inner">
       <a class="brand" href="#top"><span class="mark">${navMark}</span>${escapeHtml(data.user.displayName || 'SiteForge')}</a>
       <div class="nav-links">
-        <a href="#about" data-nav-id="about">About</a><a href="#work" data-nav-id="work">Work</a>${data.config.showAwards && awards.length ? '<a href="#awards" data-nav-id="awards">Awards</a>' : ''}${data.config.showSkills ? '<a href="#skills" data-nav-id="skills">Skills</a>' : ''}<a href="#contact" data-nav-id="contact">Contact</a>
+        <a href="#about" data-nav-id="about">About</a><a href="#work" data-nav-id="work">Work</a>${data.config.showAwards && awards.length ? '<a href="#awards" data-nav-id="awards">Awards</a>' : ''}${data.config.showSkills && skills.length ? '<a href="#skills" data-nav-id="skills">Skills</a>' : ''}<a href="#contact" data-nav-id="contact">Contact</a>
       </div>
     </div>
   </nav>
@@ -313,7 +332,10 @@ export function renderStaticHtml(data: SiteData, templateId: string) {
         <span class="eyebrow">${escapeHtml(data.user.location || 'Personal Website')}</span>
         <h1>${escapeHtml(data.user.title || 'Build your personal digital presence')}</h1>
         <p>${escapeHtml(data.user.bio || 'Use SiteForge to turn your profile, work, and ideas into a polished personal website.')}</p>
-        <a class="button" href="#work">Explore Work</a>
+        <div class="hero-actions">
+          <a class="button" href="#work">Explore Work</a>
+          <a class="button secondary" href="#contact">Contact Me</a>
+        </div>
       </div>
     </div>
     ${heroImages.length > 1 ? `<div class="hero-dots">${heroImages.map((image, index) => `<button class="hero-dot ${index === 0 ? 'active' : ''}" type="button" aria-label="Hero image ${index + 1}" data-hero-index="${index}"></button>`).join('')}</div><div class="hero-arrows"><button class="hero-arrow" id="prevHero" type="button" aria-label="Previous hero image">‹</button><button class="hero-arrow" id="nextHero" type="button" aria-label="Next hero image">›</button></div>` : ''}
@@ -332,7 +354,7 @@ export function renderStaticHtml(data: SiteData, templateId: string) {
       </div>
     </div>
   </section>
-  ${projects.length ? `<section id="work" class="work sf-reveal"><div class="container"><div data-aos="fade-up"><span class="eyebrow">Selected Work</span><h2>Recent projects with practical depth.</h2></div><div class="project-grid">${projects.map((project, index) => projectCard(project, primaryColor, index)).join('')}</div></div></section>` : ''}
+  ${projects.length ? `<section id="work" class="work sf-reveal"><div class="container"><div data-aos="fade-up"><span class="eyebrow">Selected Work</span><h2>Recent projects with practical depth.</h2></div><div class="${projectGridClass}">${projects.map((project, index) => projectCard(project, primaryColor, index)).join('')}</div></div></section>` : ''}
   ${data.config.showAwards && awards.length ? `<section id="awards" class="awards sf-reveal"><div class="container"><div data-aos="fade-up"><span class="eyebrow">Awards</span><h2>荣誉奖项与专业认可。</h2></div><div class="award-grid">${awards.map((award, index) => awardCard(award, primaryColor, index)).join('')}</div></div></section>` : ''}
   ${data.config.showSkills && skills.length ? `<section id="skills" class="sf-reveal"><div class="container"><div data-aos="fade-up"><span class="eyebrow">Skills</span><h2>Tools and strengths.</h2></div><div class="skill-grid">${skills.map((skill, index) => `<div class="card skill" data-aos="fade-up" style="transition-delay:${(index % 3) * 100}ms"><strong>${escapeHtml(skill.name)}</strong><p>${escapeHtml(skill.category || '')}</p><div class="bar"><span style="width:${skill.proficiency * 20}%"></span></div></div>`).join('')}</div></div></section>` : ''}
   ${data.config.showVideos && videos.length ? `<section id="videos" class="work sf-reveal"><div class="container"><div data-aos="fade-up"><span class="eyebrow">Video</span><h2>Stories, demos, and walkthroughs.</h2></div><div class="video-grid">${videos.map((video, index) => videoCard(video, index)).join('')}</div></div></section>` : ''}
@@ -366,7 +388,7 @@ export function renderStaticHtml(data: SiteData, templateId: string) {
             <a href="#about">About</a>
             <a href="#work">Work</a>
             ${data.config.showAwards && awards.length ? '<a href="#awards">Awards</a>' : ''}
-            ${data.config.showSkills ? '<a href="#skills">Skills</a>' : ''}
+            ${data.config.showSkills && skills.length ? '<a href="#skills">Skills</a>' : ''}
           </div>
         </div>
         <div class="site-footer-col">
@@ -476,6 +498,331 @@ export function renderStaticHtml(data: SiteData, templateId: string) {
     document.addEventListener('keydown', (event) => {
       if (event.key === 'Escape' && lightbox.classList.contains('open')) closeLightbox();
     });
+  </script>
+</body>
+</html>`;
+}
+
+function renderElenaHtml(data: SiteData) {
+  const projects = sortByOrder(data.projects);
+  const skills = sortByOrder(data.skills);
+  const awards = sortByOrder(data.awards ?? []).filter((award) => award.title.trim());
+  const experiences = sortByOrder(data.experiences);
+  const socials = sortByOrder(data.socialLinks);
+  const videos = sortByOrder(data.videos ?? []).filter((video) => video.videoUrl.trim());
+  const title = data.config.seoTitle || `${data.user.displayName} - Interactive Portfolio`;
+  const description = data.config.seoDescription || data.user.bio || 'Built with SiteForge';
+  const projectGridClass = data.config.layout === 'list' ? 'project-grid list' : 'project-grid';
+  const identityLabel = data.user.title || '设计师 / 开发者';
+  const heroMainTitle = data.user.bio || '用创意和技术构建美好数字体验';
+
+  const socialIcon = (link: SocialLink) => escapeHtml((link.platform || link.icon || 'Link').slice(0, 1).toUpperCase());
+  const projectCards = projects.map((project, index) => {
+    const span = data.config.layout === 'list' ? '' : index % 3 === 0 ? ' wide' : '';
+    const gallery = [...(project.images ?? [])]
+      .filter((image) => image.imageUrl.trim())
+      .sort((a, b) => a.displayOrder - b.displayOrder)
+      .slice(0, 4)
+      .map((image) => `<a class="project-gallery-item" href="${escapeHtml(image.imageUrl)}" target="_blank" rel="noreferrer"><img src="${escapeHtml(image.imageUrl)}" alt="${escapeHtml(image.caption || project.title)}">${image.caption ? `<span>${escapeHtml(image.caption)}</span>` : ''}</a>`)
+      .join('');
+    return `
+      <article class="tilt-card project-card${span} fade-up-element" style="transition-delay:${(index % 3) * 100}ms">
+        <div class="card-top">
+          <div>
+            <h3>${escapeHtml(project.title || 'Untitled Project')}</h3>
+            <p>${escapeHtml(project.category)}${project.role ? ` / ${escapeHtml(project.role)}` : ''}</p>
+          </div>
+          ${project.startDate || project.endDate ? `<span>${escapeHtml(project.endDate || project.startDate)}</span>` : ''}
+        </div>
+        <div class="project-media">
+          ${project.coverImage ? `<img src="${escapeHtml(project.coverImage)}" alt="${escapeHtml(project.title)}" />` : '<div class="empty-media">Select Cover Image</div>'}
+        </div>
+        ${project.description ? `<p class="project-description">${escapeHtml(project.description)}</p>` : ''}
+        ${gallery ? `<div class="project-gallery">${gallery}</div>` : ''}
+      </article>`;
+  }).join('');
+
+  const videoCards = videos.map((video, index) => {
+    const span = video.isFeatured ? ' wide' : '';
+    const media = isDirectVideoUrl(video.videoUrl)
+      ? `<video src="${escapeHtml(video.videoUrl)}" ${video.thumbnailUrl ? `poster="${escapeHtml(video.thumbnailUrl)}"` : ''} controls></video>`
+      : `<a class="video-link" href="${escapeHtml(video.videoUrl)}" target="_blank" rel="noreferrer">${video.thumbnailUrl ? `<img src="${escapeHtml(video.thumbnailUrl)}" alt="${escapeHtml(video.title)}">` : '<div class="empty-media">Open Video</div>'}<div class="video-shade"></div><span class="video-badge">${escapeHtml(video.platform)}</span><strong>WATCH</strong></a>`;
+    return `
+      <article class="tilt-card video-card${span} fade-up-element" style="transition-delay:${(index % 3) * 100}ms">
+        <div class="video-media">${media}</div>
+        <div class="video-copy">
+          <span>${escapeHtml(video.platform)}</span>
+          <h3>${escapeHtml(video.title || 'Video Showcase')}</h3>
+          ${video.description ? `<p>${escapeHtml(video.description)}</p>` : ''}
+        </div>
+      </article>`;
+  }).join('');
+
+  const experienceCards = experiences.slice(0, 4).map((experience, index) => `
+    <article class="tilt-card process-card fade-up-element" style="transition-delay:${(index % 2) * 100}ms">
+      <span>${escapeHtml(experience.type)} / ${escapeHtml(experience.startDate)}${experience.isCurrent ? ' - Now' : experience.endDate ? ` - ${escapeHtml(experience.endDate)}` : ''}</span>
+      <h3>${escapeHtml(experience.position)}</h3>
+      <strong>${escapeHtml(experience.company)}</strong>
+      ${experience.description ? `<p>${escapeHtmlWithBreaks(experience.description)}</p>` : ''}
+    </article>`).join('');
+
+  const skillStrip = skills.slice(0, 5).map((skill) => `<div><span>◆</span>${escapeHtml(skill.name)}</div>`).join('');
+  const skillCards = skills.map((skill, index) => `
+    <article class="tilt-card skill-card fade-up-element" style="transition-delay:${index * 100}ms">
+      <div class="fluid-panel"><span>${escapeHtml(skill.category || 'CRAFT')}</span></div>
+      <div class="skill-card-copy">
+        <div class="skill-card-title"><h3>${escapeHtml(skill.name || 'Untitled Skill')}</h3><span>${skill.proficiency}/5</span></div>
+        ${skill.category ? `<p class="skill-category">${escapeHtml(skill.category)}</p>` : ''}
+        <div class="skill-meter"><span style="width:${skill.proficiency * 20}%"></span></div>
+      </div>
+    </article>`).join('');
+  const awardCards = awards.map((award, index) => `
+    <article class="tilt-card elena-award-card fade-up-element" style="transition-delay:${(index % 3) * 100}ms">
+      <div class="award-card-top">
+        <span class="award-star">★</span>
+        ${award.date ? `<span class="award-date">${escapeHtml(award.date)}</span>` : ''}
+      </div>
+      <div class="award-card-copy">
+        ${award.issuer ? `<p>${escapeHtml(award.issuer)}</p>` : ''}
+        <h3>${escapeHtml(award.title || 'Untitled Award')}</h3>
+        ${award.description ? `<span>${escapeHtml(award.description)}</span>` : ''}
+      </div>
+    </article>`).join('');
+
+  return `<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>${escapeHtml(title)}</title>
+  <meta name="description" content="${escapeHtml(description)}" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Plus+Jakarta+Sans:wght@300;400;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root { --bg: #04130f; --panel: #09221b; --accent: #00E699; --muted: #899E97; }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; overflow-x: hidden; background: radial-gradient(circle at 28% 18%, rgba(0,230,153,.18), transparent 34%), linear-gradient(135deg, #04130f 0%, #061811 48%, #020807 100%); color: white; font-family: Inter, system-ui, sans-serif; }
+    a { color: inherit; text-decoration: none; }
+    .font-display, h1, h2, h3 { font-family: 'Plus Jakarta Sans', Inter, sans-serif; }
+    .glow { position: absolute; border-radius: 999px; filter: blur(140px); background: radial-gradient(circle, rgba(0,230,153,.14), rgba(4,19,15,0) 70%); pointer-events: none; }
+    .container { max-width: 1180px; margin: 0 auto; padding-left: 24px; padding-right: 24px; }
+    header { position: relative; z-index: 5; display: flex; align-items: center; justify-content: space-between; padding: 24px; max-width: 1180px; margin: 0 auto; }
+    .brand { color: var(--accent); font-family: 'Plus Jakarta Sans'; font-size: 20px; font-weight: 900; letter-spacing: -.03em; }
+    nav { display: flex; gap: 40px; color: var(--muted); font-size: 11px; font-weight: 800; letter-spacing: .18em; }
+    nav a:hover { color: var(--accent); }
+    .talk { border-radius: 999px; background: white; color: black; padding: 10px 20px; font-size: 11px; font-weight: 800; letter-spacing: .16em; transition: background .25s ease; }
+    .talk:hover { background: var(--accent); }
+    .noise-layer, .grid-layer { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
+    .grid-layer { opacity: .06; background-image: linear-gradient(rgba(255,255,255,.22) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.22) 1px, transparent 1px); background-size: 48px 48px; }
+    .noise-layer { opacity: .045; background-image: radial-gradient(circle at center, white 1px, transparent 1px); background-size: 18px 18px; }
+    .hero { position: relative; z-index: 1; min-height: 85vh; display: grid; grid-template-columns: 8fr 4fr; gap: 64px; align-items: center; padding-top: 48px; padding-bottom: 96px; }
+    .hero-copy { min-height: 560px; display: flex; flex-direction: column; justify-content: center; }
+    .identity-label { margin: 0 0 20px; color: var(--accent); font-family: 'Plus Jakarta Sans'; font-size: clamp(14px, 1.4vw, 18px); font-weight: 500; letter-spacing: .32em; text-transform: uppercase; }
+    .hero h1 { max-width: 880px; margin: 0; font-size: clamp(50px, 7vw, 86px); line-height: 1.04; letter-spacing: -.04em; font-weight: 800; }
+    .hero h1 span { color: var(--accent); }
+    .hero p, .muted { color: var(--muted); line-height: 1.75; }
+    .button { display: inline-flex; align-items: center; justify-content: center; gap: 12px; min-width: 210px; margin-top: 28px; border-radius: 999px; background: var(--accent); color: black; padding: 16px 32px; font-size: 11px; font-weight: 900; letter-spacing: .2em; transition: box-shadow .25s ease, transform .25s ease; }
+    .button:hover { transform: translateY(-2px); box-shadow: 0 18px 38px rgba(0,230,153,.24); }
+    .tilt-card { position: relative; border: 1px solid rgba(255,255,255,.06); border-radius: 28px; background: rgba(9,34,27,.42); box-shadow: 0 26px 80px rgba(0,0,0,.24); backdrop-filter: blur(25px); transform-style: preserve-3d; transition: transform .5s cubic-bezier(.16,1,.3,1), border-color .4s; overflow: hidden; }
+    .tilt-card::after { content: ""; position: absolute; inset: -1px; border-radius: inherit; padding: 1px; background: radial-gradient(120px circle at var(--mouse-x,0) var(--mouse-y,0), rgba(0,230,153,.22), transparent 72%); -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0); -webkit-mask-composite: xor; mask-composite: exclude; pointer-events: none; opacity: 0; transition: opacity .35s; }
+    .tilt-card:hover::after { opacity: .55; }
+    .hero-tags { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 56px; color: var(--accent); font-size: 11px; font-weight: 800; letter-spacing: .2em; text-transform: uppercase; }
+    .hero-tags div { border: 1px solid rgba(255,255,255,.1); border-radius: 999px; background: rgba(9,34,27,.45); padding: 9px 16px; backdrop-filter: blur(18px); }
+    .hero-tags span { opacity: .45; margin-right: 8px; }
+    .portrait { width: 92%; height: 540px; margin-left: auto; }
+    .portrait img { width: 100%; height: 100%; object-fit: cover; filter: brightness(1.1) saturate(1.05); transition: transform .7s ease; }
+    .portrait:hover img { transform: scale(1.05); }
+    .portrait::before { content: ""; position: absolute; inset: 0; z-index: 1; background: linear-gradient(90deg, rgba(4,19,15,.85), rgba(4,19,15,.28), transparent), linear-gradient(0deg, rgba(4,19,15,.85), transparent), rgba(0,230,153,.05); opacity: .8; mix-blend-mode: soft-light; }
+    .portrait::after { z-index: 2; }
+    .caption { position: absolute; z-index: 3; left: 24px; bottom: 24px; width: min(280px, calc(100% - 48px)); padding: 20px; border-radius: 20px; border: 1px solid rgba(255,255,255,.1); background: rgba(9,34,27,.55); box-shadow: 0 24px 70px rgba(0,0,0,.25); backdrop-filter: blur(24px); }
+    .caption strong { color: var(--accent); font-size: 11px; letter-spacing: .2em; }
+    .strip { margin: 0 -24px 64px; border-top: 1px solid rgba(255,255,255,.06); border-bottom: 1px solid rgba(255,255,255,.06); background: rgba(9,34,27,.22); padding: 28px 0; }
+    .strip .container { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 16px; color: var(--accent); font-size: 11px; font-weight: 900; letter-spacing: .2em; text-transform: uppercase; }
+    .strip span { opacity: .45; margin-right: 8px; }
+    section { position: relative; z-index: 1; padding: 80px 0; }
+    .section-head { margin-bottom: 48px; }
+    .eyebrow { color: var(--accent); font-size: 11px; font-weight: 900; letter-spacing: .22em; text-transform: uppercase; }
+    h2 { margin: 18px 0 0; font-size: clamp(34px, 5vw, 56px); line-height: 1.08; letter-spacing: -.035em; }
+    h2 span { color: var(--muted); font-weight: 300; }
+    .project-grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 32px; }
+    .project-grid.list { grid-template-columns: 1fr; }
+    .project-card { grid-column: span 4; min-height: 460px; padding: 32px; display: flex; flex-direction: column; justify-content: space-between; }
+    .project-card.wide { grid-column: span 8; }
+    .project-grid.list .project-card { grid-column: auto; }
+    .card-top { display: flex; justify-content: space-between; gap: 16px; position: relative; z-index: 2; }
+    .card-top h3 { margin: 0; font-size: 26px; }
+    .card-top p, .project-description { color: var(--muted); font-size: 13px; line-height: 1.7; }
+    .card-top span { flex: 0 0 auto; border: 1px solid rgba(255,255,255,.1); border-radius: 999px; background: var(--bg); padding: 6px 12px; font-family: monospace; font-size: 12px; }
+    .project-media { position: relative; z-index: 2; height: 320px; margin-top: 40px; border: 1px solid rgba(255,255,255,.06); border-radius: 20px; overflow: hidden; background: rgba(0,0,0,.3); }
+    .project-media img { width: 100%; height: 100%; object-fit: cover; filter: brightness(1.1) saturate(1.1); transition: transform .7s ease; }
+    .project-card:hover img { transform: scale(1.05); }
+    .project-media::after { content: ""; position: absolute; inset: 0; background: linear-gradient(0deg, rgba(4,19,15,.7), transparent); opacity: .55; }
+    .empty-media { height: 100%; display: grid; place-items: center; color: var(--muted); font-size: 11px; font-weight: 900; letter-spacing: .2em; text-transform: uppercase; }
+    .project-gallery { position: relative; z-index: 2; display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 12px; margin-top: 18px; }
+    .project-gallery-item { overflow: hidden; border: 1px solid rgba(255,255,255,.06); border-radius: 16px; background: rgba(0,0,0,.26); }
+    .project-gallery-item img { width: 100%; height: 112px; object-fit: cover; display: block; filter: brightness(1.1) saturate(1.1); transition: transform .55s ease, filter .55s ease; }
+    .project-gallery-item:hover img { filter: brightness(1.16) saturate(1.14); transform: scale(1.05); }
+    .project-gallery-item span { display: block; padding: 8px 10px; color: var(--muted); font-size: 11px; font-weight: 700; }
+    .video-grid { display: grid; grid-template-columns: repeat(12, minmax(0,1fr)); gap: 32px; }
+    .video-card { grid-column: span 4; }
+    .video-card.wide { grid-column: span 8; }
+    .video-media { position: relative; z-index: 2; height: 320px; overflow: hidden; border-bottom: 1px solid rgba(255,255,255,.06); background: rgba(0,0,0,.32); }
+    .video-media video, .video-media img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .video-media img { filter: brightness(1.1) saturate(1.1); transition: transform .7s ease, filter .7s ease; }
+    .video-card:hover .video-media img { transform: scale(1.05); }
+    .video-link { position: relative; display: block; height: 100%; }
+    .video-shade { position: absolute; inset: 0; background: linear-gradient(0deg, rgba(4,19,15,.75), transparent); opacity: .6; }
+    .video-badge { position: absolute; left: 20px; top: 20px; border: 1px solid rgba(255,255,255,.1); border-radius: 999px; background: rgba(4,19,15,.8); color: var(--accent); padding: 7px 12px; font-size: 11px; font-weight: 900; letter-spacing: .16em; text-transform: uppercase; }
+    .video-link strong { position: absolute; left: 20px; bottom: 20px; border-radius: 999px; background: var(--accent); color: black; padding: 10px 16px; font-size: 11px; letter-spacing: .16em; }
+    .video-copy { position: relative; z-index: 2; padding: 32px; }
+    .video-copy > span { color: var(--accent); font-size: 11px; font-weight: 900; letter-spacing: .2em; text-transform: uppercase; }
+    .video-copy h3 { margin: 12px 0 8px; font-size: 26px; }
+    .video-copy p { color: var(--muted); line-height: 1.7; }
+    .elena-award-grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 24px; }
+    .elena-award-card { padding: 28px; }
+    .award-card-top { position: relative; z-index: 2; display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 28px; }
+    .award-star { display: grid; width: 48px; height: 48px; place-items: center; border: 1px solid rgba(0,230,153,.2); border-radius: 18px; background: rgba(0,230,153,.12); color: var(--accent); font-size: 18px; font-weight: 900; }
+    .award-date { border: 1px solid rgba(255,255,255,.1); border-radius: 999px; background: var(--bg); color: var(--muted); padding: 6px 12px; font-family: monospace; font-size: 12px; }
+    .award-card-copy { position: relative; z-index: 2; }
+    .award-card-copy p { margin: 0 0 12px; color: var(--accent); font-size: 11px; font-weight: 900; letter-spacing: .2em; text-transform: uppercase; }
+    .award-card-copy h3 { margin: 0; font-size: 26px; line-height: 1.18; }
+    .award-card-copy span { display: block; margin-top: 14px; color: var(--muted); line-height: 1.7; }
+    .process-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 32px; }
+    .process-card, .skill-card { padding: 32px; }
+    .process-card span { color: var(--accent); font-size: 11px; font-weight: 900; letter-spacing: .18em; text-transform: uppercase; }
+    .process-card h3, .skill-card h3 { font-size: 26px; margin: 0; }
+    .process-card strong, .process-card p { color: var(--muted); line-height: 1.7; }
+    .skill-grid-elena { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 24px; }
+    .fluid-panel { height: 260px; border-radius: 20px; border: 1px solid rgba(255,255,255,.06); display: grid; place-items: center; background: linear-gradient(135deg, var(--panel), var(--accent), var(--bg)); background-size: 200% 200%; animation: fluidGlow 12s ease infinite; }
+    .fluid-panel span { color: rgba(255,255,255,.25); font-family: 'Plus Jakarta Sans'; font-size: 24px; font-weight: 900; letter-spacing: .2em; }
+    .skill-card-copy { margin-top: 32px; }
+    .skill-card-title { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+    .skill-card-title span { border: 1px solid rgba(255,255,255,.1); border-radius: 999px; background: var(--bg); color: var(--accent); padding: 6px 12px; font-family: monospace; font-size: 12px; }
+    .skill-category { margin: 12px 0 14px; color: var(--accent); font-size: 11px; font-weight: 900; letter-spacing: .18em; text-transform: uppercase; }
+    .skill-meter { height: 8px; overflow: hidden; border-radius: 999px; background: rgba(255,255,255,.1); }
+    .skill-meter span { display: block; height: 100%; border-radius: inherit; background: var(--accent); }
+    @keyframes fluidGlow { 0%,100% { background-position: 0 50%; } 50% { background-position: 100% 50%; } }
+    .contact-card { padding: 56px; }
+    .contact-grid { display: grid; grid-template-columns: repeat(12, minmax(0,1fr)); gap: 48px; align-items: center; }
+    .contact-copy { grid-column: span 6; }
+    .contact-links { grid-column: span 6; display: grid; gap: 14px; }
+    .social-row { display: flex; align-items: center; justify-content: space-between; border: 1px solid rgba(255,255,255,.1); border-radius: 18px; background: rgba(4,19,15,.6); padding: 16px 20px; transition: border-color .25s ease; }
+    .social-row:hover { border-color: var(--accent); }
+    footer { margin: 0 -24px; border-top: 1px solid rgba(255,255,255,.06); padding: 32px 24px; text-align: center; color: var(--muted); font-size: 12px; }
+    .fade-up-element { opacity: 0; transform: translateY(40px); transition: opacity 1s cubic-bezier(.16,1,.3,1), transform 1s cubic-bezier(.16,1,.3,1); }
+    .fade-up-element.visible { opacity: 1; transform: translateY(0); }
+    @media (max-width: 900px) {
+      nav { display: none; }
+      .hero, .process-grid, .skill-grid-elena, .contact-grid, .video-grid, .elena-award-grid { grid-template-columns: 1fr; }
+      .hero-copy { min-height: auto; }
+      .portrait { width: 100%; height: 460px; }
+      .project-grid { grid-template-columns: 1fr; }
+      .project-card, .project-card.wide, .video-card, .video-card.wide, .contact-copy, .contact-links { grid-column: auto; }
+    }
+  </style>
+</head>
+<body>
+  <div class="grid-layer"></div>
+  <div class="noise-layer"></div>
+  <div class="glow" style="left:-15%; top:0; width:60%; height:700px;"></div>
+  <div class="glow" style="right:-15%; top:1500px; width:50%; height:800px;"></div>
+  <header>
+    <a class="brand" href="#hero">${escapeHtml((data.user.username || data.user.displayName || 'creator').toLowerCase())}<span style="color:white">.</span></a>
+    <nav>
+      <a href="#hero" class="scramble-trigger" data-text="HOME">HOME</a>
+      <a href="#works" class="scramble-trigger" data-text="SELECTED WORKS">SELECTED WORKS</a>
+      ${data.config.showVideos && videos.length ? '<a href="#videos" class="scramble-trigger" data-text="VIDEO">VIDEO</a>' : ''}
+      ${data.config.showAwards && awards.length ? '<a href="#awards" class="scramble-trigger" data-text="AWARDS">AWARDS</a>' : ''}
+      ${data.config.showExperience && experiences.length ? '<a href="#process" class="scramble-trigger" data-text="THE PROCESS">THE PROCESS</a>' : ''}
+      ${data.config.showSkills && skills.length ? '<a href="#skills" class="scramble-trigger" data-text="SKILLS">SKILLS</a>' : ''}
+    </nav>
+    <a class="talk" href="#contact">LET'S TALK</a>
+  </header>
+  <main>
+    <section id="hero" class="container hero">
+      <div class="hero-copy fade-up-element">
+        <p class="identity-label">${escapeHtml(identityLabel)}</p>
+        <h1>${elenaHighlightedHeroTitle(heroMainTitle)}</h1>
+        <p style="max-width:440px">${escapeHtml(data.user.fullBio || 'A dark, interactive portfolio built around visual craft, motion, and technical depth.')}</p>
+        <a class="button" href="#works">EXPLORE WORK <span aria-hidden="true">→</span></a>
+        ${data.config.showSkills && skills.length ? `<div class="hero-tags">${skillStrip}</div>` : ''}
+      </div>
+      <article class="tilt-card portrait fade-up-element" style="transition-delay:150ms">
+        ${data.user.avatarUrl ? `<img src="${escapeHtml(data.user.avatarUrl)}" alt="${escapeHtml(data.user.displayName)}">` : ''}
+        <div class="caption">
+          <strong>[ IN ACTION ]</strong>
+          <p class="muted">${escapeHtml(data.user.location || 'Merging high design with high performance engineering.')}</p>
+        </div>
+      </article>
+    </section>
+    <section id="works" class="container">
+      <div class="section-head fade-up-element"><span class="eyebrow">[ SELECTED PORTFOLIO ]</span><h2>Recent visual codes<br><span>crafted with technical depth</span></h2></div>
+      <div class="${projectGridClass}">${projectCards}</div>
+    </section>
+    ${data.config.showVideos && videos.length ? `<section id="videos" class="container"><div class="section-head fade-up-element"><span class="eyebrow">[ MOTION PROOF ]</span><h2>Project stories<br><span>shown through video</span></h2></div><div class="video-grid">${videoCards}</div></section>` : ''}
+    ${data.config.showAwards && awards.length ? `<section id="awards" class="container"><div class="section-head fade-up-element"><span class="eyebrow">[ RECOGNITION ]</span><h2>Honors and signals<br><span>earned through the work</span></h2></div><div class="elena-award-grid">${awardCards}</div></section>` : ''}
+    ${data.config.showExperience && experiences.length ? `<section id="process" class="container"><div class="section-head fade-up-element" style="text-align:center"><span class="eyebrow">[ THE PROCESS ]</span><h2>Experience built<br><span>around strategic goals</span></h2></div><div class="process-grid">${experienceCards}</div></section>` : ''}
+    ${data.config.showSkills && skills.length ? `<section id="skills" class="container"><div class="section-head fade-up-element" style="text-align:center"><span class="eyebrow">[ SKILL STACK ]</span><h2>Capabilities shaped by<br><span>hands-on project work</span></h2></div><div class="skill-grid-elena">${skillCards}</div></section>` : ''}
+    <section id="contact" class="container">
+      <article class="tilt-card contact-card fade-up-element">
+        <div class="contact-grid">
+          <div class="contact-copy"><span class="eyebrow">[ CONTACT ]</span><h2>Invest in the most<br><span style="color:var(--accent); font-weight:800">important asset you have.</span></h2><p class="muted">If the work resonates, reach out for project collaboration, role opportunities, or a creative conversation.</p>${data.user.email ? `<a class="button" href="mailto:${escapeHtml(data.user.email)}">EMAIL</a>` : ''}</div>
+          <div class="contact-links">${socials.map((link) => `<a class="social-row" href="${escapeHtml(link.url)}"><span>${socialIcon(link)} ${escapeHtml(link.platform)}</span><span>→</span></a>`).join('')}</div>
+        </div>
+      </article>
+    </section>
+  </main>
+  <footer>© 2026 ${escapeHtml(data.user.displayName || 'Personal Portfolio')}. Crafted with SiteForge.</footer>
+  <script>
+    document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
+      anchor.addEventListener('click', (event) => {
+        const target = document.querySelector(anchor.getAttribute('href'));
+        if (target) { event.preventDefault(); target.scrollIntoView({ behavior: 'smooth' }); }
+      });
+    });
+    document.querySelectorAll('.tilt-card').forEach((card) => {
+      card.addEventListener('mousemove', (event) => {
+        const rect = card.getBoundingClientRect();
+        const x = event.clientX - rect.left;
+        const y = event.clientY - rect.top;
+        card.style.setProperty('--mouse-x', x + 'px');
+        card.style.setProperty('--mouse-y', y + 'px');
+        const rotateX = (rect.height / 2 - y) / 42;
+        const rotateY = (x - rect.width / 2) / 42;
+        card.style.transform = 'perspective(1200px) rotateX(' + rotateX + 'deg) rotateY(' + rotateY + 'deg) scale3d(1.003,1.003,1.003)';
+      });
+      card.addEventListener('mouseleave', () => {
+        card.style.transform = 'perspective(1200px) rotateX(0deg) rotateY(0deg) scale3d(1,1,1)';
+      });
+    });
+    const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    document.querySelectorAll('.scramble-trigger').forEach((element) => {
+      const originalText = element.dataset.text || element.textContent || '';
+      element.addEventListener('mouseenter', () => {
+        let iteration = 0;
+        const timer = setInterval(() => {
+          element.textContent = originalText.split('').map((letter, index) => index < iteration ? originalText[index] : letter === ' ' ? ' ' : letters[Math.floor(Math.random() * letters.length)]).join('');
+          if (iteration >= originalText.length) clearInterval(timer);
+          iteration += 1 / 3;
+        }, 30);
+      });
+    });
+    const fadeElements = Array.from(document.querySelectorAll('.fade-up-element'));
+    if ('IntersectionObserver' in window) {
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+            observer.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+      fadeElements.forEach((element) => observer.observe(element));
+    } else {
+      fadeElements.forEach((element) => element.classList.add('visible'));
+    }
   </script>
 </body>
 </html>`;

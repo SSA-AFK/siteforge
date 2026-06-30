@@ -1,0 +1,4 @@
+interface:
+  display_name: "SiteForge HTML Template Adapter"
+  short_description: "Turn provided HTML designs into SiteForge templates."
+  default_prompt: "Use $siteforge-html-template-adapter to adapt the provided HTML into a configurable SiteForge portfolio template."
