@@ -112,6 +112,10 @@ export function renderStaticHtml(data: SiteData, templateId: string) {
     return renderAuraHtml(data);
   }
 
+  if (templateId === 'solace') {
+    return renderSolaceHtml(data);
+  }
+
   if (templateId === 'elena') {
     return renderElenaHtml(data);
   }
@@ -1228,6 +1232,215 @@ function renderAuraHtml(data: SiteData) {
       context.restore(); requestAnimationFrame(draw);
     }
     resize(); addEventListener('resize', resize); draw();
+  </script>
+</body>
+</html>`;
+}
+
+function renderSolaceHtml(data: SiteData) {
+  const projects = sortByOrder(data.projects).filter((project) => project.status !== 'archived');
+  const featuredProjects = projects.filter((project) => project.isFeatured);
+  const sliderProjects = (featuredProjects.length ? featuredProjects : projects).slice(0, 4);
+  const moreProjects = projects.slice(sliderProjects.length);
+  const skills = sortByOrder(data.skills).filter((skill) => skill.name.trim());
+  const experiences = sortByOrder(data.experiences).filter((experience) => experience.position || experience.company);
+  const awards = sortByOrder(data.awards ?? []).filter((award) => award.title.trim());
+  const videos = sortByOrder(data.videos ?? []).filter((video) => video.videoUrl.trim());
+  const socials = sortByOrder(data.socialLinks);
+  const heroImages = (data.config.heroImages ?? []).filter(Boolean);
+  const heroImage = heroImages[0] || data.user.avatarUrl || 'https://images.unsplash.com/photo-1502224562085-639556652f33?auto=format&fit=crop&w=1600&q=80';
+  const title = data.config.seoTitle || `${data.user.displayName || data.user.username} - Solace Portfolio`;
+  const description = data.config.seoDescription || data.user.bio || 'Built with SiteForge';
+  const slides = sliderProjects.map((project) => ({
+    title: project.title || 'Untitled Project',
+    category: project.category || 'Portfolio',
+    role: project.role || '',
+    tools: project.tools || '',
+    description: project.description || project.content || '',
+    image: project.coverImage || project.images?.find((image) => image.imageUrl)?.imageUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=1200&q=80',
+    url: project.projectUrl || '#contact'
+  }));
+  const safeSlides = JSON.stringify(slides).replace(/</g, '\\u003c');
+
+  const projectGridClass = data.config.layout === 'list' ? 'cards list' : 'cards';
+  const heroSkillStrip = skills.length ? `
+    <div class="reveal hero-strip">
+      <div>${skills.slice(0, 8).map((skill) => `<span><i></i><b>${escapeHtml(skill.name)}</b><small>${skill.proficiency}/5</small></span>`).join('')}</div>
+    </div>` : '';
+
+  const sliderSection = slides.length ? `
+    <section id="projects" class="section dark">
+      <div class="grid program">
+        <div class="reveal program-copy">
+          <span class="eyebrow">[ Selected Work ]</span>
+          <h2>Confidence starts<br><em>with a focused story</em></h2>
+          <a id="slideLink" href="${escapeHtml(slides[0].url)}" class="btn neon">View Project</a>
+          <div class="program-bottom">
+            <p id="slideText">${escapeHtml(slides[0].description)}</p>
+            <div class="bars">${slides.map((_, index) => `<button type="button" class="bar" data-slide="${index}" aria-label="Show slide ${index + 1}"><b style="width:${index === 0 ? '100%' : '0%'}"></b></button>`).join('')}</div>
+          </div>
+        </div>
+        <article class="reveal spotlight image-card">
+          <img id="slideImg" src="${escapeHtml(slides[0].image)}" alt="${escapeHtml(slides[0].title)}">
+          <div class="image-fade"></div>
+          <div class="glass float-card">
+            <p id="slideCategory">${escapeHtml(slides[0].category)}</p>
+            <h3 id="slideTitle">${escapeHtml(slides[0].title)}</h3>
+            <small id="slideMeta">${escapeHtml([slides[0].role, slides[0].tools].filter(Boolean).join(' / '))}</small>
+          </div>
+        </article>
+      </div>
+    </section>` : '';
+
+  const experienceSection = data.config.showExperience && experiences.length ? `
+    <section class="section light">
+      <div class="section-title reveal"><span class="eyebrow">[ The Process ]</span><h2>Experience built<br><em>around real outcomes</em></h2></div>
+      <div class="process-grid">
+        ${experiences.slice(0, 3).map((experience, index) => `
+          <article class="reveal spotlight process-card ${index === 0 ? 'primary' : ''}">
+            <p>${escapeHtml(experience.startDate)}${experience.isCurrent ? ' - Now' : experience.endDate ? ` - ${escapeHtml(experience.endDate)}` : ''}</p>
+            <h3>${escapeHtml(experience.position)}</h3>
+            <strong>${escapeHtml(experience.company)}</strong>
+            ${experience.description ? `<div>${escapeHtmlWithBreaks(experience.description)}</div>` : ''}
+          </article>`).join('')}
+      </div>
+    </section>` : '';
+
+  const moreProjectsSection = moreProjects.length ? `
+    <section class="section white">
+      <div class="section-title reveal"><span class="eyebrow">[ The Approach ]</span><h2>More work, cleaner proof</h2></div>
+      <div class="${projectGridClass}">
+        ${moreProjects.map((project) => `
+          <article class="reveal work-card">
+            ${project.coverImage ? `<a href="${escapeHtml(project.coverImage)}"><img src="${escapeHtml(project.coverImage)}" alt="${escapeHtml(project.title)}"></a>` : ''}
+            <h3>${escapeHtml(project.title)}</h3>
+            <p class="category">${escapeHtml(project.category)}</p>
+            <p>${escapeHtml(project.description)}</p>
+          </article>`).join('')}
+      </div>
+    </section>` : '';
+
+  const videoSection = data.config.showVideos && videos.length ? `
+    <section class="section dark">
+      <div class="section-title left reveal"><span class="eyebrow neon-text">[ Motion Proof ]</span><h2>Video showcase</h2></div>
+      <div class="video-grid">
+        ${videos.map((video) => `
+          <article class="reveal video-card">
+            <div class="video-frame">
+              ${isDirectVideoUrl(video.videoUrl)
+                ? `<video src="${escapeHtml(video.videoUrl)}" ${video.thumbnailUrl ? `poster="${escapeHtml(video.thumbnailUrl)}"` : ''} controls></video>`
+                : `<a href="${escapeHtml(video.videoUrl)}">${video.thumbnailUrl ? `<img src="${escapeHtml(video.thumbnailUrl)}" alt="${escapeHtml(video.title)}">` : ''}<span>▶</span></a>`}
+            </div>
+            <p>${escapeHtml(video.platform)}</p>
+            <h3>${escapeHtml(video.title)}</h3>
+            ${video.description ? `<small>${escapeHtml(video.description)}</small>` : ''}
+          </article>`).join('')}
+      </div>
+    </section>` : '';
+
+  const skillsAwardsSection = (data.config.showSkills && skills.length) || (data.config.showAwards && awards.length) ? `
+    <section id="skills" class="section light">
+      <div class="split">
+        ${data.config.showSkills && skills.length ? `
+          <div class="reveal panel">
+            <span class="eyebrow">[ Skill Stack ]</span>
+            ${skills.map((skill) => `<div class="skill-row"><p><b>${escapeHtml(skill.name)}</b><span>${skill.proficiency}/5</span></p><i><b style="width:${skill.proficiency * 20}%"></b></i></div>`).join('')}
+          </div>` : ''}
+        ${data.config.showAwards && awards.length ? `
+          <div class="reveal panel dark-panel">
+            <span class="eyebrow neon-text">[ Honors ]</span>
+            ${awards.map((award) => `<article class="award"><p>★ ${escapeHtml(award.date || award.issuer)}</p><h3>${escapeHtml(award.title)}</h3>${award.description ? `<small>${escapeHtml(award.description)}</small>` : ''}</article>`).join('')}
+          </div>` : ''}
+      </div>
+    </section>` : '';
+
+  return `<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>${escapeHtml(title)}</title>
+  <meta name="description" content="${escapeHtml(description)}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *{box-sizing:border-box} html{scroll-behavior:smooth} body{margin:0;background:#01110d;color:white;font-family:Inter,system-ui,sans-serif} a{color:inherit;text-decoration:none} img,video{max-width:100%;display:block}
+    body:before{content:"";position:fixed;inset:0;pointer-events:none;z-index:1;opacity:.055;background-image:radial-gradient(rgba(255,255,255,.42) 1px,transparent 1px);background-size:4px 4px;mix-blend-mode:screen}
+    .cursor{position:fixed;left:0;top:0;z-index:80;width:32px;height:32px;border:1px solid rgba(255,255,255,.32);border-radius:50%;pointer-events:none;transform:translate(-50%,-50%);transition:width .24s,height .24s,border-color .24s,background .24s}.cursor:after{content:"";position:absolute;left:50%;top:50%;width:6px;height:6px;border-radius:50%;background:#00f294;transform:translate(-50%,-50%)}.cursor.active{width:48px;height:48px;border-color:#00f294;background:rgba(0,242,148,.06)}
+    .hero{position:relative;min-height:100vh;display:flex;flex-direction:column;justify-content:space-between;overflow:hidden;background:#021b13}.hero-bg{position:absolute;inset:0;background:url("${escapeHtml(heroImage)}") center/cover;opacity:.35;filter:blur(1px) brightness(1.08) saturate(.75);transform:scale(1.04)}.hero:after{content:"";position:absolute;inset:0;background:linear-gradient(to top,#01110d,rgba(2,27,19,.75),rgba(2,27,19,.95))}
+    .glow{position:absolute;width:520px;height:520px;border-radius:999px;background:radial-gradient(circle,rgba(0,242,148,.12),transparent 68%);filter:blur(72px);pointer-events:none}.g1{left:-130px;top:-130px}.g2{right:-110px;bottom:48px}
+    header,.hero-main,.hero-strip{position:relative;z-index:3} header{position:sticky;top:16px;width:calc(100% - 32px);max-width:1280px;margin:16px auto 0;padding:16px 24px;display:flex;align-items:center;justify-content:space-between;border-radius:28px;background:rgba(255,255,255,.78);backdrop-filter:blur(22px);border:1px solid rgba(255,255,255,.58);box-shadow:0 18px 60px rgba(1,17,13,.16)}.brand{font-size:20px;font-weight:800;color:#021b13} nav{display:flex;gap:32px;font-size:12px;font-weight:700;letter-spacing:.28em;color:rgba(2,27,19,.6)} nav a:hover{color:#00b875}.btn{display:inline-flex;align-items:center;gap:12px;border-radius:999px;padding:13px 24px;font-size:12px;font-weight:800;letter-spacing:.18em;text-transform:uppercase;border:1px solid rgba(2,27,19,.15);color:#021b13}.btn:hover{border-color:rgba(0,184,117,.5);background:rgba(0,242,148,.15);color:#021b13}.btn.neon{background:#00f294;color:#021b13;border:0;box-shadow:0 0 22px rgba(0,242,148,.35)}
+    .hero-main{width:min(1280px,100%);margin:auto;display:grid;grid-template-columns:7fr 5fr;gap:40px;align-items:center;padding:80px 24px 96px}.tag{margin:0 0 20px;color:#00f294;font-size:14px;font-weight:500;letter-spacing:.36em;text-transform:uppercase}.hero h1{margin:0;font-size:clamp(54px,7vw,92px);font-weight:650;line-height:.96;letter-spacing:-.04em}.hero h1 .muted-title{display:block;color:rgba(255,255,255,.78);font-weight:500}.hero h1 .highlight-title{display:block;color:#00f294;text-shadow:0 0 38px rgba(0,242,148,.18)}.hero-actions{display:flex;flex-wrap:wrap;gap:16px;align-items:center;margin-top:32px}.location-pill{border:1px solid rgba(255,255,255,.1);border-radius:999px;background:rgba(255,255,255,.04);padding:13px 16px;color:rgba(163,227,204,.72);font-size:12px;font-weight:700;letter-spacing:.12em}.hero-desc{align-self:center}.hero-card{border-radius:32px;padding:28px;background:rgba(2,27,19,.48);backdrop-filter:blur(22px);border:1px solid rgba(255,255,255,.09);box-shadow:inset 0 1px 1px rgba(255,255,255,.1),0 28px 70px rgba(0,0,0,.34)}.hero-card img{width:64px;height:64px;border-radius:18px;object-fit:cover;margin-bottom:24px;border:1px solid rgba(255,255,255,.14)}.hero-card .card-label{color:#00f294;font-size:12px;font-weight:800;letter-spacing:.28em;text-transform:uppercase}.hero-card p{color:rgba(163,227,204,.78);font-size:14px;line-height:1.8}.hero-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:28px}.hero-stats span{border:1px solid rgba(255,255,255,.1);border-radius:18px;background:rgba(255,255,255,.04);padding:12px;text-align:center}.hero-stats b{display:block;color:white;font-size:18px}.hero-stats small{color:rgba(255,255,255,.45);font-size:10px;letter-spacing:.16em;text-transform:uppercase}.hero-strip{width:min(1280px,100%);margin:0 auto;padding:0 24px 32px}.hero-strip>div{display:flex;flex-wrap:wrap;gap:12px;border-radius:24px;background:rgba(1,17,13,.62);backdrop-filter:blur(18px);border:1px solid rgba(255,255,255,.08);box-shadow:0 18px 60px rgba(0,0,0,.22);padding:12px}.hero-strip span{display:inline-flex;gap:8px;align-items:center;white-space:nowrap;border:1px solid rgba(255,255,255,.1);border-radius:999px;background:rgba(255,255,255,.04);padding:8px 16px;color:rgba(163,227,204,.78);font-size:12px}.hero-strip i{width:6px;height:6px;border-radius:50%;background:#00f294;box-shadow:0 0 12px rgba(0,242,148,.65)}.hero-strip small{color:rgba(255,255,255,.35);font-size:10px}
+    .section{position:relative;padding:96px 24px}.dark{background:#01110d}.light{background:#f8faf9;color:#021b13}.white{background:white;color:#021b13}.grid,.section-title,.cards,.split,.video-grid{width:min(1280px,100%);margin:auto}.program{display:grid;grid-template-columns:5fr 7fr;gap:48px;align-items:center}.eyebrow{font-size:12px;font-weight:800;letter-spacing:.28em;text-transform:uppercase;color:#637d77}.neon-text{color:#00f294}.program h2,.section-title h2{font-size:clamp(36px,5vw,64px);font-weight:300;line-height:1.05;letter-spacing:-.035em}.program h2 em,.section-title em{font-style:normal;color:#a3e3cc}.program-copy{min-height:420px;display:flex;flex-direction:column;justify-content:space-between}.program-bottom p{min-height:72px;max-width:390px;color:#637d77;font-size:13px;line-height:1.8}.bars{display:flex;gap:8px;max-width:320px}.bar{height:3px;flex:1;border:0;border-radius:999px;background:rgba(255,255,255,.2);padding:0;overflow:hidden}.bar b{display:block;height:100%;background:#00f294;transition:width .45s}
+    .spotlight{position:relative;overflow:hidden}.spotlight:before{content:"";position:absolute;inset:0;z-index:2;pointer-events:none;opacity:0;background:radial-gradient(420px circle at var(--mouse-x,50%) var(--mouse-y,50%),rgba(0,242,148,.12),transparent 78%);transition:opacity .3s}.spotlight:hover:before{opacity:1}.image-card{height:550px;border-radius:32px;box-shadow:0 30px 80px rgba(0,0,0,.42)}.image-card>img{height:100%;width:100%;object-fit:cover;opacity:.85;filter:saturate(.9);transition:transform .8s}.image-card:hover>img{transform:scale(1.05)}.image-fade{position:absolute;inset:0;background:linear-gradient(to top,rgba(1,17,13,.8),transparent)}.glass{background:rgba(2,27,19,.5);backdrop-filter:blur(22px);border:1px solid rgba(255,255,255,.09);box-shadow:inset 0 1px 1px rgba(255,255,255,.1),0 28px 70px rgba(0,0,0,.34)}.float-card{position:absolute;right:24px;bottom:24px;width:min(340px,calc(100% - 48px));border-radius:24px;padding:24px}.float-card p{margin:0;color:#00f294;font-size:12px;font-weight:800;letter-spacing:.22em;text-transform:uppercase}.float-card h3{margin:12px 0;font-size:26px}.float-card small{color:rgba(255,255,255,.65);line-height:1.7}
+    .section-title{text-align:center;margin-bottom:56px}.section-title.left{text-align:left}.process-grid{width:min(1280px,100%);margin:auto;display:grid;grid-template-columns:5fr 7fr;gap:32px}.process-card{min-height:310px;border-radius:32px;padding:32px;background:rgba(236,253,245,.75);border:1px solid #d1fae5}.process-card.primary{background:#021b13;color:white}.process-card p{color:#00f294;font-size:12px;font-weight:800;letter-spacing:.24em;text-transform:uppercase}.process-card h3{margin-top:42px;font-size:32px;font-weight:300}.process-card div{white-space:normal;color:inherit;opacity:.75;font-size:14px;line-height:1.8}
+    .cards{display:grid;grid-template-columns:repeat(3,1fr);gap:32px}.cards.list{grid-template-columns:1fr}.work-card img{aspect-ratio:1;border-radius:32px;object-fit:cover;filter:brightness(1.1);transition:transform .7s}.work-card:hover img{transform:scale(1.04)}.work-card h3{font-size:22px}.category{font-size:12px;font-weight:800;letter-spacing:.18em;text-transform:uppercase;color:#637d77}.work-card p:not(.category){font-size:13px;line-height:1.8;color:#637d77}
+    .video-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:32px}.video-card{border-radius:32px;border:1px solid rgba(255,255,255,.1);background:rgba(2,27,19,.8);padding:16px;box-shadow:0 24px 70px rgba(0,0,0,.32)}.video-frame{position:relative;aspect-ratio:16/9;overflow:hidden;border-radius:24px;background:black}.video-frame video,.video-frame img{width:100%;height:100%;object-fit:cover}.video-frame span{position:absolute;inset:0;display:grid;place-items:center;background:rgba(0,0,0,.35);font-size:34px;color:#00f294}.video-card p{color:#00f294;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.26em}.video-card small{color:rgba(163,227,204,.72);line-height:1.7}
+    .split{display:grid;grid-template-columns:1fr 1fr;gap:32px}.panel{border-radius:32px;border:1px solid #d1fae5;background:white;padding:32px}.dark-panel{background:#021b13;color:white;border:0;box-shadow:0 24px 70px rgba(2,27,19,.22)}.skill-row{margin-top:24px}.skill-row p{display:flex;justify-content:space-between;font-size:14px}.skill-row i{display:block;height:8px;border-radius:999px;background:#d1fae5;overflow:hidden}.skill-row i b{display:block;height:100%;background:#00f294}.award{border-top:1px solid rgba(255,255,255,.1);padding-top:20px;margin-top:20px}.award p{color:#00f294;font-size:12px;font-weight:800}.award small{color:rgba(163,227,204,.72);line-height:1.7}
+    .contact{position:relative;overflow:hidden;background:#01110d;color:white}.contact-grid{position:relative;z-index:3;width:min(1280px,100%);margin:auto;display:grid;grid-template-columns:8fr 4fr;gap:48px;align-items:center}.contact h2{font-size:clamp(42px,6vw,78px);font-weight:300;line-height:1.05}.contact h2 span{color:#00f294}.contact p{color:#637d77;font-size:13px;line-height:1.8}.contact-actions{display:flex;flex-direction:column;align-items:flex-end;gap:16px}.socials{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end}.socials a{border:1px solid rgba(255,255,255,.1);border-radius:999px;padding:9px 14px;color:rgba(163,227,204,.72);font-size:12px}.socials a:hover{border-color:#00f294;color:#00f294}
+    .reveal{opacity:0;transform:translateY(42px);transition:opacity .95s cubic-bezier(.16,1,.3,1),transform .95s cubic-bezier(.16,1,.3,1)}.visible{opacity:1;transform:translateY(0)}
+    @media(max-width:900px){.cursor{display:none}.hero-main,.program,.process-grid,.split,.contact-grid{grid-template-columns:1fr}.cards,.video-grid{grid-template-columns:1fr}nav{display:none}.hero h1{font-size:48px}.image-card{height:460px}.contact-actions{align-items:flex-start}.socials{justify-content:flex-start}}
+  </style>
+</head>
+<body>
+  <div class="cursor" id="cursor"></div>
+  <section id="home" class="hero">
+    <div class="hero-bg"></div><div class="glow g1"></div><div class="glow g2"></div>
+    <header class="reveal"><a class="brand" href="#home">${escapeHtml(data.user.username || data.user.displayName || 'siteforge')}</a><nav><a href="#home">HOME</a><a href="#projects">WORK</a>${data.config.showSkills && skills.length ? '<a href="#skills">SKILLS</a>' : ''}<a href="#contact">CONTACT</a></nav><a class="btn" href="#contact">CONTACT ME</a></header>
+    <main class="hero-main">
+      <div class="reveal"><p class="tag">${escapeHtml(data.user.title || 'Creative Portfolio')}</p><h1><span class="muted-title">${escapeHtml(data.user.displayName || 'Your portfolio')}</span><span class="highlight-title">${escapeHtml(data.user.bio || 'Crafting better digital experiences.')}</span></h1><div class="hero-actions"><a class="btn neon" href="#projects">Explore Work →</a>${data.user.location ? `<span class="location-pill">${escapeHtml(data.user.location)}</span>` : ''}</div></div>
+      <div class="reveal hero-desc"><div class="hero-card">${data.user.avatarUrl ? `<img src="${escapeHtml(data.user.avatarUrl)}" alt="${escapeHtml(data.user.displayName)}">` : ''}<div class="card-label">Portfolio Signal</div><p>${escapeHtml(data.user.fullBio || 'A refined portfolio template for focused storytelling, selected projects, measurable skills, and polished motion.')}</p><div class="hero-stats"><span><b>${projects.length}</b><small>Works</small></span>${data.config.showSkills ? `<span><b>${skills.length}</b><small>Skills</small></span>` : ''}${data.config.showAwards ? `<span><b>${awards.length}</b><small>Honors</small></span>` : ''}</div></div></div>
+    </main>
+    ${heroSkillStrip}
+  </section>
+  ${sliderSection}
+  ${experienceSection}
+  ${moreProjectsSection}
+  ${videoSection}
+  ${skillsAwardsSection}
+  <section id="contact" class="section contact">
+    <div class="glow" style="left:20%;bottom:-220px"></div>
+    <div class="contact-grid">
+      <div class="reveal"><h2>Invest in the most<br>important <span>story you have.</span></h2><p>Available for selected collaborations, portfolio reviews, product design work, and digital experience projects.</p></div>
+      <div class="reveal contact-actions">${data.user.email ? `<a class="btn neon" href="mailto:${escapeHtml(data.user.email)}">Contact Me</a>` : ''}${data.user.location ? `<p>${escapeHtml(data.user.location)}</p>` : ''}<div class="socials">${socials.map((social) => `<a href="${escapeHtml(social.url)}">${socialLabel(social)}</a>`).join('')}</div></div>
+    </div>
+  </section>
+  <script>
+    const slides = ${safeSlides};
+    let active = 0;
+    const cursor = document.getElementById('cursor');
+    let x = innerWidth / 2, y = innerHeight / 2, tx = x, ty = y;
+    addEventListener('mousemove', function(event) {
+      tx = event.clientX; ty = event.clientY;
+      const interactive = event.target.closest && event.target.closest('a,button');
+      cursor.classList.toggle('active', Boolean(interactive));
+      document.querySelectorAll('.spotlight').forEach(function(card) {
+        const rect = card.getBoundingClientRect();
+        card.style.setProperty('--mouse-x', event.clientX - rect.left + 'px');
+        card.style.setProperty('--mouse-y', event.clientY - rect.top + 'px');
+      });
+    });
+    function moveCursor(){ x += (tx - x) * .18; y += (ty - y) * .18; cursor.style.transform = 'translate3d(' + x + 'px,' + y + 'px,0) translate(-50%,-50%)'; requestAnimationFrame(moveCursor); }
+    moveCursor();
+    const observer = new IntersectionObserver(function(entries){ entries.forEach(function(entry){ if(entry.isIntersecting){ entry.target.classList.add('visible'); observer.unobserve(entry.target); } }); }, { threshold: .12 });
+    document.querySelectorAll('.reveal').forEach(function(node){ observer.observe(node); });
+    function setSlide(index) {
+      if (!slides.length) return;
+      active = index;
+      const slide = slides[active];
+      const img = document.getElementById('slideImg');
+      if (!img) return;
+      img.src = slide.image; img.alt = slide.title;
+      document.getElementById('slideTitle').textContent = slide.title;
+      document.getElementById('slideCategory').textContent = slide.category;
+      document.getElementById('slideMeta').textContent = [slide.role, slide.tools].filter(Boolean).join(' / ');
+      document.getElementById('slideText').textContent = slide.description;
+      document.getElementById('slideLink').href = slide.url;
+      document.querySelectorAll('.bar b').forEach(function(bar, i){ bar.style.width = i === active ? '100%' : '0%'; });
+    }
+    document.querySelectorAll('.bar').forEach(function(button){ button.addEventListener('click', function(){ setSlide(Number(button.dataset.slide || 0)); }); });
+    if (slides.length > 1) setInterval(function(){ setSlide((active + 1) % slides.length); }, 6000);
   </script>
 </body>
 </html>`;

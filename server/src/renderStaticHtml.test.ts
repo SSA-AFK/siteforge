@@ -192,4 +192,41 @@ describe('renderStaticHtml', () => {
     expect(emptyHtml).not.toContain('HONOR DATA VAULT');
     expect(emptyHtml).not.toContain('SKILL PROTOCOLS');
   });
+
+  it('exports Solace HTML with premium green visuals and portfolio data', () => {
+    const html = renderStaticHtml(defaultSiteData, 'solace');
+
+    expect(html).toContain('Solace Portfolio');
+    expect(html).toContain('Selected Work');
+    expect(html).toContain('spotlight');
+    expect(html).toContain('reveal');
+    expect(html).toContain('const slides =');
+    expect(html).toContain(defaultSiteData.projects[0].title);
+    expect(html).toContain(defaultSiteData.skills[0].name);
+    expect(html).toContain(defaultSiteData.awards[0].title);
+    expect(html).toContain(defaultSiteData.videos[0].title);
+    expect(html).toContain('CONTACT ME');
+  });
+
+  it('omits Solace optional sections when disabled or empty', () => {
+    const html = renderStaticHtml(
+      {
+        ...defaultSiteData,
+        videos: [],
+        awards: [],
+        skills: [],
+        config: {
+          ...defaultSiteData.config,
+          showVideos: false,
+          showAwards: false,
+          showSkills: false
+        }
+      },
+      'solace'
+    );
+
+    expect(html).not.toContain('Video showcase');
+    expect(html).not.toContain('Skill Stack');
+    expect(html).not.toContain('Honors');
+  });
 });

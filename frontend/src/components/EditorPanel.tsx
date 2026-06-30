@@ -39,7 +39,8 @@ export function EditorPanel() {
   const templateCapabilities = {
     snowly: { primaryColor: true, heroImages: true, layout: true, awards: true, videos: true, blog: true },
     elena: { primaryColor: false, heroImages: false, layout: true, awards: true, videos: true, blog: false },
-    aura: { primaryColor: false, heroImages: false, layout: true, awards: true, videos: true, blog: false }
+    aura: { primaryColor: false, heroImages: false, layout: true, awards: true, videos: true, blog: false },
+    solace: { primaryColor: false, heroImages: true, layout: true, awards: true, videos: true, blog: false }
   }[templateId];
   const shouldHidePrimaryColor = !templateCapabilities.primaryColor;
 
@@ -242,6 +243,7 @@ export function EditorPanel() {
               <option value="snowly">Snowly / 亮色紫色作品集</option>
               <option value="elena">Elena / 暗色荧光交互作品集</option>
               <option value="aura">Aura / 赛博终端 WebGL 风格</option>
+              <option value="solace">Solace / 深绿玻璃高级作品集</option>
             </select>
           </Field>
           <Field label="主色"><input className={`${inputClass} h-12`} type="color" value={data.config.primaryColor} onChange={(event) => updateConfig({ primaryColor: event.target.value })} /></Field>
