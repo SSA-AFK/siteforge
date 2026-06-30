@@ -18,6 +18,10 @@ function slugify(value: string) {
     .replace(/^-|-$/g, '') || 'untitled';
 }
 
+function projectKey(project: Project, index: number) {
+  return project.id !== undefined ? `project-${project.id}` : `project-${project.slug || project.displayOrder}-${index}`;
+}
+
 function Field({ label, children }: { label: string; children: ReactNode }) {
   return (
     <label className="grid gap-1.5 text-xs font-bold uppercase tracking-wide text-slate-500">
@@ -33,9 +37,11 @@ export function EditorPanel() {
   const { data, templateId, setTemplateId, updateUser, updateConfig, upsertProject, removeProject, upsertExperience, removeExperience, upsertSkill, removeSkill, upsertAward, removeAward, upsertSocialLink, removeSocialLink, upsertVideo, removeVideo, reset } = useSiteStore();
   const [publishedUrl, setPublishedUrl] = useState('');
   const templateCapabilities = {
-    snowly: { heroImages: true, awards: true, videos: true, blog: true },
-    elena: { heroImages: false, awards: true, videos: true, blog: false }
+    snowly: { primaryColor: true, heroImages: true, layout: true, awards: true, videos: true, blog: true },
+    elena: { primaryColor: false, heroImages: false, layout: true, awards: true, videos: true, blog: false },
+    aura: { primaryColor: false, heroImages: false, layout: true, awards: true, videos: true, blog: false }
   }[templateId];
+  const shouldHidePrimaryColor = !templateCapabilities.primaryColor;
 
   async function saveToServer() {
     const response = await fetch('/api/site/local', {
@@ -190,6 +196,7 @@ export function EditorPanel() {
 
   return (
     <aside className="flex h-full min-h-0 flex-col border-r border-slate-200 bg-white">
+      {shouldHidePrimaryColor ? <style>{'.sf-scrollbar label:has(input[type="color"]) { display: none; }'}</style> : null}
       <div className="border-b border-slate-200 p-5">
         <div className="flex items-center justify-between gap-3">
           <div>
@@ -204,7 +211,7 @@ export function EditorPanel() {
           <button className="inline-flex items-center justify-center gap-2 rounded-lg bg-slate-950 px-3 py-2.5 text-xs font-extrabold text-white transition hover:bg-slate-800" onClick={() => saveToServer().catch((error) => alert(error.message))}>
             <Save className="h-4 w-4" /> 保存
           </button>
-          <button className="inline-flex items-center justify-center gap-2 rounded-lg px-3 py-2.5 text-xs font-extrabold text-white transition hover:opacity-90" style={{ backgroundColor: data.config.primaryColor }} onClick={() => publishCurrentSite().catch((error) => alert(error.message))}>
+          <button className="inline-flex items-center justify-center gap-2 rounded-lg px-3 py-2.5 text-xs font-extrabold text-white transition hover:opacity-90" style={{ backgroundColor: templateCapabilities.primaryColor ? data.config.primaryColor : '#0f172a' }} onClick={() => publishCurrentSite().catch((error) => alert(error.message))}>
             <ExternalLink className="h-4 w-4" /> 发布
           </button>
         </div>
@@ -234,6 +241,7 @@ export function EditorPanel() {
             <select className={inputClass} value={templateId} onChange={(event) => setTemplateId(event.target.value as TemplateId)}>
               <option value="snowly">Snowly / 亮色紫色作品集</option>
               <option value="elena">Elena / 暗色荧光交互作品集</option>
+              <option value="aura">Aura / 赛博终端 WebGL 风格</option>
             </select>
           </Field>
           <Field label="主色"><input className={`${inputClass} h-12`} type="color" value={data.config.primaryColor} onChange={(event) => updateConfig({ primaryColor: event.target.value })} /></Field>
@@ -274,8 +282,8 @@ export function EditorPanel() {
             <h2 className="text-sm font-black text-slate-950">作品</h2>
             <button className="rounded-lg bg-slate-100 p-2 text-slate-600 hover:bg-slate-200" onClick={addProject}><Plus className="h-4 w-4" /></button>
           </div>
-          {data.projects.map((project) => (
-            <div key={project.id || project.slug} className="space-y-3 rounded-xl border border-slate-200 bg-slate-50 p-3">
+          {data.projects.map((project, index) => (
+            <div key={projectKey(project, index)} className="space-y-3 rounded-xl border border-slate-200 bg-slate-50 p-3">
               <div className="flex justify-between gap-2">
                 <input className={inputClass} placeholder="例如：品牌官网改版" value={project.title} onChange={(event) => upsertProject({ ...project, title: event.target.value, slug: slugify(event.target.value) })} />
                 <button className="rounded-lg p-2 text-red-500 hover:bg-red-50" onClick={() => project.id && removeProject(project.id)}><Trash2 className="h-4 w-4" /></button>

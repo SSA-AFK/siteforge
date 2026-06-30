@@ -57,7 +57,7 @@ function loadInitialData(): SiteData {
 function loadInitialTemplateId(): TemplateId {
   if (typeof window === 'undefined') return 'snowly';
   const templateId = window.localStorage.getItem(TEMPLATE_STORAGE_KEY);
-  return templateId === 'elena' || templateId === 'snowly' ? templateId : 'snowly';
+  return templateId === 'aura' || templateId === 'elena' || templateId === 'snowly' ? templateId : 'snowly';
 }
 
 function persist(data: SiteData) {
@@ -66,6 +66,12 @@ function persist(data: SiteData) {
 
 function byOrder<T extends { displayOrder: number }>(items: T[]) {
   return [...items].sort((a, b) => a.displayOrder - b.displayOrder);
+}
+
+function sameProject(left: Project, right: Project) {
+  if (left.id !== undefined && right.id !== undefined) return left.id === right.id;
+  if (left.slug && right.slug) return left.slug === right.slug;
+  return left.displayOrder === right.displayOrder;
 }
 
 export const useSiteStore = create<SiteStore>((set, get) => ({
@@ -91,7 +97,7 @@ export const useSiteStore = create<SiteStore>((set, get) => ({
   },
   upsertProject: (project) => {
     const current = get().data;
-    const projects = byOrder(current.projects.some((item) => item.id === project.id) ? current.projects.map((item) => (item.id === project.id ? project : item)) : [...current.projects, project]);
+    const projects = byOrder(current.projects.some((item) => sameProject(item, project)) ? current.projects.map((item) => (sameProject(item, project) ? project : item)) : [...current.projects, project]);
     const data = { ...current, projects };
     persist(data);
     set({ data });

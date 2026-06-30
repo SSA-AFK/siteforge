@@ -4,7 +4,7 @@ export type ExperienceType = 'work' | 'education';
 export type ProjectStatus = 'draft' | 'published' | 'archived';
 export type PostStatus = 'draft' | 'published';
 export type VideoPlatform = 'youtube' | 'vimeo' | 'bilibili' | 'custom';
-export type TemplateId = 'snowly' | 'elena';
+export type TemplateId = 'snowly' | 'elena' | 'aura';
 
 export interface User {
   id?: number;

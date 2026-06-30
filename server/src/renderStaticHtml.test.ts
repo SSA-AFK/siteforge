@@ -138,4 +138,58 @@ describe('renderStaticHtml', () => {
     expect(emptyHtml).not.toContain('id="awards"');
     expect(emptyHtml).not.toContain('Awwwards Honorable Mention');
   });
+
+  it('exports Aura HTML with terminal visuals and portfolio data', () => {
+    const html = renderStaticHtml(defaultSiteData, 'aura');
+
+    expect(html).toContain('auraCanvas');
+    expect(html).toContain('scanlines');
+    expect(html).toContain('sweep-line');
+    expect(html).toContain('customCursor');
+    expect(html).toContain('aura-reveal');
+    expect(html).toContain('videoModal');
+    expect(html).toContain('project-card');
+    expect(html).toContain('CORE DATA MATRIX');
+    expect(html).toContain(defaultSiteData.projects[0].title);
+    expect(html).toContain('MULTIMEDIA TERMINAL');
+    expect(html).toContain(defaultSiteData.videos[0].title);
+    expect(html).toContain('HONOR DATA VAULT');
+    expect(html).toContain(defaultSiteData.awards[0].title);
+    expect(html).toContain('SKILL PROTOCOLS');
+    expect(html).toContain(defaultSiteData.skills[0].name);
+    expect(html).not.toContain('three.min.js');
+    expect(html).not.toContain('gsap');
+    expect(html).not.toContain('lenis');
+  });
+
+  it('omits Aura optional media sections when disabled or empty', () => {
+    const disabledHtml = renderStaticHtml(
+      {
+        ...defaultSiteData,
+        config: {
+          ...defaultSiteData.config,
+          showVideos: false,
+          showAwards: false,
+          showSkills: false
+        }
+      },
+      'aura'
+    );
+    const emptyHtml = renderStaticHtml(
+      {
+        ...defaultSiteData,
+        videos: [],
+        awards: [],
+        skills: []
+      },
+      'aura'
+    );
+
+    expect(disabledHtml).not.toContain('MULTIMEDIA TERMINAL');
+    expect(disabledHtml).not.toContain('HONOR DATA VAULT');
+    expect(disabledHtml).not.toContain('SKILL PROTOCOLS');
+    expect(emptyHtml).not.toContain('MULTIMEDIA TERMINAL');
+    expect(emptyHtml).not.toContain('HONOR DATA VAULT');
+    expect(emptyHtml).not.toContain('SKILL PROTOCOLS');
+  });
 });

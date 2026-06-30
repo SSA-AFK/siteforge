@@ -5,7 +5,7 @@ import { TemplateRenderer } from './templates/TemplateRenderer';
 
 export function App() {
   const { data, templateId } = useSiteStore();
-  const templateName = templateId === 'elena' ? 'TemplateElena' : 'TemplateSnowly';
+  const templateName = templateId === 'aura' ? 'TemplateAura' : templateId === 'elena' ? 'TemplateElena' : 'TemplateSnowly';
 
   return (
     <main className="grid h-screen grid-cols-1 overflow-hidden bg-slate-100 lg:grid-cols-[420px_1fr]">

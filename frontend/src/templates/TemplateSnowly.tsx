@@ -163,11 +163,13 @@ export function TemplateSnowly({ data }: TemplateSnowlyProps) {
 
   useEffect(() => {
     const elements = Array.from(document.querySelectorAll<HTMLElement>('.sf-reveal, [data-aos]'));
+    const reveal = (element: HTMLElement) => {
+      element.classList.add('sf-visible');
+      element.classList.add('aos-animate');
+    };
+
     if (!('IntersectionObserver' in window)) {
-      elements.forEach((element) => {
-        element.classList.add('sf-visible');
-        element.classList.add('aos-animate');
-      });
+      elements.forEach(reveal);
       return undefined;
     }
 
@@ -175,8 +177,7 @@ export function TemplateSnowly({ data }: TemplateSnowlyProps) {
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
-            entry.target.classList.add('sf-visible');
-            entry.target.classList.add('aos-animate');
+            reveal(entry.target as HTMLElement);
             observer.unobserve(entry.target);
           }
         });
@@ -184,7 +185,14 @@ export function TemplateSnowly({ data }: TemplateSnowlyProps) {
       { threshold: 0.12, rootMargin: '0px 0px -8% 0px' }
     );
 
-    elements.forEach((element) => observer.observe(element));
+    elements.forEach((element) => {
+      const rect = element.getBoundingClientRect();
+      if (rect.top < window.innerHeight && rect.bottom > 0) {
+        reveal(element);
+      } else {
+        observer.observe(element);
+      }
+    });
     return () => observer.disconnect();
   }, [data]);
 
@@ -369,7 +377,7 @@ export function TemplateSnowly({ data }: TemplateSnowlyProps) {
             </div>
             <div className={`grid gap-6 ${config.layout === 'list' ? 'grid-cols-1' : 'grid-cols-1 lg:grid-cols-2'}`}>
               {visibleProjects.map((project, index) => (
-                <ProjectCard key={project.id || project.slug} project={project} featured={index === 0 && config.layout !== 'list'} primaryColor={primaryColor} onPreview={setPreviewImage} animation={index % 2 === 0 ? 'fade-right' : 'fade-left'} delay={(index % 3) * 100} />
+                <ProjectCard key={project.id || project.slug} project={project} featured={project.isFeatured && config.layout !== 'list'} primaryColor={primaryColor} onPreview={setPreviewImage} animation={index % 2 === 0 ? 'fade-right' : 'fade-left'} delay={(index % 3) * 100} />
               ))}
             </div>
           </div>
@@ -489,9 +497,13 @@ export function TemplateSnowly({ data }: TemplateSnowlyProps) {
               <div className="hidden h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-white/10 sm:flex">
                 <AlertTriangle className="h-7 w-7 text-amber-300" />
               </div>
-              <div>
+              <div className="hidden">
                 <h2 className="text-xl font-black md:text-2xl">准备好开启下一次合作？</h2>
                 <p className="mt-1 text-xs font-light text-white/75">作品交流、项目合作或职位机会，都可以从这里开始。</p>
+              </div>
+              <div>
+                <h2 className="text-xl font-black md:text-2xl">Available for selected collaborations</h2>
+                <p className="mt-1 text-xs font-light text-white/75">Portfolio reviews, freelance projects, and role opportunities can start here.</p>
               </div>
             </div>
             <a href={user.email ? `mailto:${user.email}` : '#contact'} className="flex items-center gap-3.5 rounded-2xl bg-white px-6 py-3.5 text-slate-950 shadow-xl transition hover:scale-105 hover:shadow-2xl active:scale-95">
@@ -499,8 +511,8 @@ export function TemplateSnowly({ data }: TemplateSnowlyProps) {
                 <PhoneCall className="h-4 w-4" />
               </span>
               <div>
-                <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Contact Me</p>
-                <p className="text-sm font-black text-slate-950">{user.email || 'Send a message'}</p>
+                <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Start a conversation</p>
+                <p className="text-sm font-black text-slate-950">{user.email || 'Get in touch'}</p>
               </div>
             </a>
           </div>

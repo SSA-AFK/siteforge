@@ -96,7 +96,7 @@ function TiltCard({ children, className = '', delay = 0 }: { children: React.Rea
 }
 
 function ProjectCard({ project, index, layout }: { project: Project; index: number; layout: SiteData['config']['layout'] }) {
-  const isWide = layout !== 'list' && index % 3 === 0;
+  const isWide = layout !== 'list' && project.isFeatured;
   const gallery = [...(project.images ?? [])].filter((image) => image.imageUrl.trim()).sort((a, b) => a.displayOrder - b.displayOrder).slice(0, 4);
   return (
     <TiltCard className={`group flex min-h-[460px] flex-col justify-between p-8 ${isWide ? 'lg:col-span-8' : 'lg:col-span-4'} ${layout === 'list' ? 'lg:col-span-12' : ''}`} delay={(index % 3) * 100}>
@@ -105,7 +105,10 @@ function ProjectCard({ project, index, layout }: { project: Project; index: numb
           <h3 className="font-display text-2xl font-bold text-white transition group-hover:text-[#00E699]">{project.title || 'Untitled Project'}</h3>
           <p className="mt-2 text-xs text-[#899E97]">{project.category}{project.role ? ` / ${project.role}` : ''}</p>
         </div>
-        {(project.startDate || project.endDate) ? <span className="rounded-full border border-white/10 bg-[#04130f] px-3 py-1.5 font-mono text-xs text-white">{project.endDate || project.startDate}</span> : null}
+        <div className="flex flex-col items-end gap-2">
+          {project.isFeatured ? <span className="rounded-full border border-[#00E699]/25 bg-[#00E699]/10 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.18em] text-[#00E699]">Featured</span> : null}
+          {(project.startDate || project.endDate) ? <span className="rounded-full border border-white/10 bg-[#04130f] px-3 py-1.5 font-mono text-xs text-white">{project.endDate || project.startDate}</span> : null}
+        </div>
       </div>
       <div className="relative z-10 mt-10 h-80 overflow-hidden rounded-2xl border border-white/5 bg-black/30">
         {project.coverImage ? (
@@ -186,19 +189,28 @@ export function TemplateElena({ data }: { data: SiteData }) {
 
   useEffect(() => {
     const elements = Array.from(document.querySelectorAll<HTMLElement>('.elena-reveal'));
+    const reveal = (element: HTMLElement) => element.classList.add('visible');
+
     if (!('IntersectionObserver' in window)) {
-      elements.forEach((element) => element.classList.add('visible'));
+      elements.forEach(reveal);
       return undefined;
     }
     const observer = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
         if (entry.isIntersecting) {
-          entry.target.classList.add('visible');
+          reveal(entry.target as HTMLElement);
           observer.unobserve(entry.target);
         }
       });
     }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
-    elements.forEach((element) => observer.observe(element));
+    elements.forEach((element) => {
+      const rect = element.getBoundingClientRect();
+      if (rect.top < window.innerHeight && rect.bottom > 0) {
+        reveal(element);
+      } else {
+        observer.observe(element);
+      }
+    });
     return () => observer.disconnect();
   }, [data]);
 

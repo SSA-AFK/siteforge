@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Solacecare - Telehealth Premium Landing Page</title>
+  
+  <!-- 引入 Google Fonts (Inter) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- 引入 Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Tailwind 自定义配置 -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              dark: '#021B13',       // 深森林绿背景
+              darker: '#01110D',     // 更深的主底色
+              neon: '#00F294',       // 招牌荧光绿
+              softGreen: '#A3E3CC',   // 柔和过渡绿
+              muted: '#637D77',      // 暗灰绿色（用于次级文字/边框）
+              lightBg: '#F8FAF9',    // 亮色区域底色
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- 极致毛玻璃与高级微光 CSS 样式 -->
+  <style>
+    /* 1. 极致毛玻璃效果：带细微的内部白边线 */
+    .glass-card {
+      background: rgba(2, 27, 19, 0.45);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: 
+        inset 0 1px 1px rgba(255, 255, 255, 0.1),
+        0 20px 40px rgba(0, 0, 0, 0.4);
+    }
+
+    /* 2. 背景微光呼吸灯效果 */
+    .glow-bg {
+      position: absolute;
+      width: 500px;
+      height: 500px;
+      background: radial-gradient(circle, rgba(0, 242, 148, 0.08) 0%, rgba(2, 27, 19, 0) 70%);
+      filter: blur(80px);
+      pointer-events: none;
+    }
+
+    /* 3. 自定义鼠标基本样式（隐藏原生光标以便显示自定义光标，但仅在电脑端生效） */
+    @media (pointer: fine) {
+      body {
+        cursor: none;
+      }
+      a, button, [role="button"], .interactive-element {
+        cursor: none;
+      }
+    }
+
+    /* 4. 鼠标随动高光卡片样式 */
+    .spotlight-card {
+      position: relative;
+    }
+    .spotlight-card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(400px circle at var(--mouse-x, 0) var(--mouse-y, 0), rgba(0, 242, 148, 0.07), transparent 80%);
+      z-index: 1;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    .spotlight-card:hover::before {
+      opacity: 1;
+    }
+
+    /* 隐藏滚动条 */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+  </style>
+</head>
+<body class="bg-brand-darker text-white font-sans antialiased relative">
+
+  <!-- ==================== 自定义平滑跟随光标 ==================== -->
+  <div id="custom-cursor" class="hidden md:block fixed top-0 left-0 w-8 h-8 rounded-full border border-white/30 pointer-events-none z-50 transition-all duration-100 ease-out -translate-x-1/2 -translate-y-1/2 flex items-center justify-center">
+    <div class="w-1.5 h-1.5 rounded-full bg-brand-neon"></div>
+  </div>
+
+  <!-- ==================== 1. HERO SECTION & NAVBAR ==================== -->
+  <section class="relative min-h-screen bg-brand-dark flex flex-col justify-between overflow-hidden">
+    <!-- 运动模糊暗绿底图 -->
+    <div class="absolute inset-0 bg-cover bg-center opacity-30 mix-blend-lighten filter blur-[1px] transform scale-105 transition-transform duration-[4000ms] ease-out hover:scale-100" style="background-image: url('https://images.unsplash.com/photo-1502224562085-639556652f33?auto=format&fit=crop&w=1600&q=80');"></div>
+    <div class="absolute inset-0 bg-gradient-to-t from-brand-darker via-brand-dark/40 to-brand-dark"></div>
+    
+    <!-- 环境微光 -->
+    <div class="glow-bg top-[-100px] left-[-100px]"></div>
+    <div class="glow-bg bottom-[10%] right-[-100px]"></div>
+
+    <!-- 导航栏 -->
+    <header class="relative z-10 max-w-7xl mx-auto w-full px-6 py-6 flex items-center justify-between reveal-el">
+      <div class="text-brand-neon font-bold text-xl tracking-tight interactive-element">solacecare</div>
+      
+      <nav class="hidden md:flex items-center space-x-8 text-xs font-semibold tracking-wider text-gray-300">
+        <a href="#" class="text-white hover:text-brand-neon transition interactive-element">HOME</a>
+        <a href="#" class="hover:text-brand-neon transition interactive-element">ABOUT US</a>
+        <a href="#" class="hover:text-brand-neon transition interactive-element">WELLNESS+</a>
+        <a href="#" class="hover:text-brand-neon transition interactive-element">PRODUCT</a>
+      </nav>
+      
+      <div class="flex items-center space-x-4">
+        <div class="relative flex items-center justify-center w-8 h-8 rounded-full border border-white/10 text-xs interactive-element hover:border-brand-neon transition">
+          <span>0</span>
+        </div>
+        <button class="px-5 py-2.5 rounded-full border border-white/20 text-xs font-semibold tracking-wider hover:bg-white hover:text-brand-dark transition interactive-element">
+          CONTACT US
+        </button>
+      </div>
+    </header>
+
+    <!-- Hero 主体内容 -->
+    <div class="relative z-10 max-w-7xl mx-auto w-full px-6 grid grid-cols-1 lg:grid-cols-12 gap-8 my-auto pt-16 pb-12">
+      <div class="lg:col-span-8 flex flex-col justify-center reveal-el">
+        <h1 class="text-5xl md:text-7xl font-light tracking-tight leading-none">
+          Your next level starts<br/>
+          <span class="text-brand-neon font-medium">with better health.</span>
+        </h1>
+      </div>
+      
+      <div class="lg:col-span-4 flex flex-col justify-end items-start space-y-6 lg:pb-4 reveal-el" style="transition-delay: 200ms;">
+        <p class="text-gray-400 text-sm leading-relaxed max-w-sm">
+          Comprehensive telehealth programs for weight loss, longevity, hormone balance, and preventive care.
+        </p>
+        <button class="px-6 py-3 bg-brand-neon text-brand-dark font-semibold text-xs rounded-full shadow-[0_0_15px_rgba(0,242,148,0.4)] hover:brightness-110 transition uppercase tracking-wider interactive-element">
+          Get Started
+        </button>
+      </div>
+    </div>
+
+    <!-- 横向滚动分类条 -->
+    <div class="relative z-10 border-t border-white/10 bg-brand-dark/40 backdrop-blur-md reveal-el" style="transition-delay: 400ms;">
+      <div class="max-w-7xl mx-auto px-6 py-5 overflow-x-auto no-scrollbar flex items-center justify-between space-x-8 text-xs text-gray-400">
+        <!-- 类别项添加 hover 动画与标识器 -->
+        <span class="flex items-center space-x-2 shrink-0 group interactive-element"><span class="w-1.5 h-1.5 rounded-full bg-brand-neon group-hover:scale-150 transition"></span> <span class="group-hover:text-brand-neon transition">Performance</span></span>
+        <span class="flex items-center space-x-2 shrink-0 group interactive-element"><span class="w-1.5 h-1.5 rounded-full bg-brand-neon group-hover:scale-150 transition"></span> <span class="group-hover:text-brand-neon transition">Weight-Loss</span></span>
+        <span class="flex items-center space-x-2 shrink-0 group interactive-element"><span class="w-1.5 h-1.5 rounded-full bg-brand-neon group-hover:scale-150 transition"></span> <span class="group-hover:text-brand-neon transition">Hormone Health</span></span>
+        <span class="flex items-center space-x-2 shrink-0 group interactive-element"><span class="w-1.5 h-1.5 rounded-full bg-brand-neon group-hover:scale-150 transition"></span> <span class="group-hover:text-brand-neon transition">Energy Boost</span></span>
+        <span class="flex items-center space-x-2 shrink-0 group interactive-element"><span class="w-1.5 h-1.5 rounded-full bg-brand-neon group-hover:scale-150 transition"></span> <span class="group-hover:text-brand-neon transition">Fat Burn</span></span>
+        <span class="flex items-center space-x-2 shrink-0 group interactive-element"><span class="w-1.5 h-1.5 rounded-full bg-brand-neon group-hover:scale-150 transition"></span> <span class="group-hover:text-brand-neon transition">Sexual Health</span></span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== 2. PROGRAM SLIDER SECTION ==================== -->
+  <section class="bg-brand-darker text-white py-24 overflow-hidden relative">
+    <div class="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+      
+      <!-- 左侧：文案与动态进度控制 -->
+      <div class="lg:col-span-5 flex flex-col justify-between min-h-[420px] reveal-el">
+        <div class="space-y-6">
+          <span class="text-xs font-bold tracking-widest text-brand-muted uppercase">[ Program ]</span>
+          <h2 class="text-4xl md:text-5xl font-light tracking-tight leading-tight">
+            Confidence starts <br/>
+            <span class="font-normal text-brand-softGreen">with feeling your best</span>
+          </h2>
+          <button class="px-5 py-2.5 bg-brand-neon text-brand-dark text-xs font-semibold rounded-full hover:brightness-110 transition shadow-[0_0_15px_rgba(0,242,148,0.3)] interactive-element">
+            Get Started
+          </button>
+        </div>
+
+        <div class="space-y-8 mt-12 lg:mt-0">
+          <p id="slider-text" class="text-xs text-brand-muted leading-relaxed max-w-sm min-h-[48px] transition-opacity duration-300">
+            Whether you're looking to lose weight, improve performance, optimize hormones, or feel your best every day, our programs are tailored to your needs.
+          </p>
+          
+          <!-- 指示条组 -->
+          <div class="flex items-center space-x-2 w-full max-w-xs cursor-pointer">
+            <div onclick="setSlide(0)" class="h-[3px] rounded-full flex-1 relative bg-white/20 overflow-hidden interactive-element">
+              <div id="bar-0" class="absolute inset-y-0 left-0 bg-brand-neon w-full transition-all duration-500"></div>
+            </div>
+            <div onclick="setSlide(1)" class="h-[3px] rounded-full flex-1 relative bg-white/20 overflow-hidden interactive-element">
+              <div id="bar-1" class="absolute inset-y-0 left-0 bg-brand-neon w-0 transition-all duration-500"></div>
+            </div>
+            <div onclick="setSlide(2)" class="h-[3px] rounded-full flex-1 relative bg-white/20 overflow-hidden interactive-element">
+              <div id="bar-2" class="absolute inset-y-0 left-0 bg-brand-neon w-0 transition-all duration-500"></div>
+            </div>
+            <div onclick="setSlide(3)" class="h-[3px] rounded-full flex-1 relative bg-white/20 overflow-hidden interactive-element">
+              <div id="bar-3" class="absolute inset-y-0 left-0 bg-brand-neon w-0 transition-all duration-500"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 右侧：肖像与悬浮毛玻璃卡片（启用 Spotlight 随动高光） -->
+      <div class="lg:col-span-7 relative h-[550px] rounded-3xl overflow-hidden shadow-2xl spotlight-card reveal-el">
+        <img id="slider-img" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=1200&q=80" alt="Confidence Program" class="w-full h-full object-cover object-top opacity-80 transition-all duration-700 filter saturate-75 transform hover:scale-105 duration-1000" />
+        <div class="absolute inset-0 bg-gradient-to-t from-brand-darker/60 via-transparent to-transparent pointer-events-none"></div>
+        
+        <div class="absolute top-6 right-6 w-10 h-10 rounded-full border border-white/10 bg-black/20 backdrop-blur-md flex items-center justify-center text-xs interactive-element hover:border-brand-neon hover:text-brand-neon transition">
+          👁
+        </div>
+
+        <!-- 悬浮毛玻璃卡片 (Sexual Health) -->
+        <div class="absolute bottom-6 right-6 left-6 md:left-auto md:w-[320px] glass-card p-6 rounded-2xl flex flex-col justify-between space-y-4 z-10 group interactive-element">
+          <div class="flex items-center space-x-3">
+            <div class="w-8 h-8 rounded-full border border-brand-neon/30 flex items-center justify-center text-brand-neon text-xs group-hover:scale-110 transition duration-300">
+              ◎
+            </div>
+            <span class="text-xs font-bold tracking-wider text-brand-neon uppercase">Sexual Health</span>
+          </div>
+          
+          <p class="text-[11px] text-gray-300 leading-relaxed">
+            Private, clinician-led support to address sexual well-being, confidence, and long-term vitality, all from home.
+          </p>
+          
+          <div class="pt-2 border-t border-white/5 flex justify-between items-center">
+            <a href="#" class="text-[10px] font-bold tracking-wider text-white hover:text-brand-neon transition flex items-center space-x-1">
+              <span>EXPLORE PROGRAM</span>
+              <span>↗</span>
+            </a>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ==================== 3. THE PROCESS SECTION ==================== -->
+  <section class="bg-brand-lightBg py-24 text-brand-dark">
+    <div class="max-w-7xl mx-auto px-6">
+      
+      <div class="text-center mb-16 reveal-el">
+        <span class="text-xs font-bold tracking-widest text-brand-muted uppercase">[ The Process ]</span>
+        <h2 class="text-3xl md:text-5xl font-light mt-4 tracking-tight">
+          Healthcare built <br class="md:hidden" />
+          <span class="text-gray-400 font-extralight">around your data</span>
+        </h2>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <!-- 左侧暗色运动模糊卡片（启用 Spotlight 随动高光） -->
+        <div class="lg:col-span-5 relative rounded-3xl overflow-hidden min-h-[500px] flex flex-col justify-between p-8 text-white bg-brand-dark shadow-xl spotlight-card reveal-el">
+          <div class="absolute inset-0 bg-cover bg-center opacity-40 mix-blend-luminosity filter blur-[1px] transform hover:scale-105 transition-transform duration-1000" style="background-image: url('https://images.unsplash.com/photo-1476480862126-209bfaa8edc8?auto=format&fit=crop&w=1200&q=80');"></div>
+          <div class="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent pointer-events-none"></div>
+          
+          <div class="relative z-10 flex flex-col space-y-3 text-xs text-gray-300">
+            <span class="flex items-center space-x-2"><span>◎</span> <span>Energy Boost</span></span>
+            <span class="flex items-center space-x-2"><span>①</span> <span>Fat Burn</span></span>
+            <span class="flex items-center space-x-2 text-brand-neon"><span>👁</span> <span>Sexual Health</span></span>
+          </div>
+
+          <div class="relative z-10 space-y-6">
+            <h3 class="text-3xl font-light leading-tight">Discover What's <br/>Holding You Back</h3>
+            <button class="px-5 py-2.5 bg-brand-neon text-brand-dark text-xs font-semibold rounded-full hover:brightness-110 transition uppercase tracking-wider interactive-element">
+              Get Started
+            </button>
+          </div>
+        </div>
+
+        <!-- 右侧药瓶 3D 渲染感卡片（亮色区无 Spotlight） -->
+        <div class="lg:col-span-7 relative rounded-3xl overflow-hidden min-h-[500px] bg-emerald-50/50 p-8 flex flex-col justify-between border border-emerald-100 shadow-sm reveal-el" style="transition-delay: 200ms;">
+          <div class="absolute inset-0 flex items-center justify-center p-12 transition-transform duration-1000 hover:scale-105">
+            <img src="https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?auto=format&fit=crop&w=600&q=80" alt="Solacecare bottle" class="h-[75%] object-contain rounded-2xl mix-blend-multiply opacity-90" />
+          </div>
+
+          <div class="relative z-10 flex justify-between items-center">
+            <div class="flex space-x-2">
+              <span class="px-3 py-1 bg-white/80 backdrop-blur text-[10px] font-bold rounded-full text-brand-muted interactive-element hover:text-brand-dark hover:border-brand-neon border border-transparent transition">GUIDANCE</span>
+              <span class="px-3 py-1 bg-white/80 backdrop-blur text-[10px] font-bold rounded-full text-brand-dark border border-brand-neon interactive-element">PERSONALIZED</span>
+              <span class="px-3 py-1 bg-white/80 backdrop-blur text-[10px] font-bold rounded-full text-brand-muted interactive-element hover:text-brand-dark hover:border-brand-neon border border-transparent transition">SUPPORT</span>
+            </div>
+          </div>
+
+          <div class="relative z-10 grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
+            <div class="md:col-span-7 text-xs text-brand-muted leading-relaxed">
+              Get expert guidance, personalized treatments, and continuous support that adapts as your needs change.
+            </div>
+            <div class="md:col-span-5 flex flex-wrap gap-2 justify-end text-[9px] font-mono text-emerald-800">
+              <span class="border border-emerald-200 px-2 py-0.5 rounded">FOLLOW</span>
+              <span class="border border-emerald-200 px-2 py-0.5 rounded">A PLAN</span>
+              <span class="border border-emerald-200 px-2 py-0.5 rounded">DESIGNED</span>
+              <span class="border border-emerald-200 px-2 py-0.5 rounded">FOR YOU</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ==================== 4. THE APPROACH SECTION ==================== -->
+  <section class="bg-white py-24 text-brand-dark border-t border-gray-100">
+    <div class="max-w-7xl mx-auto px-6">
+      
+      <div class="text-center mb-16 reveal-el">
+        <span class="text-xs font-bold tracking-widest text-brand-muted uppercase">[ The Approach ]</span>
+        <h2 class="text-3xl md:text-5xl font-light mt-4 tracking-tight">
+          Better health starts with <br/>
+          <span class="text-gray-400 font-extralight">better information</span>
+        </h2>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <!-- Card 1: Discover -->
+        <div class="flex flex-col space-y-6 reveal-el">
+          <div class="aspect-square rounded-3xl overflow-hidden bg-gray-100 relative shadow-sm group interactive-element">
+            <img src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80" alt="Discover" class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" />
+            <div class="absolute bottom-4 left-4 text-white text-xs font-bold tracking-widest bg-black/20 backdrop-blur-sm px-3 py-1 rounded-full">solacecare®</div>
+          </div>
+          <div>
+            <h3 class="text-xl font-medium mb-2">Discover</h3>
+            <p class="text-xs text-brand-muted leading-relaxed">
+              Gain deeper insights into your health through advanced assessments and expert analysis.
+            </p>
+          </div>
+        </div>
+
+        <!-- Card 2: Action -->
+        <div class="flex flex-col space-y-6 reveal-el" style="transition-delay: 150ms;">
+          <div class="aspect-square rounded-3xl overflow-hidden bg-gray-100 shadow-sm group interactive-element">
+            <img src="https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=800&q=80" alt="Action" class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" />
+          </div>
+          <div>
+            <h3 class="text-xl font-medium mb-2">Action</h3>
+            <p class="text-xs text-brand-muted leading-relaxed">
+              Follow a personalized care plan built around your unique needs and objectives.
+            </p>
+          </div>
+        </div>
+
+        <!-- Card 3: Improve -->
+        <div class="flex flex-col space-y-6 reveal-el" style="transition-delay: 300ms;">
+          <div class="aspect-square rounded-3xl overflow-hidden bg-gray-100 shadow-sm group interactive-element">
+            <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=800&q=80" alt="Improve" class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" />
+          </div>
+          <div>
+            <h3 class="text-xl font-medium mb-2">Improve</h3>
+            <p class="text-xs text-brand-muted leading-relaxed">
+              Track progress over time and continuously adapt your path toward better health.
+            </p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ==================== 5. CALL TO ACTION SECTION ==================== -->
+  <section class="bg-brand-darker text-white py-24 relative overflow-hidden">
+    <div class="glow-bg bottom-[-200px] left-[20%]"></div>
+    
+    <div class="max-w-7xl mx-auto px-6 relative z-10">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+        
+        <div class="lg:col-span-8 space-y-8 reveal-el">
+          <h2 class="text-4xl md:text-6xl font-light tracking-tight leading-tight">
+            Invest in the most <br />
+            important <span class="text-brand-neon font-normal">asset you have!</span>
+          </h2>
+          <p class="text-brand-muted text-xs max-w-md leading-relaxed">
+            Your health influences every part of your life. Start building a stronger foundation with care designed around you.
+          </p>
+        </div>
+
+        <div class="lg:col-span-4 flex flex-col md:flex-row lg:flex-col items-start lg:items-end space-y-6 md:space-y-0 lg:space-y-6 md:space-x-6 lg:space-x-0 reveal-el" style="transition-delay: 200ms;">
+          <div class="text-brand-neon text-3xl animate-bounce">👁</div>
+          <button class="px-8 py-4 bg-brand-neon text-brand-dark font-bold text-xs rounded-full tracking-wider hover:brightness-110 transition shadow-[0_0_20px_rgba(0,242,148,0.3)] uppercase interactive-element">
+            GET STARTED
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== PREMIUM INTERACTIVE JAVASCRIPT ==================== -->
+  <script>
+    /* =========================================================
+       1. 自定义平滑跟随光标（Lerp Cursor）
+       ========================================================= */
+    const cursor = document.getElementById('custom-cursor');
+    let mouse = { x: 0, y: 0 };
+    let cursorCoords = { x: 0, y: 0 };
+    const speed = 0.18; // 跟随惯性大小，数值越小越丝滑
+
+    // 追踪真实鼠标坐标
+    window.addEventListener('mousemove', (e) => {
+      mouse.x = e.clientX;
+      mouse.y = e.clientY;
+    });
+
+    // 惯性平滑递归更新
+    function animateCursor() {
+      cursorCoords.x += (mouse.x - cursorCoords.x) * speed;
+      cursorCoords.y += (mouse.y - cursorCoords.y) * speed;
+      cursor.style.transform = `translate(${cursorCoords.x}px, ${cursorCoords.y}px)`;
+      requestAnimationFrame(animateCursor);
+    }
+    animateCursor();
+
+    // 当鼠标移出窗口时，隐藏光标
+    document.addEventListener('mouseleave', () => {
+      cursor.style.opacity = '0';
+    });
+    document.addEventListener('mouseenter', () => {
+      cursor.style.opacity = '1';
+    });
+
+    // 悬停交互元素时放大光标
+    const interactives = document.querySelectorAll('a, button, [role="button"], .interactive-element');
+    interactives.forEach(el => {
+      el.addEventListener('mouseenter', () => {
+        cursor.classList.add('w-12', 'h-12', 'border-brand-neon', 'bg-brand-neon/5');
+      });
+      el.addEventListener('mouseleave', () => {
+        cursor.classList.remove('w-12', 'h-12', 'border-brand-neon', 'bg-brand-neon/5');
+      });
+    });
+
+    /* =========================================================
+       2. 卡片鼠标随动微光（Spotlight Glow Effect）
+       ========================================================= */
+    document.querySelectorAll('.spotlight-card').forEach(card => {
+      card.addEventListener('mousemove', e => {
+        const rect = card.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        card.style.setProperty('--mouse-x', `${x}px`);
+        card.style.setProperty('--mouse-y', `${y}px`);
+      });
+    });
+
+    /* =========================================================
+       3. 页面滚动优雅载入（Scroll Reveal Animation）
+       ========================================================= */
+    const revealObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('opacity-100', 'translate-y-0');
+          entry.target.classList.remove('opacity-0', 'translate-y-10');
+          // 渲染后停止监听
+          revealObserver.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll('.reveal-el').forEach(el => {
+      // 预置隐藏与向下的位移样式
+      el.classList.add('transition-all', 'duration-1000', 'ease-out', 'opacity-0', 'translate-y-10');
+      revealObserver.observe(el);
+    });
+
+    /* =========================================================
+       4. 幻灯片控制（Slider Logic）
+       ========================================================= */
+    const slides = [
+      {
+        text: "Whether you're looking to lose weight, improve performance, optimize hormones, or feel your best every day, our programs are tailored to your needs.",
+        img: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=1200&q=80"
+      },
+      {
+        text: "Optimize your endocrine system and cellular vitality under medical-grade supervision. Discover personalized HRT treatments today.",
+        img: "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?auto=format&fit=crop&w=1200&q=80"
+      },
+      {
+        text: "Regain cognitive clarity and constant stamina. Our tailored energy protocols target health metrics from the baseline level.",
+        img: "https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?auto=format&fit=crop&w=1200&q=80"
+      },
+      {
+        text: "Clinician-led metabolic support designed for longevity, using advanced therapeutics to transition your body gracefully.",
+        img: "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=1200&q=80"
+      }
+    ];
+
+    let currentSlide = 0;
+    let autoSlideInterval;
+
+    function updateSliderDOM() {
+      const textEl = document.getElementById('slider-text');
+      const imgEl = document.getElementById('slider-img');
+      
+      textEl.style.opacity = '0';
+      setTimeout(() => {
+        textEl.textContent = slides[currentSlide].text;
+        textEl.style.opacity = '1';
+      }, 200);
+
+      imgEl.src = slides[currentSlide].img;
+
+      for (let i = 0; i < slides.length; i++) {
+        const bar = document.getElementById(`bar-${i}`);
+        if (i === currentSlide) {
+          bar.style.width = '100%';
+        } else {
+          bar.style.width = '0%';
+        }
+      }
+    }
+
+    function setSlide(index) {
+      currentSlide = index;
+      updateSliderDOM();
+      resetAutoSlide();
+    }
+
+    function startAutoSlide() {
+      autoSlideInterval = setInterval(() => {
+        currentSlide = (currentSlide + 1) % slides.length;
+        updateSliderDOM();
+      }, 6000);
+    }
+
+    function resetAutoSlide() {
+      clearInterval(autoSlideInterval);
+      startAutoSlide();
+    }
+
+    startAutoSlide();
+  </script>
+</body>
+</html>

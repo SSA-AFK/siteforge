@@ -39,7 +39,7 @@ function elenaHighlightedHeroTitle(text: string) {
   return `${escapeHtml(before)}<span>${escapeHtml(keyword)}</span>${escapeHtml(after)}`;
 }
 
-function projectCard(project: Project, primaryColor: string, index = 0) {
+function projectCard(project: Project, primaryColor: string, index = 0, featured = false) {
   const animation = index % 2 === 0 ? 'fade-right' : 'fade-left';
   const delay = (index % 3) * 100;
   const gallery = [...(project.images ?? [])]
@@ -50,9 +50,10 @@ function projectCard(project: Project, primaryColor: string, index = 0) {
     .join('');
 
   return `
-    <article class="card project-card" data-aos="${animation}" style="transition-delay:${delay}ms">
+    <article class="card project-card ${featured ? 'featured' : ''}" data-aos="${animation}" style="transition-delay:${delay}ms">
       ${project.coverImage ? `<button class="image-preview-trigger" type="button" data-preview-src="${escapeHtml(project.coverImage)}" data-preview-alt="${escapeHtml(project.title)}" aria-label="Preview ${escapeHtml(project.title)}"><img src="${escapeHtml(project.coverImage)}" alt="${escapeHtml(project.title)}" /></button>` : '<div class="media-placeholder">Select a cover image</div>'}
       <div class="project-body">
+        ${featured ? `<span class="featured-pill" style="color:${primaryColor}; background: color-mix(in srgb, ${primaryColor} 10%, white);">Featured</span>` : ''}
         <span class="pill">${escapeHtml(project.category)}</span>
         <h3>${escapeHtml(project.title)}</h3>
         <p>${escapeHtml(project.description)}</p>
@@ -107,6 +108,10 @@ function awardCard(award: Award, primaryColor: string, index = 0) {
 }
 
 export function renderStaticHtml(data: SiteData, templateId: string) {
+  if (templateId === 'aura') {
+    return renderAuraHtml(data);
+  }
+
   if (templateId === 'elena') {
     return renderElenaHtml(data);
   }
@@ -204,6 +209,7 @@ export function renderStaticHtml(data: SiteData, templateId: string) {
     .project-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; }
     .project-grid-list { grid-template-columns: 1fr; }
     .project-card { overflow: hidden; }
+    .project-card.featured { grid-column: span 2; }
     .project-card > .image-preview-trigger { width: 100%; height: 280px; }
     .media-placeholder { width: 100%; height: 280px; display: grid; place-items: center; background: #f1f5f9; color: #94a3b8; font-size: 12px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; text-align: center; }
     .project-card img { width: 100%; height: 100%; object-fit: cover; display: block; }
@@ -211,6 +217,7 @@ export function renderStaticHtml(data: SiteData, templateId: string) {
     .image-preview-trigger img { transition: transform .5s ease; }
     .image-preview-trigger:hover img { transform: scale(1.04); }
     .project-body { padding: 24px; }
+    .featured-pill { display: inline-flex; margin: 0 8px 10px 0; border-radius: 999px; padding: 6px 10px; font-size: 12px; font-weight: 900; text-transform: uppercase; letter-spacing: .08em; }
     .project-body h3 { margin: 14px 0 8px; color: #0f172a; font-size: 24px; }
     .project-body p { color: #64748b; line-height: 1.65; }
     .pill, .tags span { display: inline-flex; border-radius: 999px; background: #f1f5f9; padding: 6px 10px; font-size: 12px; font-weight: 800; color: #64748b; }
@@ -308,7 +315,7 @@ export function renderStaticHtml(data: SiteData, templateId: string) {
       .nav-links { display: none; }
       .hero-card { padding: 32px; }
       .about-grid, .project-grid, .skill-grid, .award-grid, .video-grid, .contact { grid-template-columns: 1fr; }
-      .video-card.featured { grid-column: auto; }
+      .project-card.featured, .video-card.featured { grid-column: auto; }
       .footer-cta-inner, .footer-cta-copy { flex-direction: column; text-align: center; }
       .site-footer-grid { grid-template-columns: 1fr; }
       .site-footer-col { grid-column: auto; }
@@ -354,7 +361,7 @@ export function renderStaticHtml(data: SiteData, templateId: string) {
       </div>
     </div>
   </section>
-  ${projects.length ? `<section id="work" class="work sf-reveal"><div class="container"><div data-aos="fade-up"><span class="eyebrow">Selected Work</span><h2>Recent projects with practical depth.</h2></div><div class="${projectGridClass}">${projects.map((project, index) => projectCard(project, primaryColor, index)).join('')}</div></div></section>` : ''}
+  ${projects.length ? `<section id="work" class="work sf-reveal"><div class="container"><div data-aos="fade-up"><span class="eyebrow">Selected Work</span><h2>Recent projects with practical depth.</h2></div><div class="${projectGridClass}">${projects.map((project, index) => projectCard(project, primaryColor, index, data.config.layout !== 'list' && Boolean(project.isFeatured))).join('')}</div></div></section>` : ''}
   ${data.config.showAwards && awards.length ? `<section id="awards" class="awards sf-reveal"><div class="container"><div data-aos="fade-up"><span class="eyebrow">Awards</span><h2>荣誉奖项与专业认可。</h2></div><div class="award-grid">${awards.map((award, index) => awardCard(award, primaryColor, index)).join('')}</div></div></section>` : ''}
   ${data.config.showSkills && skills.length ? `<section id="skills" class="sf-reveal"><div class="container"><div data-aos="fade-up"><span class="eyebrow">Skills</span><h2>Tools and strengths.</h2></div><div class="skill-grid">${skills.map((skill, index) => `<div class="card skill" data-aos="fade-up" style="transition-delay:${(index % 3) * 100}ms"><strong>${escapeHtml(skill.name)}</strong><p>${escapeHtml(skill.category || '')}</p><div class="bar"><span style="width:${skill.proficiency * 20}%"></span></div></div>`).join('')}</div></div></section>` : ''}
   ${data.config.showVideos && videos.length ? `<section id="videos" class="work sf-reveal"><div class="container"><div data-aos="fade-up"><span class="eyebrow">Video</span><h2>Stories, demos, and walkthroughs.</h2></div><div class="video-grid">${videos.map((video, index) => videoCard(video, index)).join('')}</div></div></section>` : ''}
@@ -364,14 +371,18 @@ export function renderStaticHtml(data: SiteData, templateId: string) {
       <div class="footer-cta-inner" data-aos="fade-up">
         <div class="footer-cta-copy">
           <div class="footer-cta-icon">!</div>
-          <div>
+          <div style="display:none">
             <h2>准备好开启下一次合作？</h2>
             <p>作品交流、项目合作或职位机会，都可以从这里开始。</p>
           </div>
         </div>
+        <div class="footer-cta-text">
+          <h2>Available for selected collaborations</h2>
+          <p>Portfolio reviews, freelance projects, and role opportunities can start here.</p>
+        </div>
         <a class="footer-cta-button" href="${data.user.email ? `mailto:${escapeHtml(data.user.email)}` : '#contact'}">
           <span>☎</span>
-          <div><small>Contact Me</small><strong>${escapeHtml(data.user.email || 'Send a message')}</strong></div>
+          <div><small>Start a conversation</small><strong>${escapeHtml(data.user.email || 'Get in touch')}</strong></div>
         </a>
       </div>
     </div>
@@ -518,7 +529,7 @@ function renderElenaHtml(data: SiteData) {
 
   const socialIcon = (link: SocialLink) => escapeHtml((link.platform || link.icon || 'Link').slice(0, 1).toUpperCase());
   const projectCards = projects.map((project, index) => {
-    const span = data.config.layout === 'list' ? '' : index % 3 === 0 ? ' wide' : '';
+    const span = data.config.layout === 'list' ? '' : project.isFeatured ? ' wide' : '';
     const gallery = [...(project.images ?? [])]
       .filter((image) => image.imageUrl.trim())
       .sort((a, b) => a.displayOrder - b.displayOrder)
@@ -532,7 +543,10 @@ function renderElenaHtml(data: SiteData) {
             <h3>${escapeHtml(project.title || 'Untitled Project')}</h3>
             <p>${escapeHtml(project.category)}${project.role ? ` / ${escapeHtml(project.role)}` : ''}</p>
           </div>
-          ${project.startDate || project.endDate ? `<span>${escapeHtml(project.endDate || project.startDate)}</span>` : ''}
+          <div class="project-meta">
+            ${project.isFeatured ? '<span class="featured-badge">Featured</span>' : ''}
+            ${project.startDate || project.endDate ? `<span>${escapeHtml(project.endDate || project.startDate)}</span>` : ''}
+          </div>
         </div>
         <div class="project-media">
           ${project.coverImage ? `<img src="${escapeHtml(project.coverImage)}" alt="${escapeHtml(project.title)}" />` : '<div class="empty-media">Select Cover Image</div>'}
@@ -655,6 +669,8 @@ function renderElenaHtml(data: SiteData) {
     .card-top h3 { margin: 0; font-size: 26px; }
     .card-top p, .project-description { color: var(--muted); font-size: 13px; line-height: 1.7; }
     .card-top span { flex: 0 0 auto; border: 1px solid rgba(255,255,255,.1); border-radius: 999px; background: var(--bg); padding: 6px 12px; font-family: monospace; font-size: 12px; }
+    .project-meta { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+    .project-meta .featured-badge { border-color: rgba(0,230,153,.25); background: rgba(0,230,153,.1); color: var(--accent); font-family: Inter, system-ui, sans-serif; font-size: 10px; font-weight: 900; letter-spacing: .18em; text-transform: uppercase; }
     .project-media { position: relative; z-index: 2; height: 320px; margin-top: 40px; border: 1px solid rgba(255,255,255,.06); border-radius: 20px; overflow: hidden; background: rgba(0,0,0,.3); }
     .project-media img { width: 100%; height: 100%; object-fit: cover; filter: brightness(1.1) saturate(1.1); transition: transform .7s ease; }
     .project-card:hover img { transform: scale(1.05); }
@@ -823,6 +839,395 @@ function renderElenaHtml(data: SiteData) {
     } else {
       fadeElements.forEach((element) => element.classList.add('visible'));
     }
+  </script>
+</body>
+</html>`;
+}
+
+function renderAuraHtml(data: SiteData) {
+  const projects = sortByOrder(data.projects);
+  const skills = sortByOrder(data.skills);
+  const awards = sortByOrder(data.awards ?? []).filter((award) => award.title.trim());
+  const experiences = sortByOrder(data.experiences);
+  const socials = sortByOrder(data.socialLinks);
+  const videos = sortByOrder(data.videos ?? []).filter((video) => video.videoUrl.trim());
+  const title = data.config.seoTitle || `${data.user.displayName} - Aura Terminal`;
+  const description = data.config.seoDescription || data.user.bio || 'Built with SiteForge';
+  const projectGridClass = data.config.layout === 'list' ? 'matrix-grid list' : 'matrix-grid';
+
+  const projectCards = projects.map((project, index) => {
+    const colors = ['#49c5b6', '#ff9398', '#a3e635'];
+    const accent = colors[index % colors.length];
+    const featuredClass = project.isFeatured ? ' featured' : '';
+    const gallery = sortByOrder(project.images ?? [])
+      .filter((image) => image.imageUrl)
+      .slice(0, 2)
+      .map((image) => `<a href="${escapeHtml(image.imageUrl)}" target="_blank" rel="noreferrer"><img src="${escapeHtml(image.imageUrl)}" alt="${escapeHtml(image.caption || project.title)}"></a>`)
+      .join('');
+    return `
+      <article class="terminal-card project-node aura-reveal interactive-item project-card${featuredClass}" data-card-index="${index}">
+        <span class="corner tl"></span><span class="corner br"></span>
+        <div class="node-row"><p style="color:${accent}">[NODE_${String(index + 1).padStart(2, '0')}_SYS]</p>${project.isFeatured ? '<span>FEATURED</span>' : ''}</div>
+        <div class="project-head">
+          <div><h3>${escapeHtml(project.title || 'Untitled Project')}</h3><small>${escapeHtml(project.category)}${project.role ? ` / ${escapeHtml(project.role)}` : ''}</small></div>
+          ${project.endDate || project.startDate ? `<time>${escapeHtml(project.endDate || project.startDate)}</time>` : ''}
+        </div>
+        ${project.coverImage ? `<a class="cover" href="${escapeHtml(project.coverImage)}" target="_blank" rel="noreferrer"><img src="${escapeHtml(project.coverImage)}" alt="${escapeHtml(project.title)}"></a>` : ''}
+        ${project.description ? `<p class="copy">${escapeHtml(project.description)}</p>` : ''}
+        ${project.tools ? `<div class="meta">TOOLS: ${escapeHtml(project.tools)}</div>` : ''}
+        ${gallery ? `<div class="gallery-mini">${gallery}</div>` : ''}
+      </article>`;
+  }).join('');
+
+  const videoCards = videos.map((video) => {
+    const featuredClass = video.isFeatured ? ' featured' : '';
+    const media = isDirectVideoUrl(video.videoUrl)
+      ? `<button class="video-trigger interactive-item" type="button" data-video-url="${escapeHtml(video.videoUrl)}" ${video.thumbnailUrl ? `data-poster="${escapeHtml(video.thumbnailUrl)}"` : ''}>${video.thumbnailUrl ? `<img src="${escapeHtml(video.thumbnailUrl)}" alt="${escapeHtml(video.title)}">` : ''}<span class="play">▶</span></button>`
+      : `<a href="${escapeHtml(video.videoUrl)}" target="_blank" rel="noreferrer">${video.thumbnailUrl ? `<img src="${escapeHtml(video.thumbnailUrl)}" alt="${escapeHtml(video.title)}">` : ''}<span class="play">▶</span></a>`;
+    return `
+      <article class="terminal-card video-terminal aura-reveal interactive-item${featuredClass}">
+        <span class="corner tl"></span><span class="corner br"></span>
+        ${video.isFeatured ? '<div class="stream-priority"><span>PRIORITY STREAM</span><span>FEATURED</span></div>' : ''}
+        <div class="video-frame">${media}<b>REC [LIVE]</b><em>${escapeHtml(video.platform.toUpperCase())}</em></div>
+        <h3>${escapeHtml(video.title || 'Video Stream')}</h3>
+        ${video.description ? `<p class="copy">${escapeHtml(video.description)}</p>` : ''}
+      </article>`;
+  }).join('');
+
+  const awardCards = awards.map((award, index) => `
+    <article class="terminal-card award-node aura-reveal">
+      <span class="corner tl"></span><span class="corner br"></span>
+      <div class="award-row"><strong>*</strong><div><p>AWARD_${String(index + 1).padStart(2, '0')} ${award.date ? `// ${escapeHtml(award.date)}` : ''}</p><h3>${escapeHtml(award.title)}</h3>${award.issuer ? `<small>${escapeHtml(award.issuer)}</small>` : ''}${award.description ? `<span>${escapeHtml(award.description)}</span>` : ''}</div></div>
+    </article>`).join('');
+
+  const experienceCards = experiences.map((experience, index) => `
+    <article class="timeline-node aura-reveal">
+      <i></i>
+      <div class="timeline-top"><b style="color:${index % 2 ? '#ff9398' : '#49c5b6'}">${escapeHtml(experience.startDate)}${experience.isCurrent ? ' - PRESENT' : experience.endDate ? ` - ${escapeHtml(experience.endDate)}` : ''}</b><span>${escapeHtml(experience.company)}</span></div>
+      <h3>${escapeHtml(experience.position)}</h3>
+      ${experience.description ? `<p>${escapeHtmlWithBreaks(experience.description)}</p>` : ''}
+    </article>`).join('');
+
+  const skillCards = skills.map((skill, index) => {
+    const level = Math.max(0, Math.min(5, skill.proficiency || 0));
+    const percent = level * 20;
+    const accent = ['#49c5b6', '#ff9398', '#a3e635'][index % 3];
+    const segments = Array.from({ length: 5 }, (_, segment) => `<span class="${segment < level ? 'on' : ''}"></span>`).join('');
+    return `
+    <article class="skill-node aura-reveal interactive-item" style="--skill-percent:${percent}%; --skill-accent:${accent}">
+      <span class="corner tl"></span><span class="corner br"></span>
+      <div class="skill-top">
+        <div><p style="color:${accent}">PROTOCOL_${String(index + 1).padStart(2, '0')}</p><h3>${escapeHtml(skill.name)}</h3>${skill.category ? `<small>${escapeHtml(skill.category)}</small>` : ''}</div>
+        <div class="skill-orb"><span>${level}</span></div>
+      </div>
+      <div class="skill-segments">${segments}</div>
+      <i><b style="width:${percent}%"></b></i>
+      <div class="skill-sync"><span>SYNC ${percent}%</span><span>READY</span></div>
+    </article>`;
+  }).join('');
+
+  return `<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>${escapeHtml(title)}</title>
+  <meta name="description" content="${escapeHtml(description)}" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+  <style>
+    :root { --bg:#030208; --cyan:#49c5b6; --pink:#ff9398; --lime:#a3e635; }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin:0; overflow-x:hidden; background:var(--bg); color:#cbd5e1; font-family:'Space Mono', monospace; }
+    @media (hover:hover) and (pointer:fine) { body, a, button { cursor:none; } }
+    a { color:inherit; text-decoration:none; }
+    canvas { position:fixed; inset:0; width:100%; height:100%; z-index:-10; }
+    .scanlines { position:fixed; inset:0; z-index:50; pointer-events:none; background:linear-gradient(to bottom, transparent, transparent 50%, rgba(0,243,255,.018) 50%, rgba(0,243,255,.018)); background-size:100% 4px; }
+    .sweep-line { position:fixed; inset:0; z-index:50; pointer-events:none; background:linear-gradient(to bottom, transparent, rgba(73,197,182,.08), transparent); animation:scan 10s linear infinite; }
+    .noise { position:fixed; inset:0; z-index:20; pointer-events:none; opacity:.05; mix-blend-mode:screen; background-image:radial-gradient(rgba(255,255,255,.06) 1px, transparent 1px); background-size:3px 3px; }
+    @keyframes scan { from { transform:translateY(-100%); } to { transform:translateY(100%); } }
+    .grid { position:fixed; inset:0; z-index:-9; pointer-events:none; background-size:50px 50px; background-image:linear-gradient(to right, rgba(73,197,182,.035) 1px, transparent 1px), linear-gradient(to bottom, rgba(73,197,182,.035) 1px, transparent 1px); }
+    .glow { position:fixed; inset:0; z-index:-8; pointer-events:none; background:radial-gradient(circle 350px at var(--mouse-x,50%) var(--mouse-y,50%), rgba(73,197,182,.13), transparent 80%); }
+    .custom-cursor, .custom-cursor-dot { position:fixed; left:0; top:0; z-index:70; pointer-events:none; transform:translate3d(var(--mouse-x,50vw), var(--mouse-y,50vh), 0) translate(-50%,-50%); }
+    .custom-cursor { width:20px; height:20px; border:1px solid rgba(73,197,182,.5); border-radius:999px; transition:width .28s ease, height .28s ease, border-color .28s ease, background-color .28s ease; }
+    .custom-cursor-dot { width:6px; height:6px; border-radius:999px; background:var(--cyan); }
+    .custom-cursor.active { width:55px; height:55px; border-color:var(--pink); background:rgba(255,147,152,.06); }
+    .screen-corner { position:fixed; z-index:30; width:24px; height:24px; pointer-events:none; border-color:rgba(73,197,182,.3); }
+    .screen-corner.tl { top:16px; left:16px; border-top:2px solid; border-left:2px solid; }
+    .screen-corner.tr { top:16px; right:16px; border-top:2px solid; border-right:2px solid; }
+    .screen-corner.bl { bottom:16px; left:16px; border-bottom:2px solid; border-left:2px solid; }
+    .screen-corner.br { bottom:16px; right:16px; border-bottom:2px solid; border-right:2px solid; }
+    .aura-reveal { opacity:0; transform:translate3d(0,48px,0); transition:opacity 1.1s cubic-bezier(.16,1,.3,1), transform 1.1s cubic-bezier(.16,1,.3,1); }
+    .aura-reveal.aura-visible { opacity:1; transform:translate3d(0,0,0); }
+    nav { position:fixed; top:0; left:0; width:100%; z-index:40; display:flex; align-items:center; justify-content:space-between; padding:22px 40px; border-bottom:1px solid rgba(255,255,255,.05); backdrop-filter:blur(14px); }
+    .brand { color:white; font-weight:700; letter-spacing:.22em; }
+    .navlinks { display:flex; gap:36px; color:#cbd5e1; font-size:12px; letter-spacing:.2em; }
+    .navlinks a:hover { color:var(--cyan); }
+    .core { border:1px solid rgba(73,197,182,.3); color:var(--cyan); padding:4px 10px; font-size:12px; }
+    main { position:relative; z-index:10; max-width:1152px; margin:0 auto; padding:0 24px; }
+    section { border-top:1px solid rgba(255,255,255,.05); padding:112px 0; }
+    .hero { min-height:100vh; display:flex; flex-direction:column; align-items:flex-start; justify-content:center; border-top:0; padding-top:90px; }
+    .hero-label { border-left:2px solid var(--cyan); padding-left:24px; margin-bottom:32px; }
+    .hero-label p { margin:0 0 6px; color:var(--cyan); font-size:12px; letter-spacing:.4em; text-transform:uppercase; }
+    .hero-label span { color:#64748b; font-size:10px; letter-spacing:.22em; text-transform:uppercase; }
+    h1 { margin:0 0 24px; color:white; font-size:clamp(52px, 9vw, 112px); line-height:.94; letter-spacing:-.08em; }
+    h1 span { background:linear-gradient(90deg,var(--cyan),var(--lime),var(--pink)); -webkit-background-clip:text; background-clip:text; color:transparent; }
+    .hero-copy { max-width:520px; margin:0 0 32px; color:#94a3b8; font-size:12px; line-height:1.8; }
+    .button { position:relative; display:inline-block; border:1px solid rgba(73,197,182,.4); padding:16px 32px; color:var(--cyan); font-size:12px; letter-spacing:.22em; transition:.35s; }
+    .button:hover { background:var(--cyan); color:black; }
+    .section-head { margin-bottom:60px; }
+    .section-head p { margin:0 0 8px; color:var(--cyan); font-size:12px; letter-spacing:.22em; }
+    .section-head h2 { margin:0; color:white; font-size:40px; }
+    .matrix-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:32px; }
+    .matrix-grid.list { grid-template-columns:1fr; }
+    .terminal-card { position:relative; overflow:hidden; border:1px solid rgba(73,197,182,.15); background:rgba(4,3,10,.75); padding:28px; backdrop-filter:blur(16px); clip-path:polygon(0 0, calc(100% - 22px) 0, 100% 22px, 100% 100%, 22px 100%, 0 calc(100% - 22px)); box-shadow:inset 0 0 0 1px rgba(73,197,182,.08), inset 0 0 36px rgba(73,197,182,.045), 0 20px 80px rgba(0,0,0,.28); transition:.55s cubic-bezier(.16,1,.3,1); }
+    .terminal-card::before { content:""; position:absolute; inset:0; z-index:0; pointer-events:none; background:radial-gradient(circle at 20% 0%, rgba(73,197,182,.18), transparent 34%), linear-gradient(120deg, transparent 0%, rgba(73,197,182,.16) 44%, transparent 62%); transform:translateX(-125%); opacity:.9; transition:transform .95s cubic-bezier(.16,1,.3,1); }
+    .terminal-card::after { content:""; position:absolute; inset:1px; z-index:0; pointer-events:none; background-image:linear-gradient(rgba(73,197,182,.04) 1px, transparent 1px), linear-gradient(90deg, rgba(73,197,182,.035) 1px, transparent 1px), repeating-linear-gradient(0deg, transparent 0 7px, rgba(255,255,255,.025) 8px); background-size:18px 18px, 18px 18px, auto; opacity:.72; mix-blend-mode:screen; }
+    .terminal-card:hover { transform:translateY(-5px); border-color:rgba(73,197,182,.78); box-shadow:0 0 55px rgba(73,197,182,.2), inset 0 0 34px rgba(73,197,182,.06); }
+    .terminal-card:hover::before { transform:translateX(125%); }
+    .terminal-card > * { position:relative; z-index:1; }
+    .matrix-grid:not(.list) .project-node.featured { grid-column:span 2; border-color:rgba(73,197,182,.45); box-shadow:0 0 70px rgba(73,197,182,.14), inset 0 0 42px rgba(73,197,182,.06); }
+    .corner { position:absolute; z-index:20; width:16px; height:16px; border-color:rgba(73,197,182,.45); transition:.3s; }
+    .tl { top:0; left:0; border-left:2px solid; border-top:2px solid; }
+    .br { right:0; bottom:0; border-right:2px solid; border-bottom:2px solid; }
+    .terminal-card:hover .corner { border-color:var(--cyan); }
+    .node-row { display:flex; align-items:center; justify-content:space-between; gap:12px; }
+    .node-row p, .meta { margin:0; font-size:10px; font-weight:700; letter-spacing:.22em; color:var(--cyan); }
+    .node-row span { border:1px solid rgba(73,197,182,.4); background:rgba(73,197,182,.1); padding:4px 8px; color:var(--cyan); font-size:9px; font-weight:700; letter-spacing:.2em; }
+    .project-head { display:flex; justify-content:space-between; gap:16px; margin-top:24px; }
+    .project-head h3, .video-terminal h3, .award-node h3, .timeline-node h3 { margin:0; color:white; font-size:20px; }
+    .project-node.featured .project-head h3 { font-size:26px; }
+    small, time { color:#64748b; font-size:11px; line-height:1.6; }
+    .cover { display:block; margin-top:28px; overflow:hidden; border:1px solid rgba(255,255,255,.1); background:black; }
+    .cover img { width:100%; height:210px; object-fit:cover; display:block; filter:brightness(1.05) saturate(1.1); transition:.7s; }
+    .project-node.featured .cover img { height:288px; }
+    .cover:hover img { transform:scale(1.05); }
+    .copy { color:#94a3b8; font-size:12px; line-height:1.8; }
+    .gallery-mini { display:grid; grid-template-columns:repeat(2,1fr); gap:12px; margin-top:20px; }
+    .gallery-mini img { width:100%; height:96px; object-fit:cover; display:block; }
+    .video-grid, .award-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:32px; }
+    .video-terminal.featured { grid-column:span 2; border-color:rgba(255,147,152,.5); box-shadow:0 0 55px rgba(255,147,152,.14); }
+    .stream-priority { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; color:var(--pink); font-size:10px; font-weight:700; letter-spacing:.22em; }
+    .video-frame { position:relative; aspect-ratio:16/9; background:#020617; overflow:hidden; }
+    .video-terminal.featured .video-frame { aspect-ratio:21/9; }
+    .video-frame video, .video-frame img, .video-trigger { width:100%; height:100%; object-fit:cover; display:block; }
+    .video-trigger { position:relative; appearance:none; border:0; padding:0; background:#020617; color:inherit; }
+    .play { position:absolute; inset:0; display:grid; place-items:center; color:var(--cyan); font-size:44px; background:linear-gradient(45deg, rgba(2,6,23,.8), rgba(15,23,42,.4)); }
+    .video-frame b { position:absolute; left:16px; top:16px; color:rgba(73,197,182,.55); font-size:10px; font-weight:400; }
+    .video-frame em { position:absolute; right:16px; bottom:16px; color:#64748b; font-size:10px; font-style:normal; font-weight:700; }
+    .award-row { display:flex; gap:18px; }
+    .award-row strong { display:grid; width:40px; height:40px; flex:0 0 auto; place-items:center; border:1px solid rgba(73,197,182,.4); color:var(--cyan); }
+    .award-row p { margin:0; color:var(--cyan); font-size:10px; font-weight:700; letter-spacing:.2em; }
+    .award-row span { display:block; margin-top:12px; color:#94a3b8; font-size:12px; line-height:1.7; }
+    .timeline { position:relative; margin-left:24px; padding-left:36px; border-left:1px solid rgba(255,255,255,.1); }
+    .timeline-node { position:relative; margin-bottom:56px; }
+    .timeline-node i { position:absolute; left:-45px; top:4px; width:16px; height:16px; border:2px solid var(--cyan); border-radius:999px; background:var(--bg); }
+    .timeline-top { display:flex; justify-content:space-between; gap:16px; margin-bottom:10px; }
+    .timeline-top b { font-size:12px; letter-spacing:.18em; }
+    .timeline-top span { color:#64748b; font-size:10px; text-transform:uppercase; }
+    .timeline-node p { max-width:780px; color:#94a3b8; font-size:12px; line-height:1.8; }
+    .skill-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px; }
+    .skill-node { position:relative; overflow:hidden; border:1px solid rgba(73,197,182,.15); background:rgba(4,3,10,.7); padding:20px; clip-path:polygon(0 0, calc(100% - 22px) 0, 100% 22px, 100% 100%, 22px 100%, 0 calc(100% - 22px)); box-shadow:inset 0 0 0 1px color-mix(in srgb, var(--skill-accent) 14%, transparent), inset 0 0 36px rgba(73,197,182,.045), 0 20px 80px rgba(0,0,0,.28); transition:transform .55s cubic-bezier(.16,1,.3,1), border-color .55s cubic-bezier(.16,1,.3,1), box-shadow .55s cubic-bezier(.16,1,.3,1); }
+    .skill-node::before { content:""; position:absolute; inset:0; background:linear-gradient(120deg, transparent 0%, color-mix(in srgb, var(--skill-accent) 17%, transparent) 45%, transparent 62%); transform:translateX(-120%); transition:transform .85s cubic-bezier(.16,1,.3,1); }
+    .skill-node::after { content:""; position:absolute; inset:1px; pointer-events:none; background:radial-gradient(circle at 20% 0%, color-mix(in srgb, var(--skill-accent) 17%, transparent), transparent 34%), linear-gradient(rgba(73,197,182,.04) 1px, transparent 1px), linear-gradient(90deg, rgba(73,197,182,.03) 1px, transparent 1px), repeating-linear-gradient(0deg, transparent 0 7px, rgba(255,255,255,.025) 8px); background-size:auto, 18px 18px, 18px 18px, auto; opacity:.78; }
+    .skill-node:hover { transform:translateY(-6px); border-color:color-mix(in srgb, var(--skill-accent) 75%, transparent); box-shadow:0 0 46px color-mix(in srgb, var(--skill-accent) 18%, transparent), inset 0 0 30px color-mix(in srgb, var(--skill-accent) 7%, transparent); }
+    .skill-node:hover::before { transform:translateX(120%); }
+    .skill-top { position:relative; z-index:1; display:flex; justify-content:space-between; align-items:flex-start; gap:16px; color:white; }
+    .skill-top p { margin:0; font-size:10px; font-weight:700; letter-spacing:.24em; }
+    .skill-top h3 { margin:12px 0 0; color:white; font-size:20px; }
+    .skill-top small { display:block; margin-top:8px; color:#64748b; font-size:10px; letter-spacing:.22em; text-transform:uppercase; }
+    .skill-orb { width:58px; height:58px; flex:0 0 auto; display:grid; place-items:center; border-radius:999px; color:white; font-size:15px; font-weight:800; background:conic-gradient(var(--skill-accent) var(--skill-percent), rgba(255,255,255,.08) 0), radial-gradient(circle, #04030a 58%, transparent 60%); box-shadow:0 0 24px color-mix(in srgb, var(--skill-accent) 38%, transparent); }
+    .skill-orb span { display:grid; place-items:center; width:40px; height:40px; border:1px solid rgba(255,255,255,.08); border-radius:999px; background:rgba(4,3,10,.92); }
+    .skill-segments { position:relative; z-index:1; display:grid; grid-template-columns:repeat(5,1fr); gap:6px; margin-top:28px; }
+    .skill-segments span { height:28px; border:1px solid rgba(255,255,255,.1); background:rgba(255,255,255,.03); }
+    .skill-segments span.on { border-color:rgba(73,197,182,.7); background:rgba(73,197,182,.2); box-shadow:0 0 18px rgba(73,197,182,.18); }
+    .skill-node i { position:relative; z-index:1; display:block; height:1px; margin-top:20px; overflow:hidden; background:rgba(255,255,255,.1); }
+    .skill-node b { display:block; height:100%; background:linear-gradient(90deg,var(--cyan),var(--lime),var(--pink)); }
+    .skill-sync { position:relative; z-index:1; display:flex; justify-content:space-between; margin-top:16px; color:#475569; font-size:9px; letter-spacing:.2em; text-transform:uppercase; }
+    .contact { text-align:center; }
+    .contact h2 { color:white; font-size:clamp(34px, 7vw, 72px); }
+    .contact-links { display:flex; flex-wrap:wrap; justify-content:center; gap:12px; }
+    .contact-links a, .contact-links span { border:1px solid rgba(255,255,255,.1); padding:14px 20px; color:#94a3b8; font-size:12px; }
+    .contact-links a:hover { border-color:var(--cyan); color:var(--cyan); }
+    .video-modal { position:fixed; inset:0; z-index:80; display:flex; align-items:center; justify-content:center; padding:16px; background:rgba(0,0,0,.95); backdrop-filter:blur(12px); opacity:0; pointer-events:none; transition:.45s ease; }
+    .video-modal.open { opacity:1; pointer-events:auto; }
+    .modal-close { position:absolute; top:32px; right:32px; border:1px solid rgba(255,255,255,.1); background:transparent; color:white; padding:9px 14px; font-size:12px; letter-spacing:.18em; }
+    .modal-close:hover { border-color:var(--cyan); color:var(--cyan); }
+    .modal-frame { width:min(100%, 960px); aspect-ratio:16/9; border:1px solid rgba(255,255,255,.1); background:black; box-shadow:0 24px 80px rgba(0,0,0,.6); }
+    .modal-frame video { width:100%; height:100%; object-fit:cover; display:block; }
+    footer { border-top:1px solid rgba(255,255,255,.05); padding:40px 24px; text-align:center; color:#475569; font-size:10px; letter-spacing:.2em; }
+    @media (max-width: 820px) { nav { padding:18px 20px; } .navlinks { display:none; } .matrix-grid, .video-grid, .award-grid, .skill-grid { grid-template-columns:1fr; } h1 { font-size:52px; } }
+  </style>
+</head>
+<body>
+  <canvas id="auraCanvas"></canvas><div class="grid"></div><div class="glow"></div><div class="noise"></div><div class="scanlines"></div><div class="sweep-line"></div>
+  <div class="screen-corner tl"></div><div class="screen-corner tr"></div><div class="screen-corner bl"></div><div class="screen-corner br"></div>
+  <div id="customCursor" class="custom-cursor"></div><div id="customCursorDot" class="custom-cursor-dot"></div>
+  <nav><a class="brand interactive-item" href="#home">${escapeHtml((data.user.username || data.user.displayName || 'AURA').toUpperCase())}</a><div class="navlinks"><a class="interactive-item" href="#home">INDEX</a><a class="interactive-item" href="#projects">PROJECTS</a>${data.config.showVideos && videos.length ? '<a class="interactive-item" href="#video-section">REELS</a>' : ''}${data.config.showAwards && awards.length ? '<a class="interactive-item" href="#awards">AWARDS</a>' : ''}${data.config.showExperience && experiences.length ? '<a class="interactive-item" href="#resume">BIOGRAPHY</a>' : ''}</div><div class="core">CORE_V3.0</div></nav>
+  <main>
+    <section id="home" class="hero"><div class="hero-label aura-reveal"><p>${escapeHtml(data.user.title || 'SYSTEM ONLINE // CORE_V3')}</p><span>${escapeHtml(data.user.location || 'GPU MULTI-AXIS WAVE DEFORMATION')}</span></div><h1 class="aura-reveal">${escapeHtml(data.user.displayName || 'CYBERNETIC')}<br><span>${escapeHtml(data.user.bio || 'METAVERSE')}</span></h1><p class="hero-copy aura-reveal">${escapeHtml(data.user.fullBio || 'A cyber terminal portfolio for spatial interfaces, multimedia demos, and high-signal creative systems.')}</p><a class="button interactive-item aura-reveal" href="#projects"><span class="corner tl"></span><span class="corner br"></span>INITIALIZE SCAN //</a></section>
+    <section id="projects"><div class="section-head aura-reveal"><p>// SELECTED TELEMETRY</p><h2 class="scramble-trigger" data-text="CORE DATA MATRIX">CORE DATA MATRIX</h2></div><div class="${projectGridClass}">${projectCards}</div></section>
+    ${data.config.showVideos && videos.length ? `<section id="video-section"><div class="section-head aura-reveal"><p>// REELS & DEMOS</p><h2 class="scramble-trigger" data-text="MULTIMEDIA TERMINAL">MULTIMEDIA TERMINAL</h2></div><div class="video-grid">${videoCards}</div></section>` : ''}
+    ${data.config.showAwards && awards.length ? `<section id="awards"><div class="section-head aura-reveal"><p>// RECOGNITION LOG</p><h2 class="scramble-trigger" data-text="HONOR DATA VAULT">HONOR DATA VAULT</h2></div><div class="award-grid">${awardCards}</div></section>` : ''}
+    ${data.config.showExperience && experiences.length ? `<section id="resume"><div class="section-head aura-reveal"><p>// EXPERIENCE CHRONOLOGY</p><h2 class="scramble-trigger" data-text="BIOGRAPHY DATABASE">BIOGRAPHY DATABASE</h2></div><div class="timeline">${experienceCards}</div></section>` : ''}
+    ${data.config.showSkills && skills.length ? `<section id="skills"><div class="section-head aura-reveal"><p>// CAPABILITY STACK</p><h2 class="scramble-trigger" data-text="SKILL PROTOCOLS">SKILL PROTOCOLS</h2></div><div class="skill-grid">${skillCards}</div></section>` : ''}
+    <section id="contact" class="contact"><h2 class="aura-reveal scramble-trigger" data-text="CONNECT TO PORT">CONNECT TO PORT</h2><p class="hero-copy aura-reveal" style="margin-left:auto;margin-right:auto">Establish a secure channel for collaboration, roles, or experimental digital systems.</p><div class="contact-links aura-reveal">${data.user.email ? `<a class="interactive-item" href="mailto:${escapeHtml(data.user.email)}">EMAIL</a>` : ''}${data.user.location ? `<span>${escapeHtml(data.user.location)}</span>` : ''}${socials.map((social) => `<a class="interactive-item" href="${escapeHtml(social.url)}">${escapeHtml(social.platform)}</a>`).join('')}</div></section>
+  </main>
+  <footer>2026 ${escapeHtml(data.user.displayName || 'AURA STUDIO')}. CORE ENGINE POWERED BY SITEFORGE.</footer>
+  <div id="videoModal" class="video-modal"><button id="closeModal" class="modal-close interactive-item" type="button">CLOSE_STREAM [X]</button><div class="modal-frame"><video id="modalVideo" controls loop playsinline></video></div></div>
+  <script>
+    const cursor = document.getElementById('customCursor');
+    const cursorDot = document.getElementById('customCursorDot');
+    let cursorX = innerWidth / 2;
+    let cursorY = innerHeight / 2;
+    let dotX = cursorX;
+    let dotY = cursorY;
+    let mouseUnitX = .5;
+    let mouseUnitY = .5;
+    let hoverOffset = { x: 0, y: 0 };
+    document.addEventListener('mousemove', function(event) {
+      dotX = event.clientX;
+      dotY = event.clientY;
+      mouseUnitX = event.clientX / innerWidth;
+      mouseUnitY = 1 - event.clientY / innerHeight;
+      document.documentElement.style.setProperty('--mouse-x', event.clientX + 'px');
+      document.documentElement.style.setProperty('--mouse-y', event.clientY + 'px');
+      if (cursorDot) cursorDot.style.transform = 'translate3d(' + dotX + 'px,' + dotY + 'px,0) translate(-50%,-50%)';
+    });
+    function cursorLoop() {
+      cursorX += (dotX - cursorX) * .18;
+      cursorY += (dotY - cursorY) * .18;
+      if (cursor) cursor.style.transform = 'translate3d(' + cursorX + 'px,' + cursorY + 'px,0) translate(-50%,-50%)';
+      requestAnimationFrame(cursorLoop);
+    }
+    cursorLoop();
+    document.querySelectorAll('.interactive-item').forEach(function(el) {
+      el.addEventListener('mouseenter', function() { cursor && cursor.classList.add('active'); });
+      el.addEventListener('mouseleave', function() { cursor && cursor.classList.remove('active'); });
+    });
+    document.querySelectorAll('.project-card').forEach(function(card) {
+      card.addEventListener('mouseenter', function() {
+        const index = Number(card.getAttribute('data-card-index') || 0);
+        hoverOffset = index % 3 === 0 ? { x: -.5, y: -.1 } : index % 3 === 1 ? { x: 0, y: -.4 } : { x: .5, y: -.1 };
+      });
+      card.addEventListener('mouseleave', function() { hoverOffset = { x: 0, y: 0 }; });
+    });
+    const revealObserver = new IntersectionObserver(function(entries) {
+      entries.forEach(function(entry) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('aura-visible');
+          revealObserver.unobserve(entry.target);
+        }
+      });
+    }, { threshold: .18 });
+    document.querySelectorAll('.aura-reveal').forEach(function(el) { revealObserver.observe(el); });
+    const scrambleChars = '!<>-_\\\\/[]{}+*^?#________';
+    document.querySelectorAll('.scramble-trigger').forEach(function(element) {
+      const originalText = element.getAttribute('data-text') || element.textContent || '';
+      let frameId = 0;
+      element.addEventListener('mouseenter', function() {
+        cancelAnimationFrame(frameId);
+        let frame = 0;
+        const max = Math.max(12, originalText.length * 2);
+        function tick() {
+          element.textContent = originalText.split('').map(function(char, index) {
+            return frame > index * 2 ? char : char === ' ' ? ' ' : scrambleChars[Math.floor(Math.random() * scrambleChars.length)];
+          }).join('');
+          frame += 1;
+          if (frame <= max) frameId = requestAnimationFrame(tick);
+          else element.textContent = originalText;
+        }
+        tick();
+      });
+    });
+    const videoModal = document.getElementById('videoModal');
+    const modalVideo = document.getElementById('modalVideo');
+    const closeModal = document.getElementById('closeModal');
+    document.querySelectorAll('.video-trigger').forEach(function(trigger) {
+      trigger.addEventListener('click', function() {
+        modalVideo.src = trigger.getAttribute('data-video-url') || '';
+        modalVideo.poster = trigger.getAttribute('data-poster') || '';
+        videoModal.classList.add('open');
+        modalVideo.play().catch(function() {});
+      });
+    });
+    closeModal.addEventListener('click', function() {
+      videoModal.classList.remove('open');
+      modalVideo.pause();
+      modalVideo.currentTime = 0;
+      modalVideo.removeAttribute('src');
+    });
+    const canvas = document.getElementById('auraCanvas');
+    const context = canvas.getContext('2d');
+    const particles = Array.from({ length: 180 }, () => ({
+      x: Math.random(),
+      y: Math.random(),
+      z: Math.random() * 1.8 + .35,
+      vx: (Math.random() - .5) * .0009,
+      vy: (Math.random() - .5) * .0009
+    }));
+    let frame = 0;
+    function resize(){ canvas.width = innerWidth * devicePixelRatio; canvas.height = innerHeight * devicePixelRatio; }
+    function draw(){
+      frame += .016; context.clearRect(0,0,canvas.width,canvas.height); context.save(); context.scale(devicePixelRatio,devicePixelRatio);
+      const progress = document.documentElement.scrollHeight > innerHeight ? scrollY / (document.documentElement.scrollHeight - innerHeight) : 0;
+      const flowX = hoverOffset.x * .0018 + (mouseUnitX - .5) * .0008;
+      const flowY = hoverOffset.y * .0018 + (.5 - mouseUnitY) * .0008;
+      context.strokeStyle = 'rgba(73,197,182,.12)';
+      for (let i=0;i<22;i++){ const y = innerHeight*.68+i*18; context.beginPath(); context.moveTo(innerWidth * -.2,y); context.lineTo(innerWidth * 1.2,y+Math.sin(frame*1.6+i)*26); context.stroke(); }
+      const points = particles.map((p) => {
+        p.x += p.vx / p.z + flowX;
+        p.y += p.vy / p.z + flowY + Math.sin(frame * .35 + p.z) * .0002;
+        if (p.x < -.04) p.x = 1.04;
+        if (p.x > 1.04) p.x = -.04;
+        if (p.y < -.04) p.y = 1.04;
+        if (p.y > 1.04) p.y = -.04;
+        const depth = 1 / p.z;
+        return {
+          x: p.x * innerWidth,
+          y: p.y * innerHeight + Math.sin(frame * .6 + p.x * 8) * 10 * depth + progress * 28 * depth,
+          size: Math.max(.8, 2.2 * depth),
+          alpha: Math.min(.72, .18 + depth * .42)
+        };
+      });
+      points.forEach((point, index) => {
+        for (let j = index + 1; j < points.length; j++) {
+          const next = points[j];
+          const dx = point.x - next.x;
+          const dy = point.y - next.y;
+          const distance = Math.sqrt(dx * dx + dy * dy);
+          if (distance < 88) {
+            context.globalAlpha = (1 - distance / 88) * .16;
+            context.strokeStyle = index % 5 === 0 ? 'rgba(255,147,152,.45)' : 'rgba(73,197,182,.55)';
+            context.beginPath();
+            context.moveTo(point.x, point.y);
+            context.lineTo(next.x, next.y);
+            context.stroke();
+          }
+        }
+      });
+      points.forEach((point, index) => {
+        context.globalAlpha = point.alpha;
+        context.fillStyle = index % 7 === 0 ? 'rgba(255,147,152,.85)' : 'rgba(73,197,182,.85)';
+        context.beginPath();
+        context.arc(point.x, point.y, point.size, 0, Math.PI * 2);
+        context.fill();
+      });
+      context.globalAlpha = 1;
+      const glowX = innerWidth * (.58 + Math.sin(progress * Math.PI * 2) * .14) + hoverOffset.x * 70;
+      const glowY = innerHeight * (.48 + Math.cos(progress * Math.PI * 1.4) * .1) + hoverOffset.y * 70;
+      const glowRadius = Math.min(innerWidth, innerHeight) * .42;
+      const gradient = context.createRadialGradient(glowX, glowY, 0, glowX, glowY, glowRadius);
+      gradient.addColorStop(0, 'rgba(73,197,182,.2)');
+      gradient.addColorStop(.55, 'rgba(255,147,152,.08)');
+      gradient.addColorStop(1, 'transparent');
+      context.fillStyle = gradient;
+      context.fillRect(0, 0, innerWidth, innerHeight);
+      context.restore(); requestAnimationFrame(draw);
+    }
+    resize(); addEventListener('resize', resize); draw();
   </script>
 </body>
 </html>`;

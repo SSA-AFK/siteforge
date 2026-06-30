@@ -1,5 +1,5 @@
 import { Video } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { uploadMedia } from '../utils/uploadMedia';
 
 interface VideoUploadFieldProps {
@@ -15,7 +15,7 @@ const inputClass = 'w-full rounded-lg border border-slate-200 bg-white px-3 py-2
 
 function looksLikeVideoUrl(value?: string) {
   if (!value) return false;
-  return value.startsWith('blob:') || /\.(mp4|webm|ogg|ogv|mov)(\?|#|$)/i.test(value);
+  return /\.(mp4|webm|ogg|ogv|mov)(\?|#|$)/i.test(value);
 }
 
 export function VideoUploadField({
@@ -24,30 +24,45 @@ export function VideoUploadField({
   onChange,
   actionLabel = '选择视频',
   uploadingLabel = '上传中...',
-  placeholder = '例如：https://example.com/demo.mp4，或选择本地视频自动上传'
+  placeholder = '例如：https://example.com/demo.mp4，或选择本地视频'
 }: VideoUploadFieldProps) {
+  const inputRef = useRef<HTMLInputElement | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [localPreviewUrl, setLocalPreviewUrl] = useState('');
 
-  async function handleFile(file?: File) {
+  useEffect(() => {
+    return () => {
+      if (localPreviewUrl) URL.revokeObjectURL(localPreviewUrl);
+    };
+  }, [localPreviewUrl]);
+
+  function closePickerWindow() {
+    if (localPreviewUrl) URL.revokeObjectURL(localPreviewUrl);
+    setSelectedFile(null);
+    setLocalPreviewUrl('');
+  }
+
+  function selectFile(file?: File) {
     if (!file || isUploading) return;
-
-    const previousValue = value || '';
-    const previewUrl = URL.createObjectURL(file);
+    if (localPreviewUrl) URL.revokeObjectURL(localPreviewUrl);
     setErrorMessage('');
-    onChange(previewUrl);
+    setSelectedFile(file);
+    setLocalPreviewUrl(URL.createObjectURL(file));
+  }
+
+  async function confirmUpload() {
+    if (!selectedFile || isUploading) return;
     setIsUploading(true);
 
     try {
-      const result = await uploadMedia(file, 'video');
+      const result = await uploadMedia(selectedFile, 'video');
       onChange(result.url);
+      closePickerWindow();
     } catch (error) {
-      onChange(previousValue);
-      const message = error instanceof Error ? error.message : '视频上传失败。';
-      setErrorMessage(message);
-      alert(message);
+      setErrorMessage(error instanceof Error ? error.message : '视频上传失败。');
     } finally {
-      URL.revokeObjectURL(previewUrl);
       setIsUploading(false);
     }
   }
@@ -56,24 +71,54 @@ export function VideoUploadField({
     <div className="grid gap-2">
       <div className="flex items-center justify-between gap-3">
         <span className="text-xs font-bold uppercase tracking-wide text-slate-500">{label}</span>
-        <label className={`inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-bold transition ${isUploading ? 'cursor-wait bg-slate-200 text-slate-400' : 'cursor-pointer bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>
+        <button
+          type="button"
+          className={`inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-bold transition ${isUploading ? 'cursor-wait bg-slate-200 text-slate-400' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
+          disabled={isUploading}
+          onClick={() => inputRef.current?.click()}
+        >
           <Video className="h-3.5 w-3.5" />
           {isUploading ? uploadingLabel : actionLabel}
-          <input
-            className="sr-only"
-            type="file"
-            accept="video/*"
-            disabled={isUploading}
-            onChange={(event) => {
-              void handleFile(event.target.files?.[0]);
-              event.currentTarget.value = '';
-            }}
-          />
-        </label>
+        </button>
+        <input
+          ref={inputRef}
+          className="sr-only"
+          type="file"
+          accept="video/*"
+          disabled={isUploading}
+          onChange={(event) => {
+            selectFile(event.target.files?.[0]);
+            event.currentTarget.value = '';
+          }}
+        />
       </div>
       {looksLikeVideoUrl(value) ? <video src={value} className="h-32 w-full rounded-lg border border-slate-200 bg-slate-950 object-cover" controls muted /> : null}
       <input className={inputClass} value={value || ''} placeholder={placeholder} onChange={(event) => onChange(event.target.value)} />
       {errorMessage ? <p className="text-xs font-semibold text-red-500">{errorMessage}</p> : null}
+      {selectedFile && localPreviewUrl ? (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/55 p-4 backdrop-blur-sm" role="dialog" aria-modal="true" aria-label="视频上传预览">
+          <div className="w-full max-w-2xl rounded-2xl border border-slate-200 bg-white p-4 shadow-2xl">
+            <div className="mb-3 flex items-start justify-between gap-3">
+              <div>
+                <p className="text-sm font-black text-slate-950">确认上传视频</p>
+                <p className="mt-1 max-w-[360px] truncate text-xs font-semibold text-slate-500">{selectedFile.name}</p>
+              </div>
+              <button type="button" className="rounded-lg px-2 py-1 text-xs font-bold text-slate-500 hover:bg-slate-100" onClick={closePickerWindow} disabled={isUploading}>
+                关闭
+              </button>
+            </div>
+            <video src={localPreviewUrl} className="max-h-[52vh] w-full rounded-xl border border-slate-200 bg-slate-950 object-contain" controls muted />
+            <div className="mt-4 flex justify-end gap-2">
+              <button type="button" className="rounded-lg border border-slate-200 px-3 py-2 text-xs font-bold text-slate-600 hover:bg-slate-50" onClick={closePickerWindow} disabled={isUploading}>
+                取消
+              </button>
+              <button type="button" className="rounded-lg bg-slate-950 px-3 py-2 text-xs font-bold text-white hover:bg-slate-800 disabled:bg-slate-300" onClick={() => void confirmUpload()} disabled={isUploading}>
+                {isUploading ? uploadingLabel : '确认上传'}
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

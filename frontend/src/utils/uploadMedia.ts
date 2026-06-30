@@ -34,8 +34,9 @@ export async function uploadMedia(file: File, kind: 'image' | 'video'): Promise<
     });
 
     if (!response.ok) {
-      const error = await response.json().catch(() => ({ error: kind === 'image' ? '图片上传失败。' : '视频上传失败。' }));
-      throw new Error(error.error || (kind === 'image' ? '图片上传失败。' : '视频上传失败。'));
+      const fallback = kind === 'image' ? '图片上传失败。' : '视频上传失败。';
+      const error = await response.json().catch(() => ({ error: fallback }));
+      throw new Error(error.error || fallback);
     }
 
     return (await response.json()) as UploadResult;
