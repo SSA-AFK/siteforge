@@ -1,5 +1,5 @@
 import { useMemo, useRef, useState, type CSSProperties } from 'react';
-import { getAboutSectionCopy, getSectionCopy } from '@siteforge/shared';
+import { getAboutSectionCopy, getOrderedSections, getSectionCopy } from '@siteforge/shared';
 import type { Project, SiteData } from '@siteforge/shared';
 
 function byOrder<T extends { displayOrder: number }>(items: T[]) {
@@ -12,7 +12,9 @@ function projectImage(project: Project) {
 
 export function TemplateAqua({ data }: { data: SiteData }) {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [showAllSkills, setShowAllSkills] = useState(false);
   const [previewImage, setPreviewImage] = useState<{ src: string; alt: string } | null>(null);
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const leftCardRef = useRef<HTMLDivElement>(null);
   const centerCardRef = useRef<HTMLDivElement>(null);
   const rightCardRef = useRef<HTMLDivElement>(null);
@@ -22,7 +24,15 @@ export function TemplateAqua({ data }: { data: SiteData }) {
   const sideProjects = projects.filter((project) => project !== featuredProject);
   const leftProject = sideProjects[0] || featuredProject;
   const rightProject = sideProjects[1] || projects[1] || featuredProject;
+  const deckProjects = useMemo(() => {
+    const ordered = projects.length <= 2 ? projects : [leftProject, featuredProject, rightProject];
+    const seen = new Set<Project>();
+    return ordered.filter((project): project is Project => Boolean(project) && !seen.has(project) && Boolean(seen.add(project)));
+  }, [featuredProject, leftProject, projects, rightProject]);
+  const experiences = useMemo(() => byOrder(data.experiences).filter((experience) => experience.position.trim() || experience.company.trim()), [data.experiences]);
   const skills = useMemo(() => byOrder(data.skills).filter((skill) => skill.name.trim()), [data.skills]);
+  const previewSkills = skills.slice(0, 8);
+  const hiddenSkillCount = Math.max(0, skills.length - previewSkills.length);
   const awards = useMemo(() => byOrder(data.awards ?? []).filter((award) => award.title.trim()), [data.awards]);
   const videos = useMemo(
     () =>
@@ -56,6 +66,17 @@ export function TemplateAqua({ data }: { data: SiteData }) {
   const videosCopy = getSectionCopy(data, 'videos', { label: 'Motion Proof', title: 'Videos and demos' });
   const awardsCopy = getSectionCopy(data, 'awards', { label: 'Recognition', title: 'Honors and proof points' });
   const contactCopy = getSectionCopy(data, 'contact', { label: 'Contact', title: 'Start a Collaboration', description: 'Have a project idea, role opportunity, or portfolio conversation? Use the public contact channels below.' });
+  const sectionOrder = Object.fromEntries(getOrderedSections(data).map((section, index) => [section, index])) as Record<string, number>;
+  const navTargets: Record<string, string> = { projects: 'projects', experience: 'experience', skills: 'skills', videos: 'videos', awards: 'awards', contact: 'contact' };
+  const navLabels: Record<string, string> = { projects: 'Works', experience: 'Experience', skills: 'Skills', videos: 'Videos', awards: 'Awards', contact: 'Contact' };
+  const navSections = getOrderedSections(data).filter((section) => {
+    if (section === 'projects') return projects.length;
+    if (section === 'experience') return data.config.showExperience && experiences.length;
+    if (section === 'skills') return data.config.showSkills && skills.length;
+    if (section === 'videos') return data.config.showVideos && videos.length;
+    if (section === 'awards') return data.config.showAwards && awards.length && !data.config.showSkills;
+    return section === 'contact';
+  });
   const orbitSkillSignal = skills.length
     ? `${skills.slice(0, 3).map((skill) => skill.name).join(', ')}${skills.length > 3 ? ` +${skills.length - 3} more` : ''}`
     : 'Add skills in the form';
@@ -73,6 +94,18 @@ export function TemplateAqua({ data }: { data: SiteData }) {
     if (leftCardRef.current) leftCardRef.current.style.transform = 'rotateY(20deg) translateZ(-30px) rotateX(4deg)';
     if (centerCardRef.current) centerCardRef.current.style.transform = 'translateZ(40px) translateY(-10px) rotateY(0deg) rotateX(0deg)';
     if (rightCardRef.current) rightCardRef.current.style.transform = 'rotateY(-20deg) translateZ(-30px) rotateX(4deg)';
+  }
+
+  function projectVariant(index: number, count: number): 'left' | 'center' | 'right' {
+    if (count === 1) return 'center';
+    if (count === 2) return index === 0 ? 'left' : 'right';
+    return index === 0 ? 'left' : index === 1 ? 'center' : 'right';
+  }
+
+  function projectRef(variant: 'left' | 'center' | 'right') {
+    if (variant === 'left') return leftCardRef;
+    if (variant === 'center') return centerCardRef;
+    return rightCardRef;
   }
 
   function scrollToSection(sectionId: string, event?: React.MouseEvent<HTMLAnchorElement | HTMLButtonElement>) {
@@ -96,16 +129,19 @@ export function TemplateAqua({ data }: { data: SiteData }) {
     window.history.replaceState(null, '', `#${sectionId}`);
   }
 
-  function ProjectMiniCard({ project, side }: { project?: Project; side: 'left' | 'right' }) {
+  function ProjectMiniCard({ project, variant }: { project?: Project; variant: 'left' | 'center' | 'right' }) {
     if (!project) return null;
     const image = projectImage(project);
+    const isFeatured = project.isFeatured;
     return (
-      <div ref={side === 'left' ? leftCardRef : rightCardRef} className={`aqua-glass aqua-project-card aqua-card-${side}`}>
+      <div ref={projectRef(variant)} className={`aqua-glass aqua-project-card aqua-card-${variant} ${isFeatured ? 'aqua-featured-card' : ''}`}>
         {image ? <button className="aqua-cover" type="button" onClick={() => setPreviewImage({ src: image, alt: project.title })}><img src={image} alt={project.title} /></button> : null}
         <div>
+          {isFeatured ? <div className="aqua-pill aqua-featured-pill">Featured Project</div> : null}
           <h3>{project.title || 'Untitled Project'}</h3>
           <div className="aqua-pill">{project.category || 'Selected Work'}</div>
-          <p>{project.description || 'A selected portfolio project with polished interaction and visual craft.'}</p>
+          <p className="aqua-project-copy">{project.description || 'A selected portfolio project with polished interaction and visual craft.'}</p>
+          <button className="aqua-detail-btn" type="button" onClick={() => setSelectedProject(project)}>Details</button>
         </div>
         <div className="aqua-chip-row">
           {(project.tools || project.role || 'Design, React').split(',').slice(0, 2).map((tool) => (
@@ -160,17 +196,27 @@ export function TemplateAqua({ data }: { data: SiteData }) {
         .aqua-glass::after { content:""; position:absolute; inset:-1px; border-radius:inherit; pointer-events:none; opacity:0; background:radial-gradient(220px circle at 50% 0%, rgba(133,112,238,.22), transparent 62%); transition:opacity .35s ease; }
         .aqua-glass:hover { border-color:rgba(133,112,238,.32); background:rgba(18,13,35,.62); box-shadow:0 22px 58px rgba(133,112,238,.12); }
         .aqua-glass:hover::after { opacity:1; }
-        .aqua-deck { perspective:1500px; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:24px; margin:0 auto 70px; max-width:1120px; }
+        .aqua-deck { perspective:1500px; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:24px; margin:0 auto 70px; max-width:1120px; align-items:stretch; }
+        .aqua-deck-1 { grid-template-columns:minmax(0,520px); justify-content:center; }
+        .aqua-deck-2 { grid-template-columns:repeat(2,minmax(0,420px)); justify-content:center; }
         .aqua-project-card { min-height:288px; border-radius:28px; padding:22px; display:flex; flex-direction:column; justify-content:space-between; overflow:hidden; cursor:pointer; }
         .aqua-card-left { transform:rotateY(20deg) translateZ(-30px) rotateX(4deg); }
         .aqua-card-right { transform:rotateY(-20deg) translateZ(-30px) rotateX(4deg); }
         .aqua-card-center { min-height:330px; transform:translateZ(40px) translateY(-10px); border-color:rgba(133,112,238,.25); box-shadow:0 24px 60px rgba(133,112,238,.15); }
+        .aqua-deck-1 .aqua-project-card, .aqua-deck-2 .aqua-project-card { min-height:330px; transform:none !important; }
+        .aqua-featured-card { border-color:rgba(133,112,238,.36); box-shadow:0 24px 70px rgba(133,112,238,.17), inset 0 0 0 1px rgba(217,70,239,.08); }
+        .aqua-featured-card::before { content:""; position:absolute; inset:0; pointer-events:none; background:linear-gradient(135deg, rgba(133,112,238,.16), transparent 46%, rgba(217,70,239,.1)); opacity:.9; }
+        .aqua-featured-card > * { position:relative; z-index:1; }
         .aqua-cover { height:96px; margin:-8px -8px 16px; border-radius:20px; overflow:hidden; background:rgba(255,255,255,.04); }
         .aqua-cover img { width:100%; height:100%; object-fit:cover; filter:saturate(1.15) brightness(1.12); transition:transform .45s ease; }
         .aqua-cover:hover img { transform:scale(1.05); }
         .aqua-project-card h3 { margin:0 0 10px; font-size:19px; font-weight:850; }
         .aqua-pill { display:inline-flex; width:max-content; max-width:100%; margin-bottom:14px; border-radius:999px; background:rgba(255,255,255,.05); padding:5px 11px; color:#9595b1; font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:.08em; }
         .aqua-project-card p { color:#9595b1; font-size:12px; line-height:1.75; }
+        .aqua-project-copy { display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
+        .aqua-featured-pill { background:rgba(217,70,239,.14); color:#fff; }
+        .aqua-detail-btn { margin-top:14px; border-radius:999px; border:1px solid rgba(255,255,255,.08); background:rgba(255,255,255,.05); color:#fff; padding:8px 12px; font-size:10px; font-weight:900; letter-spacing:.12em; text-transform:uppercase; transition:background .25s ease, transform .25s ease, border-color .25s ease; }
+        .aqua-detail-btn:hover { transform:translateY(-2px); border-color:rgba(133,112,238,.42); background:rgba(133,112,238,.16); }
         .aqua-chip-row { display:flex; flex-wrap:wrap; gap:8px; margin-top:18px; }
         .aqua-chip-row span { border-radius:999px; background:rgba(133,112,238,.12); color:#dcd7ff; padding:7px 10px; font-size:10px; font-weight:800; transition:background .25s ease, color .25s ease, transform .25s ease; }
         .aqua-chip-row span:hover { transform:translateY(-2px); background:rgba(217,70,239,.18); color:#fff; }
@@ -243,6 +289,20 @@ export function TemplateAqua({ data }: { data: SiteData }) {
         .aqua-drawer input, .aqua-drawer textarea { width:100%; border:0; outline:0; background:transparent; color:#fff; resize:none; font-size:14px; }
         .aqua-lightbox { position:fixed; inset:0; z-index:80; display:grid; place-items:center; padding:24px; background:rgba(2,6,23,.86); backdrop-filter:blur(8px); }
         .aqua-lightbox img { max-width:min(100%,1040px); max-height:86vh; object-fit:contain; border-radius:24px; box-shadow:0 24px 80px rgba(0,0,0,.5); }
+        .aqua-project-modal { position:fixed; inset:0; z-index:78; display:grid; place-items:center; padding:24px; background:radial-gradient(circle at 50% 18%, rgba(133,112,238,.26), transparent 34%), rgba(4,3,10,.72); backdrop-filter:blur(14px); }
+        .aqua-project-dialog { width:min(100%,820px); max-height:min(88vh,780px); overflow:auto; border-radius:34px; padding:0; background:linear-gradient(145deg,rgba(255,255,255,.16),rgba(255,255,255,.07)); border:1px solid rgba(255,255,255,.2); box-shadow:0 30px 110px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.18); }
+        .aqua-project-dialog-hero { position:relative; min-height:180px; overflow:hidden; background:linear-gradient(135deg,rgba(133,112,238,.55),rgba(217,70,239,.36)); }
+        .aqua-project-dialog-hero img { position:absolute; inset:0; height:100%; width:100%; object-fit:cover; opacity:.72; filter:saturate(1.08) brightness(1.08); }
+        .aqua-project-dialog-hero::after { content:""; position:absolute; inset:0; background:linear-gradient(180deg,rgba(5,3,10,.08),rgba(5,3,10,.68)); }
+        .aqua-project-dialog-head { position:relative; z-index:1; display:flex; align-items:flex-start; justify-content:space-between; gap:20px; padding:28px; }
+        .aqua-project-dialog-content { padding:26px 28px 30px; background:linear-gradient(180deg,rgba(13,10,25,.72),rgba(13,10,25,.5)); }
+        .aqua-project-dialog h3 { margin:0; max-width:620px; font-size:clamp(26px,3.2vw,42px); line-height:1.08; font-weight:950; letter-spacing:-.04em; text-shadow:0 18px 46px rgba(0,0,0,.4); }
+        .aqua-project-dialog p { color:#e8e4ff; line-height:1.85; font-size:14px; }
+        .aqua-project-dialog-body { white-space:pre-line; border-radius:22px; border:1px solid rgba(255,255,255,.09); background:rgba(255,255,255,.055); padding:18px; }
+        .aqua-project-dialog-close { border-radius:999px; background:rgba(255,255,255,.88); color:#05030a; padding:9px 14px; font-size:12px; font-weight:950; box-shadow:0 12px 30px rgba(0,0,0,.24); transition:transform .25s ease, background .25s ease; }
+        .aqua-project-dialog-close:hover { transform:translateY(-2px); background:#fff; }
+        .aqua-project-dialog-meta { display:flex; flex-wrap:wrap; gap:8px; margin-top:18px; }
+        .aqua-project-dialog-meta span { border-radius:999px; background:rgba(255,255,255,.1); color:#fff; padding:8px 11px; font-size:11px; font-weight:850; }
         .aqua-reveal { opacity:0; transform:translateY(24px) scale(.985); animation:aqua-fade-up .86s cubic-bezier(.16,1,.3,1) forwards; }
         @keyframes aqua-fade-up { to { opacity:1; transform:translateY(0) scale(1); } }
         @keyframes aqua-particle-drift { 0% { transform:translate3d(0,0,0) scale(.85); opacity:calc(var(--opacity) * .55); } 45% { transform:translate3d(28px,-34px,0) scale(1.22); opacity:var(--opacity); } 100% { transform:translate3d(-22px,26px,0) scale(.96); opacity:calc(var(--opacity) * .82); } }
@@ -250,7 +310,7 @@ export function TemplateAqua({ data }: { data: SiteData }) {
         @keyframes aqua-glow { 0%,100% { transform:scale(1); opacity:.32; } 50% { transform:scale(1.16); opacity:.65; } }
         @keyframes aqua-saucer-path { 0%,100% { transform:translate(94px,-50%) scale(1); z-index:3; } 25% { transform:translate(-17px,24px) scale(.9); z-index:0; } 50% { transform:translate(-112px,-50%) scale(.78); z-index:0; opacity:.78; } 75% { transform:translate(-17px,-38px) scale(1.08); z-index:3; opacity:1; } }
         @keyframes aqua-planet-pulse { 0%,100% { transform:scale(1); filter:saturate(1); } 50% { transform:scale(1.06); filter:saturate(1.2); } }
-        @media (max-width: 980px) { .aqua-nav { display:none; } .aqua-hero { grid-template-columns:1fr; text-align:center; } .aqua-metric-stack, .aqua-metric-stack.right { flex-direction:row; justify-content:center; align-items:center; text-align:center; flex-wrap:wrap; order:2; } .aqua-hero-center { order:1; } .aqua-deck, .aqua-bento, .aqua-media-grid, .aqua-award-grid, .aqua-footer { grid-template-columns:1fr; } .aqua-card-left, .aqua-card-center, .aqua-card-right { transform:none !important; min-height:auto; } .aqua-tools { grid-template-columns:repeat(2,minmax(0,1fr)); } .aqua-orbit-showcase { grid-template-columns:1fr; text-align:center; } .aqua-orbit-copy:nth-child(3) { text-align:center; } }
+        @media (max-width: 980px) { .aqua-nav { display:none; } .aqua-hero { grid-template-columns:1fr; text-align:center; } .aqua-metric-stack, .aqua-metric-stack.right { flex-direction:row; justify-content:center; align-items:center; text-align:center; flex-wrap:wrap; order:2; } .aqua-hero-center { order:1; } .aqua-deck, .aqua-deck-1, .aqua-deck-2, .aqua-bento, .aqua-media-grid, .aqua-award-grid, .aqua-footer { grid-template-columns:1fr; } .aqua-card-left, .aqua-card-center, .aqua-card-right { transform:none !important; min-height:auto; } .aqua-tools { grid-template-columns:repeat(2,minmax(0,1fr)); } .aqua-orbit-showcase { grid-template-columns:1fr; text-align:center; } .aqua-orbit-copy:nth-child(3) { text-align:center; } }
         @media (max-width: 620px) { .aqua-header { flex-direction:column; align-items:flex-start; } .aqua-main { margin-top:32px; padding-inline:16px; } .aqua-hero h1 { font-size:42px; } .aqua-skill-grid { grid-template-columns:1fr; } .aqua-panel { padding:18px; border-radius:22px; } .aqua-footer { margin-inline:16px; padding-bottom:92px; } .aqua-footer-bottom { flex-direction:column; align-items:flex-start; } }
       `}</style>
 
@@ -277,10 +337,8 @@ export function TemplateAqua({ data }: { data: SiteData }) {
       <div className="aqua-content">
         <header className="aqua-header aqua-reveal" style={{ animationDelay: '0.1s' }}>
           <nav className="aqua-nav">
-            <a href="#projects" onClick={(event) => scrollToSection('projects', event)}>Works</a>
             <a href="#about" onClick={(event) => scrollToSection('about', event)}>About</a>
-            {data.config.showSkills && skills.length ? <a href="#skills" onClick={(event) => scrollToSection('skills', event)}>Skills</a> : null}
-            <a href="#contact" onClick={(event) => scrollToSection('contact', event)}>Contact</a>
+            {navSections.map((section) => <a key={section} href={`#${navTargets[section]}`} onClick={(event) => scrollToSection(navTargets[section], event)}>{navLabels[section]}</a>)}
           </nav>
           <a className="aqua-logo" href="#top" aria-label="Home" onClick={(event) => scrollToSection('top', event)}>
             <span className="aqua-logo-mark">{data.user.avatarUrl ? <img className="h-full w-full rounded-full object-cover" src={data.user.avatarUrl} alt={data.user.displayName} /> : (data.user.displayName || 'A').slice(0, 1)}</span>
@@ -289,8 +347,8 @@ export function TemplateAqua({ data }: { data: SiteData }) {
           <button className="aqua-btn" type="button" onClick={() => setIsDrawerOpen(true)}>Hire Me</button>
         </header>
 
-        <main className="aqua-main" id="top">
-          <section className="aqua-hero" id="about">
+        <main className="aqua-main flex flex-col" id="top">
+          <section className="aqua-hero" id="about" style={{ order: -2 }}>
             <div className="aqua-metric-stack aqua-reveal" style={{ animationDelay: '0.35s' }}>
               <button className="aqua-circle-btn" type="button" onClick={(event) => scrollToSection('projects', event)}>↘</button>
               <div className="aqua-metric"><strong>{metricYears}</strong><span>Experience</span></div>
@@ -316,7 +374,7 @@ export function TemplateAqua({ data }: { data: SiteData }) {
             </div>
           </section>
 
-          <section className="aqua-glass aqua-orbit-showcase aqua-reveal" aria-label="Aqua orbit signature" style={{ animationDelay: '0.45s' }}>
+          <section className="aqua-glass aqua-orbit-showcase aqua-reveal" aria-label="Aqua orbit signature" style={{ animationDelay: '0.45s', order: -1 }}>
             <div className="aqua-orbit-copy">
               <span>Orbit Signal</span>
               <strong>{featuredProject?.category || 'Selected portfolio system'}</strong>
@@ -329,38 +387,19 @@ export function TemplateAqua({ data }: { data: SiteData }) {
           </section>
 
           {projects.length ? (
-            <section className="aqua-section aqua-reveal" id="projects" style={{ animationDelay: '0.5s' }}>
+            <section className="aqua-section aqua-reveal" id="projects" style={{ animationDelay: '0.5s', order: sectionOrder.projects }}>
               <span className="aqua-section-label">{projectsCopy.label}</span>
               <h2>{projectsCopy.title}</h2>
               {projectsCopy.description ? <p className="mb-8 text-xs leading-6 text-[#9595b1]">{projectsCopy.description}</p> : null}
-              <div className="aqua-deck" onMouseMove={handleDeckMove} onMouseLeave={resetDeck}>
-              <ProjectMiniCard project={leftProject} side="left" />
-              {featuredProject ? (
-                <div ref={centerCardRef} className="aqua-glass aqua-project-card aqua-card-center">
-                  <div>
-                    <div className="flex items-center justify-between gap-3">
-                      <span className="aqua-pill">Featured Project</span>
-                      <span className="aqua-muted text-xs">✦</span>
-                    </div>
-                    {projectImage(featuredProject) ? <button className="aqua-cover" type="button" onClick={() => setPreviewImage({ src: projectImage(featuredProject), alt: featuredProject.title })}><img src={projectImage(featuredProject)} alt={featuredProject.title} /></button> : null}
-                    <h3>{featuredProject.title || 'Featured Project'}</h3>
-                    <p>{featuredProject.description}</p>
-                  </div>
-                  <div>
-                    {featuredProject.githubUrl ? <a className="aqua-github" href={featuredProject.githubUrl} target="_blank" rel="noreferrer"><span>{featuredProject.githubUrl}</span><span>↗</span></a> : null}
-                    <div className="aqua-chip-row">
-                      {featuredProject.role ? <span>{featuredProject.role}</span> : null}
-                      {featuredProject.tools ? <span>{featuredProject.tools}</span> : null}
-                    </div>
-                  </div>
-                </div>
-              ) : null}
-              <ProjectMiniCard project={rightProject} side="right" />
+              <div className={`aqua-deck aqua-deck-${Math.min(deckProjects.length, 3)}`} onMouseMove={deckProjects.length >= 3 ? handleDeckMove : undefined} onMouseLeave={deckProjects.length >= 3 ? resetDeck : undefined}>
+                {deckProjects.map((project, index) => (
+                  <ProjectMiniCard project={project} variant={projectVariant(index, deckProjects.length)} key={project.id || project.slug || project.title} />
+                ))}
               </div>
             </section>
           ) : null}
 
-          <section className="aqua-section aqua-reveal" id="skills" style={{ animationDelay: '0.6s' }}>
+          <section className="aqua-section aqua-reveal" id="experience" style={{ animationDelay: '0.6s', order: sectionOrder.experience }}>
             <span className="aqua-section-label">{experienceCopy.label}</span>
             <h2>{experienceCopy.title}</h2>
             {experienceCopy.description ? <p className="mb-6 text-xs leading-6 text-[#9595b1]">{experienceCopy.description}</p> : null}
@@ -389,14 +428,14 @@ export function TemplateAqua({ data }: { data: SiteData }) {
           </section>
 
           {data.config.showSkills && skills.length ? (
-            <section className="aqua-section aqua-reveal" style={{ animationDelay: '0.7s' }}>
+            <section className="aqua-section aqua-reveal" id="skills" style={{ animationDelay: '0.7s', order: Math.min(sectionOrder.skills ?? 99, sectionOrder.awards ?? 99) }}>
               <div className="mb-8 text-center">
                 <span className="text-xs uppercase tracking-[.22em] text-[#9595b1]">{skillsCopy.label}</span>
                 {skillsCopy.title ? <h2 className="mt-3 text-3xl font-black">{skillsCopy.title}</h2> : null}
                 {skillsCopy.description ? <p className="mx-auto mt-3 max-w-xl text-xs leading-6 text-[#9595b1]">{skillsCopy.description}</p> : null}
               </div>
               <div className="aqua-tools">
-                {skills.slice(0, 8).map((skill, index) => (
+                {previewSkills.map((skill, index) => (
                   <article className="aqua-glass aqua-tool" key={skill.id || skill.name}>
                     <div className="aqua-tool-top">
                       <span className="aqua-tool-orb">{String(index + 1).padStart(2, '0')}</span>
@@ -409,11 +448,14 @@ export function TemplateAqua({ data }: { data: SiteData }) {
                   </article>
                 ))}
               </div>
+              {hiddenSkillCount ? (
+                <button className="aqua-btn mt-8" type="button" onClick={() => setShowAllSkills(true)}>View all skills +{hiddenSkillCount}</button>
+              ) : null}
             </section>
           ) : null}
 
           {data.config.showVideos && videos.length ? (
-            <section className="aqua-section aqua-reveal">
+            <section className="aqua-section aqua-reveal" id="videos" style={{ order: sectionOrder.videos }}>
               <span className="aqua-section-label">{videosCopy.label}</span>
               <h2>{videosCopy.title}</h2>
               {videosCopy.description ? <p className="mb-6 text-xs leading-6 text-[#9595b1]">{videosCopy.description}</p> : null}
@@ -431,7 +473,7 @@ export function TemplateAqua({ data }: { data: SiteData }) {
           ) : null}
 
           {data.config.showAwards && awards.length ? (
-            <section className="aqua-section aqua-reveal">
+            <section className="aqua-section aqua-reveal" id="awards" style={{ order: sectionOrder.awards }}>
               <span className="aqua-section-label">{awardsCopy.label}</span>
               <h2>{awardsCopy.title}</h2>
               {awardsCopy.description ? <p className="mb-6 text-xs leading-6 text-[#9595b1]">{awardsCopy.description}</p> : null}
@@ -483,6 +525,62 @@ export function TemplateAqua({ data }: { data: SiteData }) {
         </div>
         <button className="aqua-gradient-btn" type="button" onClick={() => setIsDrawerOpen(false)}>Close Contact Panel</button>
       </aside>
+      {showAllSkills ? (
+        <div className="aqua-project-modal" role="dialog" aria-modal="true" aria-label="All skills" onClick={() => setShowAllSkills(false)}>
+          <div className="aqua-project-dialog" onClick={(event) => event.stopPropagation()}>
+            <div className="aqua-project-dialog-hero">
+              <div className="aqua-project-dialog-head">
+                <div>
+                  <div className="aqua-pill">{skillsCopy.label}</div>
+                  <h3>All Skills</h3>
+                </div>
+                <button className="aqua-project-dialog-close" type="button" onClick={() => setShowAllSkills(false)}>Close</button>
+              </div>
+            </div>
+            <div className="aqua-project-dialog-content">
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                {skills.map((skill, index) => (
+                  <article className="aqua-glass aqua-tool" key={skill.id || skill.name}>
+                    <div className="aqua-tool-top">
+                      <span className="aqua-tool-orb">{String(index + 1).padStart(2, '0')}</span>
+                      <span className="aqua-tool-category">{skill.category || 'Capability'}</span>
+                    </div>
+                    <strong className="aqua-tool-name">{skill.name}</strong>
+                    <div className="aqua-tool-meter" aria-label={`${skill.name} proficiency ${skill.proficiency} of 5`}>
+                      {[1, 2, 3, 4, 5].map((level) => <span className={level <= skill.proficiency ? 'active' : ''} key={level} />)}
+                    </div>
+                  </article>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : null}
+      {selectedProject ? (
+        <div className="aqua-project-modal" role="dialog" aria-modal="true" aria-label={`${selectedProject.title} details`} onClick={() => setSelectedProject(null)}>
+          <div className="aqua-project-dialog" onClick={(event) => event.stopPropagation()}>
+            <div className="aqua-project-dialog-hero">
+              {projectImage(selectedProject) ? <img src={projectImage(selectedProject)} alt="" /> : null}
+              <div className="aqua-project-dialog-head">
+                <div>
+                  <div className="aqua-pill">{selectedProject.category || 'Selected Work'}</div>
+                  <h3>{selectedProject.title || 'Untitled Project'}</h3>
+                </div>
+                <button className="aqua-project-dialog-close" type="button" onClick={() => setSelectedProject(null)}>Close</button>
+              </div>
+            </div>
+            <div className="aqua-project-dialog-content">
+              {selectedProject.description ? <p>{selectedProject.description}</p> : null}
+              {selectedProject.content ? <p className="aqua-project-dialog-body mt-4">{selectedProject.content}</p> : null}
+              <div className="aqua-project-dialog-meta">
+                {selectedProject.role ? <span>{selectedProject.role}</span> : null}
+                {selectedProject.tools ? selectedProject.tools.split(',').map((tool) => <span key={tool.trim()}>{tool.trim()}</span>) : null}
+                {selectedProject.startDate ? <span>{selectedProject.startDate}{selectedProject.endDate ? ` - ${selectedProject.endDate}` : ''}</span> : null}
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : null}
       {previewImage ? <button className="aqua-lightbox" type="button" onClick={() => setPreviewImage(null)}><img src={previewImage.src} alt={previewImage.alt} /></button> : null}
     </div>
   );

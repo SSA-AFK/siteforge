@@ -1,7 +1,7 @@
 import { ArrowRight, Github, Linkedin, Mail, MapPin, Sparkles } from 'lucide-react';
 import type { CSSProperties, MouseEvent } from 'react';
 import { useEffect, useRef, useState } from 'react';
-import { getSectionCopy } from '@siteforge/shared';
+import { getOrderedSections, getSectionCopy } from '@siteforge/shared';
 import type { Award, Project, SiteData, SocialLink, VideoItem } from '@siteforge/shared';
 
 const accent = '#00E699';
@@ -181,10 +181,13 @@ export function TemplateElena({ data }: { data: SiteData }) {
   const { user, config } = data;
   const projects = [...data.projects].sort((a, b) => a.displayOrder - b.displayOrder);
   const skills = [...data.skills].sort((a, b) => a.displayOrder - b.displayOrder);
+  const previewSkills = skills.slice(0, 6);
+  const hiddenSkillCount = Math.max(0, skills.length - previewSkills.length);
   const awards = [...(data.awards ?? [])].filter((award) => award.title.trim()).sort((a, b) => a.displayOrder - b.displayOrder);
   const experiences = [...data.experiences].sort((a, b) => a.displayOrder - b.displayOrder);
   const socials = [...data.socialLinks].sort((a, b) => a.displayOrder - b.displayOrder);
   const videos = [...(data.videos ?? [])].filter((video) => video.videoUrl.trim()).sort((a, b) => a.displayOrder - b.displayOrder);
+  const [showAllSkills, setShowAllSkills] = useState(false);
   const identityLabel = user.title || '设计师 / 开发者';
   const heroMainTitle = user.bio || '用创意和技术构建美好数字体验';
   const projectsCopy = getSectionCopy(data, 'projects', { label: '[ SELECTED PORTFOLIO ]', title: 'Recent visual codes crafted with technical depth' });
@@ -193,6 +196,17 @@ export function TemplateElena({ data }: { data: SiteData }) {
   const experienceCopy = getSectionCopy(data, 'experience', { label: '[ THE PROCESS ]', title: 'Experience built around strategic goals' });
   const skillsCopy = getSectionCopy(data, 'skills', { label: '[ SKILL STACK ]', title: 'Capabilities shaped by hands-on project work' });
   const contactCopy = getSectionCopy(data, 'contact', { label: '[ CONTACT ]', title: 'Invest in the most important asset you have.', description: 'If the work resonates, reach out for project collaboration, role opportunities, or a creative conversation.' });
+  const sectionOrder = Object.fromEntries(getOrderedSections(data).map((section, index) => [section, index])) as Record<string, number>;
+  const navTargets: Record<string, string> = { projects: 'works', videos: 'videos', awards: 'awards', experience: 'process', skills: 'skills', contact: 'contact' };
+  const navLabels: Record<string, string> = { projects: 'SELECTED WORKS', videos: 'VIDEO', awards: 'AWARDS', experience: 'THE PROCESS', skills: 'SKILLS', contact: 'CONTACT' };
+  const navSections = getOrderedSections(data).filter((section) => {
+    if (section === 'projects') return projects.length;
+    if (section === 'videos') return config.showVideos && videos.length;
+    if (section === 'awards') return config.showAwards && awards.length;
+    if (section === 'experience') return config.showExperience && experiences.length;
+    if (section === 'skills') return config.showSkills && skills.length;
+    return section === 'contact';
+  });
 
   useEffect(() => {
     const elements = Array.from(document.querySelectorAll<HTMLElement>('.elena-reveal'));
@@ -244,11 +258,7 @@ export function TemplateElena({ data }: { data: SiteData }) {
         </a>
         <nav className="hidden items-center gap-10 text-xs font-semibold md:flex">
           <ScrambleLink href="#hero" label="HOME" />
-          <ScrambleLink href="#works" label="SELECTED WORKS" />
-          {config.showVideos && videos.length ? <ScrambleLink href="#videos" label="VIDEO" /> : null}
-          {config.showAwards && awards.length ? <ScrambleLink href="#awards" label="AWARDS" /> : null}
-          {config.showExperience && experiences.length ? <ScrambleLink href="#process" label="THE PROCESS" /> : null}
-          {config.showSkills && skills.length ? <ScrambleLink href="#skills" label="SKILLS" /> : null}
+          {navSections.map((section) => <ScrambleLink key={section} href={`#${navTargets[section]}`} label={navLabels[section]} />)}
         </nav>
         <a href="#contact" className="rounded-full bg-white px-5 py-2.5 text-xs font-semibold tracking-[0.16em] text-black transition hover:bg-[#00E699]">
           LET'S TALK
@@ -302,7 +312,8 @@ export function TemplateElena({ data }: { data: SiteData }) {
         </section>
       ) : null}
 
-      <section id="works" className="relative z-10 mx-auto max-w-7xl space-y-12 py-20">
+      <div className="flex flex-col">
+      <section id="works" className="relative z-10 mx-auto max-w-7xl space-y-12 py-20" style={{ order: sectionOrder.projects }}>
         <div className="elena-reveal flex flex-col justify-between gap-6 md:flex-row md:items-end">
           <div className="space-y-4">
             <span className="text-xs font-bold uppercase tracking-[0.2em] text-[#00E699]">{projectsCopy.label}</span>
@@ -316,7 +327,7 @@ export function TemplateElena({ data }: { data: SiteData }) {
       </section>
 
       {config.showVideos && videos.length ? (
-        <section id="videos" className="relative z-10 mx-auto max-w-7xl space-y-12 py-20">
+        <section id="videos" className="relative z-10 mx-auto max-w-7xl space-y-12 py-20" style={{ order: sectionOrder.videos }}>
           <div className="elena-reveal flex flex-col justify-between gap-6 md:flex-row md:items-end">
             <div className="space-y-4">
               <span className="text-xs font-bold uppercase tracking-[0.2em] text-[#00E699]">{videosCopy.label}</span>
@@ -331,7 +342,7 @@ export function TemplateElena({ data }: { data: SiteData }) {
       ) : null}
 
       {config.showAwards && awards.length ? (
-        <section id="awards" className="relative z-10 mx-auto max-w-7xl space-y-12 py-20">
+        <section id="awards" className="relative z-10 mx-auto max-w-7xl space-y-12 py-20" style={{ order: sectionOrder.awards }}>
           <div className="elena-reveal flex flex-col justify-between gap-6 md:flex-row md:items-end">
             <div className="space-y-4">
               <span className="text-xs font-bold uppercase tracking-[0.2em] text-[#00E699]">{awardsCopy.label}</span>
@@ -346,7 +357,7 @@ export function TemplateElena({ data }: { data: SiteData }) {
       ) : null}
 
       {config.showExperience && experiences.length ? (
-        <section id="process" className="relative z-10 mx-auto max-w-7xl space-y-16 py-20">
+        <section id="process" className="relative z-10 mx-auto max-w-7xl space-y-16 py-20" style={{ order: sectionOrder.experience }}>
           <div className="elena-reveal space-y-4 text-center">
             <span className="text-xs font-bold uppercase tracking-[0.2em] text-[#00E699]">{experienceCopy.label}</span>
             <h2 className="font-display text-3xl font-extrabold md:text-5xl">{experienceCopy.title}</h2>
@@ -368,14 +379,14 @@ export function TemplateElena({ data }: { data: SiteData }) {
       ) : null}
 
       {config.showSkills && skills.length ? (
-        <section id="skills" className="relative z-10 mx-auto max-w-7xl space-y-16 py-20">
+        <section id="skills" className="relative z-10 mx-auto max-w-7xl space-y-16 py-20" style={{ order: sectionOrder.skills }}>
           <div className="elena-reveal space-y-4 text-center">
             <span className="text-xs font-bold uppercase tracking-[0.2em] text-[#00E699]">{skillsCopy.label}</span>
             <h2 className="font-display text-3xl font-extrabold md:text-5xl">{skillsCopy.title}</h2>
             {skillsCopy.description ? <p className="mx-auto max-w-xl text-sm leading-7 text-[#899E97]">{skillsCopy.description}</p> : null}
           </div>
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-            {skills.map((skill, index) => (
+            {previewSkills.map((skill, index) => (
               <TiltCard key={skill.id || skill.name} className="flex flex-col justify-between space-y-8 p-6" delay={index * 100}>
                 <div className="elena-fluid relative z-10 flex h-64 items-center justify-center overflow-hidden rounded-2xl border border-white/5">
                   <span className="font-display select-none text-2xl font-black tracking-[0.2em] text-white/25">{skill.category || 'CRAFT'}</span>
@@ -393,10 +404,17 @@ export function TemplateElena({ data }: { data: SiteData }) {
               </TiltCard>
             ))}
           </div>
+          {hiddenSkillCount ? (
+            <div className="text-center">
+              <button type="button" onClick={() => setShowAllSkills(true)} className="rounded-full border border-[#00E699]/30 bg-[#00E699]/10 px-6 py-3 text-xs font-bold uppercase tracking-[0.18em] text-[#00E699] transition hover:bg-[#00E699] hover:text-black">
+                View all skills +{hiddenSkillCount}
+              </button>
+            </div>
+          ) : null}
         </section>
       ) : null}
 
-      <section id="contact" className="relative z-10 mx-auto max-w-7xl pb-28">
+      <section id="contact" className="relative z-10 mx-auto max-w-7xl pb-28" style={{ order: sectionOrder.contact }}>
         <TiltCard className="elena-reveal overflow-hidden p-8 md:p-16">
           <div className="relative z-10 grid grid-cols-1 items-center gap-12 lg:grid-cols-12">
             <div className="space-y-6 lg:col-span-6">
@@ -419,6 +437,35 @@ export function TemplateElena({ data }: { data: SiteData }) {
           </div>
         </TiltCard>
       </section>
+      </div>
+
+      {showAllSkills ? (
+        <div className="fixed inset-0 z-[80] flex items-center justify-center bg-[#04130f]/88 p-4 backdrop-blur-xl" role="dialog" aria-modal="true" onClick={() => setShowAllSkills(false)}>
+          <div className="max-h-[86vh] w-full max-w-5xl overflow-y-auto rounded-3xl border border-white/10 bg-[#09221b]/95 p-6 shadow-2xl shadow-black/40 md:p-8" onClick={(event) => event.stopPropagation()}>
+            <div className="mb-7 flex items-start justify-between gap-4">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#00E699]">[ Full Skill Stack ]</p>
+                <h3 className="font-display mt-3 text-3xl font-extrabold text-white">Capabilities</h3>
+              </div>
+              <button type="button" onClick={() => setShowAllSkills(false)} className="rounded-full border border-white/10 px-4 py-2 text-xs font-bold text-[#899E97] transition hover:border-[#00E699] hover:text-[#00E699]">Close</button>
+            </div>
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              {skills.map((skill) => (
+                <div key={skill.id || skill.name} className="rounded-2xl border border-white/10 bg-[#04130f]/70 p-5">
+                  <div className="mb-3 flex items-center justify-between gap-4">
+                    <h4 className="font-display font-bold text-white">{skill.name || 'Untitled Skill'}</h4>
+                    <span className="rounded-full border border-white/10 bg-[#09221b] px-3 py-1 text-xs text-[#00E699]">{skill.proficiency}/5</span>
+                  </div>
+                  {skill.category ? <p className="mb-3 text-xs font-bold uppercase tracking-[0.18em] text-[#00E699]">{skill.category}</p> : null}
+                  <div className="h-2 overflow-hidden rounded-full bg-white/10">
+                    <div className="h-full rounded-full bg-[#00E699]" style={{ width: `${skill.proficiency * 20}%` }} />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      ) : null}
 
       <footer className="-mx-6 border-t border-white/5 py-8 text-center text-xs text-[#899E97]">
         <p>© 2026 {user.displayName || 'Personal Portfolio'}. Crafted with SiteForge.</p>

@@ -1,0 +1,404 @@
+{
+  "basics": {
+    "name": "梁辰",
+    "headline": "资深前端工程师 / 增长与中后台方向",
+    "email": "liangchen@example.com",
+    "phone": "138-0000-2468",
+    "location": "上海",
+    "url": {
+      "label": "Portfolio",
+      "href": "https://example.com/portfolio"
+    },
+    "customFields": [],
+    "picture": {
+      "url": "",
+      "size": 64,
+      "aspectRatio": 1,
+      "borderRadius": 0,
+      "effects": {
+        "hidden": false,
+        "border": false,
+        "grayscale": false
+      }
+    }
+  },
+  "metadata": {
+    "template": "glalie",
+    "layout": [
+      [
+        ["summary", "experience", "projects", "education", "certifications", "awards"],
+        ["skills", "profiles", "languages", "interests", "publications", "references", "volunteer"]
+      ]
+    ],
+    "css": {
+      "value": ".section {\n\toutline: 1px solid #000;\n\toutline-offset: 4px;\n}",
+      "visible": false
+    },
+    "page": {
+      "margin": 28,
+      "format": "a4",
+      "options": {
+        "breakLine": true,
+        "pageNumbers": true
+      }
+    },
+    "theme": {
+      "background": "#fffefe",
+      "text": "#242424",
+      "primary": "#2563eb"
+    },
+    "typography": {
+      "font": {
+        "family": "Noto Sans SC",
+        "subset": "chinese-simplified",
+        "variants": ["regular"],
+        "size": 12.8
+      },
+      "lineHeight": 1.32,
+      "hideIcons": false,
+      "underlineLinks": false
+    },
+    "notes": ""
+  },
+  "sections": {
+    "summary": {
+      "id": "summary",
+      "name": "个人总结",
+      "columns": 1,
+      "separateLinks": true,
+      "visible": true,
+      "content": "<p>8年互联网前端研发经验，长期负责增长平台、B端中后台、数据可视化和高性能交互场景。熟悉 React、TypeScript、微前端、组件库、工程化和前端质量体系，能够从业务目标拆解技术方案，独立推进跨团队项目落地。最近三年聚焦增长与商业化链路，主导过千万级访问活动平台、低代码运营平台和数据分析工作台建设，擅长把复杂业务抽象为稳定、可复用、可观测的前端系统。</p>"
+    },
+    "awards": {
+      "id": "awards",
+      "name": "荣誉奖项",
+      "columns": 1,
+      "separateLinks": true,
+      "visible": true,
+      "items": [
+        {
+          "id": "u2xkr7ug9up6017aq6wh5avg",
+          "visible": true,
+          "title": "年度技术影响力奖",
+          "awarder": "云帆科技",
+          "date": "2025",
+          "summary": "因增长运营平台稳定性治理、组件体系沉淀和跨团队技术支持获得年度技术影响力奖。",
+          "url": {
+            "label": "",
+            "href": ""
+          }
+        },
+        {
+          "id": "yqmf6jt1f4r0ufy61w9qxkj8",
+          "visible": true,
+          "title": "优秀项目交付奖",
+          "awarder": "星河互动",
+          "date": "2022",
+          "summary": "核心交易中台重构项目提前两周上线，支撑双十一峰值流量并保持核心页面稳定。",
+          "url": {
+            "label": "",
+            "href": ""
+          }
+        }
+      ]
+    },
+    "certifications": {
+      "id": "certifications",
+      "name": "证书",
+      "columns": 1,
+      "separateLinks": true,
+      "visible": true,
+      "items": [
+        {
+          "id": "d6i55c9gzypxfkqvurh12k7i",
+          "visible": true,
+          "name": "阿里云云原生微服务工程师认证",
+          "issuer": "阿里云",
+          "date": "2024",
+          "summary": "覆盖容器化部署、服务治理、监控告警和云原生应用交付基础能力。",
+          "url": {
+            "label": "",
+            "href": ""
+          }
+        }
+      ]
+    },
+    "education": {
+      "id": "education",
+      "name": "教育经历",
+      "columns": 1,
+      "separateLinks": true,
+      "visible": true,
+      "items": [
+        {
+          "id": "of7wp3xctkam39248ygdcvqk",
+          "visible": true,
+          "institution": "华东理工大学",
+          "studyType": "本科",
+          "area": "软件工程",
+          "score": "",
+          "date": "2012.09 - 2016.06",
+          "summary": "<ul><li><p>主修课程：数据结构、操作系统、计算机网络、数据库系统、软件工程、Web 应用开发。</p></li><li><p>毕业设计为企业级项目协作平台，负责前后端开发和权限模型设计。</p></li></ul>",
+          "picture": {
+            "url": ""
+          },
+          "url": {
+            "label": "",
+            "href": ""
+          }
+        }
+      ]
+    },
+    "experience": {
+      "id": "experience",
+      "name": "工作经历",
+      "columns": 1,
+      "separateLinks": true,
+      "visible": true,
+      "items": [
+        {
+          "id": "jtr6xwps7a852iy5o0drw2jt",
+          "visible": true,
+          "company": "云帆科技有限公司",
+          "position": "资深前端工程师",
+          "location": "上海",
+          "date": "2023.04 - 至今",
+          "summary": "<ul><li><p>负责增长运营平台和商业化活动链路前端架构，覆盖活动搭建、投放配置、实时看板、权益发放和风控审核等核心模块。</p></li><li><p>主导 React + TypeScript + Vite 技术栈升级，拆分 40+ 业务组件和 12 个领域 hooks，使活动页面平均交付周期从 5 天缩短到 2 天。</p></li><li><p>建设前端稳定性治理体系，接入错误监控、性能指标、接口失败率和灰度发布观察面板，核心页面 JS 错误率下降 63%。</p></li><li><p>推动运营低代码配置能力落地，支持运营独立完成普通活动页面搭建，季度内节省约 180 人时研发投入。</p></li></ul>",
+          "url": {
+            "label": "",
+            "href": ""
+          }
+        },
+        {
+          "id": "qgj3xrmeic60misjd5pc2m53",
+          "visible": true,
+          "company": "星河互动网络科技",
+          "position": "高级前端工程师",
+          "location": "杭州",
+          "date": "2020.07 - 2023.03",
+          "summary": "<ul><li><p>参与电商交易中台、商家后台和数据分析平台建设，负责订单、库存、营销、结算等多个高频业务模块。</p></li><li><p>主导中后台组件库治理，统一表单、表格、筛选器、权限按钮、批量操作和空状态规范，减少重复代码约 35%。</p></li><li><p>落地微前端改造，将 6 个历史系统逐步迁移为独立子应用，解决发布互相阻塞和权限模型不一致问题。</p></li><li><p>负责大促前端保障，优化首屏资源、接口聚合和降级策略，双十一期间核心后台可用性保持在 99.95% 以上。</p></li></ul>",
+          "url": {
+            "label": "",
+            "href": ""
+          }
+        },
+        {
+          "id": "tbrrzj82oqj18ibdse8jolug",
+          "visible": true,
+          "company": "明澈数据科技",
+          "position": "前端工程师",
+          "location": "南京",
+          "date": "2016.07 - 2020.06",
+          "summary": "<ul><li><p>从 0 到 1 参与企业数据可视化 SaaS 平台研发，负责仪表盘、报表设计器、权限管理和客户自定义主题能力。</p></li><li><p>使用 Vue、ECharts 和 WebSocket 实现实时指标看板，支持设备监控、销售漏斗、财务分析等多个行业模板。</p></li><li><p>建立基础前端工程规范，补齐 ESLint、单元测试、接口 mock 和构建发布脚本，新人上手时间从 2 周缩短到 4 天。</p></li><li><p>长期参与客户交付支持，将一线反馈沉淀为通用配置项和组件能力，提升项目复用率和交付稳定性。</p></li></ul>",
+          "url": {
+            "label": "",
+            "href": ""
+          }
+        }
+      ]
+    },
+    "volunteer": {
+      "id": "volunteer",
+      "name": "志愿者经历",
+      "columns": 1,
+      "separateLinks": true,
+      "visible": false,
+      "items": []
+    },
+    "interests": {
+      "id": "interests",
+      "name": "兴趣爱好",
+      "columns": 1,
+      "separateLinks": true,
+      "visible": true,
+      "items": [
+        {
+          "id": "hto08csxpo6dp85xhy9ojnkh",
+          "visible": true,
+          "name": "技术写作",
+          "keywords": ["前端工程化", "组件设计", "性能优化"]
+        },
+        {
+          "id": "ab7x8n2edpw86xg65dtqm5ya",
+          "visible": true,
+          "name": "产品体验分析",
+          "keywords": ["增长链路", "B端效率", "数据看板"]
+        }
+      ]
+    },
+    "languages": {
+      "id": "languages",
+      "name": "语言",
+      "columns": 1,
+      "separateLinks": true,
+      "visible": true,
+      "items": [
+        {
+          "id": "o9upqw2k64xcctukbgxn5ohf",
+          "visible": true,
+          "name": "英语",
+          "description": "CET-6，可阅读英文技术文档并参与跨团队英文书面沟通。",
+          "level": 4
+        }
+      ]
+    },
+    "profiles": {
+      "id": "profiles",
+      "name": "社交主页",
+      "columns": 1,
+      "separateLinks": true,
+      "visible": true,
+      "items": [
+        {
+          "id": "owv3cksrefejf1dv33jzkvkz",
+          "visible": true,
+          "network": "GitHub",
+          "username": "liangchen-demo",
+          "icon": "github",
+          "url": {
+            "label": "GitHub",
+            "href": "https://github.com/liangchen-demo"
+          }
+        },
+        {
+          "id": "zzxei84efsw7j0hagmzeh1p0",
+          "visible": true,
+          "network": "Blog",
+          "username": "liangchen",
+          "icon": "hashnode",
+          "url": {
+            "label": "Blog",
+            "href": "https://example.com/blog"
+          }
+        }
+      ]
+    },
+    "projects": {
+      "id": "projects",
+      "name": "项目经历",
+      "columns": 1,
+      "separateLinks": true,
+      "visible": true,
+      "items": [
+        {
+          "id": "zcfltymb744qpew2l4i3sfry",
+          "visible": true,
+          "name": "增长运营低代码活动平台",
+          "description": "前端负责人",
+          "date": "2024.02 - 2025.06",
+          "summary": "<ul><li><p>面向运营、市场和商业化团队建设活动搭建平台，覆盖页面配置、组件编排、人群圈选、权益配置、投放审核和数据回收闭环。</p></li><li><p>设计基于 schema 的页面描述协议和组件注册机制，沉淀 28 个活动组件，支持运营拖拽配置、实时预览和灰度发布。</p></li><li><p>实现配置 diff、版本回滚和发布校验流程，减少因误配置导致的线上事故，活动发布失败率下降 72%。</p></li><li><p>优化预览与渲染链路，引入按需加载和静态资源预取，活动页 LCP 从 3.1s 降至 1.7s。</p></li><li><p>平台上线后支撑 300+ 场营销活动，常规活动研发投入从 2-3 人天降低到半天内。</p></li></ul>",
+          "keywords": ["React", "TypeScript", "低代码", "Schema", "增长平台"],
+          "url": {
+            "label": "",
+            "href": ""
+          }
+        },
+        {
+          "id": "jssd87i1a3vw1fxeskq1ohjn",
+          "visible": true,
+          "name": "实时经营数据分析工作台",
+          "description": "核心开发",
+          "date": "2023.08 - 2024.01",
+          "summary": "<ul><li><p>为业务负责人和运营团队建设实时数据分析工作台，整合活动转化、渠道 ROI、用户分层、权益核销和异常告警等指标。</p></li><li><p>封装图表协议层，统一 ECharts、表格透视、指标卡和趋势对比组件，支持 20+ 看板快速配置。</p></li><li><p>针对大数据量表格实现虚拟滚动、列冻结、批量筛选和前端缓存，10 万行数据场景下交互保持流畅。</p></li><li><p>与后端协作定义指标查询 DSL 和缓存策略，将常用看板查询耗时从 4s 降至 800ms 左右。</p></li></ul>",
+          "keywords": ["ECharts", "数据可视化", "虚拟滚动", "实时看板"],
+          "url": {
+            "label": "",
+            "href": ""
+          }
+        },
+        {
+          "id": "cnb9xfohzjd5yj1ovgoimdo8",
+          "visible": true,
+          "name": "电商交易中台微前端改造",
+          "description": "模块负责人",
+          "date": "2021.11 - 2022.10",
+          "summary": "<ul><li><p>负责订单、库存、营销和结算后台的微前端迁移，拆分历史单体应用，统一登录态、菜单权限、路由协议和公共依赖。</p></li><li><p>制定子应用接入规范和公共 SDK，沉淀鉴权、埋点、错误上报、接口请求、环境变量等基础能力。</p></li><li><p>通过分阶段迁移方案保障业务连续性，历史模块与新模块并行运行 6 个月无重大线上回滚。</p></li><li><p>迁移完成后，各业务线可独立发布，平均发布等待时间从 2 天缩短到 2 小时内。</p></li></ul>",
+          "keywords": ["微前端", "qiankun", "中后台", "权限模型", "工程化"],
+          "url": {
+            "label": "",
+            "href": ""
+          }
+        },
+        {
+          "id": "heaod2o3zcev2q38nvfz059m",
+          "visible": true,
+          "name": "企业级可视化报表设计器",
+          "description": "前端核心开发",
+          "date": "2018.03 - 2019.12",
+          "summary": "<ul><li><p>参与 SaaS 报表设计器建设，支持数据源接入、图表拖拽、字段映射、筛选联动、权限控制和主题配置。</p></li><li><p>实现画布拖拽布局、组件吸附、撤销重做和配置面板联动，提升复杂报表搭建效率。</p></li><li><p>基于 WebSocket 实现实时数据刷新和异常状态提示，满足设备监控和销售大屏等高频刷新场景。</p></li><li><p>将多个客户定制报表能力抽象为通用模板，客户项目交付周期平均缩短 30%。</p></li></ul>",
+          "keywords": ["Vue", "ECharts", "WebSocket", "报表设计器", "SaaS"],
+          "url": {
+            "label": "",
+            "href": ""
+          }
+        }
+      ]
+    },
+    "publications": {
+      "id": "publications",
+      "name": "出版物",
+      "columns": 1,
+      "separateLinks": true,
+      "visible": false,
+      "items": []
+    },
+    "references": {
+      "id": "references",
+      "name": "推荐信",
+      "columns": 1,
+      "separateLinks": true,
+      "visible": false,
+      "items": []
+    },
+    "skills": {
+      "id": "skills",
+      "name": "技能",
+      "columns": 1,
+      "separateLinks": true,
+      "visible": true,
+      "items": [
+        {
+          "id": "idpmdoataln575xzir1owygq",
+          "visible": true,
+          "name": "前端框架",
+          "description": "熟悉 React 生态和现代前端架构，能独立设计复杂业务模块。",
+          "level": 5,
+          "keywords": ["React", "TypeScript", "Vue", "Next.js", "Hooks"]
+        },
+        {
+          "id": "gbo1io20vk8tdz84mjjtaho5",
+          "visible": true,
+          "name": "工程化",
+          "description": "具备大型前端项目构建、发布、质量和协作治理经验。",
+          "level": 5,
+          "keywords": ["Vite", "Webpack", "Monorepo", "CI/CD", "ESLint", "Vitest"]
+        },
+        {
+          "id": "z0erq7h9lptuhiveutkt2hma",
+          "visible": true,
+          "name": "中后台与平台化",
+          "description": "擅长表单、表格、权限、低代码配置和数据可视化等 B 端复杂场景。",
+          "level": 5,
+          "keywords": ["组件库", "权限系统", "低代码", "ECharts", "微前端"]
+        },
+        {
+          "id": "df3r2219kvqs4rq3umcapd42",
+          "visible": true,
+          "name": "性能与稳定性",
+          "description": "能围绕核心指标建立监控、定位和优化闭环。",
+          "level": 4,
+          "keywords": ["Web Vitals", "错误监控", "资源优化", "缓存策略", "灰度发布"]
+        },
+        {
+          "id": "vx80m3cmpract7zaac56xyan",
+          "visible": true,
+          "name": "协作与业务理解",
+          "description": "能与产品、设计、后端、运营协作推进跨团队项目。",
+          "level": 4,
+          "keywords": ["需求拆解", "技术方案", "项目推进", "Code Review"]
+        }
+      ]
+    },
+    "custom": {}
+  }
+}

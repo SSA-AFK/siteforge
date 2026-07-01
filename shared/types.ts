@@ -2,10 +2,10 @@ export type Theme = 'light' | 'dark' | 'minimal';
 export type Layout = 'grid' | 'list' | 'masonry';
 export type ExperienceType = 'work' | 'education';
 export type ProjectStatus = 'draft' | 'published' | 'archived';
-export type PostStatus = 'draft' | 'published';
 export type VideoPlatform = 'youtube' | 'vimeo' | 'bilibili' | 'custom';
 export type TemplateId = 'snowly' | 'elena' | 'aura' | 'solace' | 'jakarta' | 'aqua';
 export type SectionKey = 'about' | 'projects' | 'experience' | 'skills' | 'skillTools' | 'videos' | 'awards' | 'contact';
+export type OrderedSectionKey = Exclude<SectionKey, 'about' | 'skillTools'>;
 
 export interface SectionCopy {
   label?: string;
@@ -104,22 +104,6 @@ export interface SocialLink {
   displayOrder: number;
 }
 
-export interface BlogPost {
-  id?: number;
-  userId?: number;
-  title: string;
-  slug: string;
-  excerpt?: string;
-  content: string;
-  coverImage?: string;
-  tags: string[];
-  viewCount: number;
-  status: PostStatus;
-  createdAt?: string;
-  updatedAt?: string;
-  publishedAt?: string;
-}
-
 export interface VideoItem {
   id?: number;
   userId?: number;
@@ -138,11 +122,11 @@ export interface SiteConfig {
   primaryColor: string;
   layout: Layout;
   heroImages: string[];
-  showBlog: boolean;
   showExperience: boolean;
   showSkills: boolean;
   showVideos: boolean;
   showAwards: boolean;
+  moduleOrder: OrderedSectionKey[];
   sectionCopies?: SectionCopies;
   customCss?: string;
   seoTitle?: string;
@@ -158,7 +142,6 @@ export interface SiteData {
   skills: Skill[];
   awards: Award[];
   socialLinks: SocialLink[];
-  blogPosts: BlogPost[];
   videos: VideoItem[];
   config: SiteConfig;
 }
@@ -203,6 +186,19 @@ export function getAboutSectionCopy(data: SiteData, fallback: SectionCopy): Requ
   };
 }
 
+export const defaultModuleOrder: OrderedSectionKey[] = ['projects', 'videos', 'experience', 'awards', 'skills', 'contact'];
+
+export function normalizeModuleOrder(moduleOrder?: SectionKey[]): OrderedSectionKey[] {
+  const validSections = new Set<OrderedSectionKey>(defaultModuleOrder);
+  const ordered = (moduleOrder ?? [])
+    .filter((key): key is OrderedSectionKey => validSections.has(key as OrderedSectionKey));
+  return [...new Set([...ordered, ...defaultModuleOrder])];
+}
+
+export function getOrderedSections(data: SiteData): OrderedSectionKey[] {
+  return normalizeModuleOrder(data.config.moduleOrder);
+}
+
 export interface AIChatRequest {
   message: string;
   currentData: SiteData;
@@ -233,11 +229,11 @@ export const defaultConfig: SiteConfig = {
     'https://images.unsplash.com/photo-1550684848-fac1c5b4e853?auto=format&fit=crop&w=1920&q=80',
     'https://images.unsplash.com/photo-1634017839464-5c339ebe3cb4?auto=format&fit=crop&w=1920&q=80'
   ],
-  showBlog: false,
   showExperience: true,
   showSkills: true,
   showVideos: true,
   showAwards: true,
+  moduleOrder: defaultModuleOrder,
   sectionCopies: {
     about: {
       label: 'About',
@@ -380,7 +376,6 @@ export const defaultSiteData: SiteData = {
     { id: 1, platform: 'GitHub', url: 'https://github.com', icon: 'github', displayOrder: 0 },
     { id: 2, platform: 'LinkedIn', url: 'https://linkedin.com', icon: 'linkedin', displayOrder: 1 }
   ],
-  blogPosts: [],
   videos: [
     {
       id: 1,

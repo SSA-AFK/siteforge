@@ -1,9 +1,10 @@
-import { ExternalLink, Plus, RotateCcw, Save, Trash2 } from 'lucide-react';
-import { useState, type ReactNode } from 'react';
-import { defaultConfig } from '@siteforge/shared';
-import type { Award, Experience, Project, ProjectImage, SectionCopy, SectionKey, Skill, SocialLink, TemplateId, VideoItem } from '@siteforge/shared';
+import { ArrowDown, ArrowUp, ExternalLink, Lock, Plus, RotateCcw, Save, Trash2, Upload } from 'lucide-react';
+import { useRef, useState, type ReactNode } from 'react';
+import { defaultConfig, normalizeModuleOrder } from '@siteforge/shared';
+import type { Award, Experience, OrderedSectionKey, Project, ProjectImage, SectionCopy, SectionKey, Skill, SocialLink, TemplateId, VideoItem } from '@siteforge/shared';
 import { useSiteStore } from '../store/siteStore';
 import { publishSite } from '../utils/exportHtml';
+import { importReactiveResumeJson, type ResumeImportReport } from '../utils/importResume';
 import { defaultPrivacySettings, type PrivacySettings } from '../utils/privacy';
 import { ImageUploadField } from './ImageUploadField';
 import { PublishSettingsModal } from './PublishSettingsModal';
@@ -46,6 +47,15 @@ const sectionCopyFields: Array<{ key: SectionKey; name: string; hint: string; ne
   { key: 'contact', name: 'Contact', hint: '联系模块' }
 ];
 
+const moduleOrderFields: Array<{ key: OrderedSectionKey; name: string; hint: string; needs?: 'experience' | 'skills' | 'videos' | 'awards' }> = [
+  { key: 'projects', name: 'Work / Projects', hint: '作品项目展示' },
+  { key: 'videos', name: 'Videos', hint: '图片或视频展示', needs: 'videos' },
+  { key: 'experience', name: 'Experience', hint: '经历时间线', needs: 'experience' },
+  { key: 'awards', name: 'Awards', hint: '荣誉奖项', needs: 'awards' },
+  { key: 'skills', name: 'Skills', hint: '技能能力', needs: 'skills' },
+  { key: 'contact', name: 'Contact', hint: '联系方式' }
+];
+
 function toMonthInputValue(value?: string) {
   if (!value) return '';
   if (/^\d{4}-\d{2}$/.test(value)) return value;
@@ -54,18 +64,20 @@ function toMonthInputValue(value?: string) {
 }
 
 export function EditorPanel() {
-  const { data, templateId, setTemplateId, updateUser, updateConfig, upsertProject, removeProject, upsertExperience, removeExperience, upsertSkill, removeSkill, upsertAward, removeAward, upsertSocialLink, removeSocialLink, upsertVideo, removeVideo, reset } = useSiteStore();
+  const { data, templateId, setData, setTemplateId, updateUser, updateConfig, upsertProject, removeProject, upsertExperience, removeExperience, upsertSkill, removeSkill, upsertAward, removeAward, upsertSocialLink, removeSocialLink, upsertVideo, removeVideo, reset } = useSiteStore();
   const [publishedUrl, setPublishedUrl] = useState('');
+  const [importReport, setImportReport] = useState<ResumeImportReport | null>(null);
   const [privacySettings, setPrivacySettings] = useState<PrivacySettings>(defaultPrivacySettings);
   const [isPublishModalOpen, setIsPublishModalOpen] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
+  const resumeInputRef = useRef<HTMLInputElement | null>(null);
   const templateCapabilities = {
-    snowly: { primaryColor: true, heroImages: true, layout: true, awards: true, videos: true, blog: true },
-    elena: { primaryColor: false, heroImages: false, layout: true, awards: true, videos: true, blog: false },
-    aura: { primaryColor: false, heroImages: false, layout: true, awards: true, videos: true, blog: false },
-    solace: { primaryColor: false, heroImages: true, layout: true, awards: true, videos: true, blog: false },
-    jakarta: { primaryColor: false, heroImages: true, layout: true, awards: true, videos: true, blog: false },
-    aqua: { primaryColor: false, heroImages: false, layout: true, awards: true, videos: true, blog: false }
+    snowly: { primaryColor: true, heroImages: true, layout: true, awards: true, videos: true },
+    elena: { primaryColor: false, heroImages: false, layout: true, awards: true, videos: true },
+    aura: { primaryColor: false, heroImages: false, layout: true, awards: true, videos: true },
+    solace: { primaryColor: false, heroImages: true, layout: true, awards: true, videos: true },
+    jakarta: { primaryColor: false, heroImages: true, layout: true, awards: true, videos: true },
+    aqua: { primaryColor: false, heroImages: false, layout: true, awards: true, videos: true }
   }[templateId];
   const shouldHidePrimaryColor = !templateCapabilities.primaryColor;
 
@@ -99,6 +111,35 @@ export function EditorPanel() {
     return true;
   }
 
+  function getModuleField(key: OrderedSectionKey) {
+    return moduleOrderFields.find((field) => field.key === key) ?? moduleOrderFields[0];
+  }
+
+  function isModuleSupported(field: (typeof moduleOrderFields)[number]) {
+    if (field.needs === 'videos') return templateCapabilities.videos;
+    if (field.needs === 'awards') return templateCapabilities.awards;
+    return true;
+  }
+
+  function isModuleVisible(field: (typeof moduleOrderFields)[number]) {
+    if (!isModuleSupported(field)) return false;
+    if (field.needs === 'experience') return data.config.showExperience;
+    if (field.needs === 'skills') return data.config.showSkills;
+    if (field.needs === 'videos') return data.config.showVideos;
+    if (field.needs === 'awards') return data.config.showAwards;
+    return true;
+  }
+
+  function moveModule(sectionKey: OrderedSectionKey, direction: -1 | 1) {
+    const moduleOrder = normalizeModuleOrder(data.config.moduleOrder);
+    const fromIndex = moduleOrder.indexOf(sectionKey);
+    const toIndex = fromIndex + direction;
+    if (fromIndex < 0 || toIndex < 0 || toIndex >= moduleOrder.length) return;
+    const nextOrder = [...moduleOrder];
+    [nextOrder[fromIndex], nextOrder[toIndex]] = [nextOrder[toIndex], nextOrder[fromIndex]];
+    updateConfig({ moduleOrder: nextOrder });
+  }
+
   async function saveToServer() {
     const response = await fetch('/api/site/local', {
       method: 'PUT',
@@ -108,6 +149,20 @@ export function EditorPanel() {
 
     if (!response.ok) {
       throw new Error('保存失败，请确认后端服务正在运行。');
+    }
+  }
+
+  async function importResumeFile(file?: File) {
+    if (!file) return;
+    try {
+      const json = JSON.parse(await file.text());
+      const result = importReactiveResumeJson(json, data);
+      setData(result.data);
+      setImportReport(result.report);
+    } catch (error) {
+      alert(error instanceof Error ? error.message : '导入失败，请确认文件是有效的 JSON。');
+    } finally {
+      if (resumeInputRef.current) resumeInputRef.current.value = '';
     }
   }
 
@@ -256,6 +311,39 @@ export function EditorPanel() {
     upsertVideo(video);
   }
 
+  function clearCurrentData() {
+    setData({
+      ...data,
+      user: {
+        ...data.user,
+        email: '',
+        username: '',
+        displayName: '',
+        avatarUrl: '',
+        title: '',
+        bio: '',
+        fullBio: '',
+        location: ''
+      },
+      projects: [],
+      experiences: [],
+      skills: [],
+      awards: [],
+      socialLinks: [],
+      videos: [],
+      config: {
+        ...data.config,
+        heroImages: [],
+        showExperience: false,
+        showSkills: false,
+        showVideos: false,
+        showAwards: false
+      }
+    });
+    setImportReport(null);
+    setPublishedUrl('');
+  }
+
   return (
     <aside className="flex h-full min-h-0 flex-col border-r border-slate-200 bg-white">
       {shouldHidePrimaryColor ? <style>{'.sf-scrollbar label:has(input[type="color"]) { display: none; }'}</style> : null}
@@ -277,6 +365,23 @@ export function EditorPanel() {
             <ExternalLink className="h-4 w-4" /> 发布
           </button>
         </div>
+        <input ref={resumeInputRef} className="hidden" type="file" accept="application/json,.json" onChange={(event) => importResumeFile(event.target.files?.[0])} />
+        <div className="mt-2 grid grid-cols-2 gap-2">
+          <button className="inline-flex items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-xs font-extrabold text-slate-700 transition hover:bg-slate-50" onClick={() => resumeInputRef.current?.click()}>
+            <Upload className="h-4 w-4" /> 导入简历 JSON
+          </button>
+          <button className="inline-flex items-center justify-center gap-2 rounded-lg border border-red-200 bg-white px-3 py-2.5 text-xs font-extrabold text-red-600 transition hover:bg-red-50" onClick={clearCurrentData}>
+            <Trash2 className="h-4 w-4" /> 一键清空
+          </button>
+        </div>
+        {importReport ? (
+          <div className="mt-3 rounded-lg border border-emerald-100 bg-emerald-50 p-3 text-xs font-semibold text-emerald-900">
+            <p className="font-black">导入完成</p>
+            {importReport.filled.length ? <p className="mt-1">已填充：{importReport.filled.join('、')}</p> : null}
+            {importReport.missing.length ? <p className="mt-1">待补充：{importReport.missing.join('、')}</p> : null}
+            {importReport.skipped.length ? <p className="mt-1 text-amber-700">未导入：{importReport.skipped.join('；')}</p> : null}
+          </div>
+        ) : null}
         {publishedUrl ? (
           <a className="mt-3 block truncate rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-bold text-slate-600 transition hover:border-slate-300 hover:bg-white" href={publishedUrl} target="_blank" rel="noreferrer" title={publishedUrl}>
             {publishedUrl}
@@ -321,7 +426,44 @@ export function EditorPanel() {
           <label className="flex items-center justify-between rounded-lg border border-slate-200 p-3 text-sm font-bold text-slate-700">显示技能 <input type="checkbox" checked={data.config.showSkills} onChange={(event) => updateConfig({ showSkills: event.target.checked })} /></label>
           {templateCapabilities.videos ? <label className="flex items-center justify-between rounded-lg border border-slate-200 p-3 text-sm font-bold text-slate-700">显示视频 <input type="checkbox" checked={data.config.showVideos} onChange={(event) => updateConfig({ showVideos: event.target.checked })} /></label> : null}
           {templateCapabilities.awards ? <label className="flex items-center justify-between rounded-lg border border-slate-200 p-3 text-sm font-bold text-slate-700">显示荣誉奖项 <input type="checkbox" checked={data.config.showAwards} onChange={(event) => updateConfig({ showAwards: event.target.checked })} /></label> : null}
-          {templateCapabilities.blog ? <label className="flex items-center justify-between rounded-lg border border-slate-200 p-3 text-sm font-bold text-slate-700">显示博客 <input type="checkbox" checked={data.config.showBlog} onChange={(event) => updateConfig({ showBlog: event.target.checked })} /></label> : null}
+        </section>
+
+        <section className="space-y-3">
+          <div>
+            <h2 className="text-sm font-black text-slate-950">模块展示顺序</h2>
+            <p className="mt-1 text-xs font-medium text-slate-500">首页 / About 固定第一，其他模块可用上移、下移调整。</p>
+          </div>
+          <div className="space-y-2 rounded-xl border border-slate-200 bg-slate-50 p-3">
+            <div className="flex items-center justify-between rounded-lg border border-slate-200 bg-white p-3">
+              <div>
+                <p className="text-sm font-extrabold text-slate-900">Home / About</p>
+                <p className="text-xs font-medium text-slate-500">固定首屏，不参与排序</p>
+              </div>
+              <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-black text-slate-500"><Lock className="h-3 w-3" /> 固定</span>
+            </div>
+            {normalizeModuleOrder(data.config.moduleOrder).map((sectionKey, index, order) => {
+              const field = getModuleField(sectionKey);
+              const supported = isModuleSupported(field);
+              const visible = isModuleVisible(field);
+              return (
+                <div key={sectionKey} className={`flex items-center justify-between gap-3 rounded-lg border p-3 ${visible ? 'border-slate-200 bg-white' : 'border-slate-200 bg-white/55'}`}>
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-extrabold text-slate-900">{field.name}</p>
+                    <p className="truncate text-xs font-medium text-slate-500">{field.hint}</p>
+                    <p className={`mt-1 text-[11px] font-black ${visible ? 'text-emerald-600' : 'text-slate-400'}`}>{supported ? (visible ? '当前展示' : '当前隐藏') : '当前模板不支持'}</p>
+                  </div>
+                  <div className="flex shrink-0 items-center gap-1">
+                    <button type="button" className="rounded-lg border border-slate-200 bg-white p-2 text-slate-600 transition hover:border-slate-300 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-35" disabled={index === 0} onClick={() => moveModule(sectionKey, -1)} aria-label={`Move ${field.name} up`}>
+                      <ArrowUp className="h-4 w-4" />
+                    </button>
+                    <button type="button" className="rounded-lg border border-slate-200 bg-white p-2 text-slate-600 transition hover:border-slate-300 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-35" disabled={index === order.length - 1} onClick={() => moveModule(sectionKey, 1)} aria-label={`Move ${field.name} down`}>
+                      <ArrowDown className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </section>
 
         <section className="space-y-3">

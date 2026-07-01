@@ -1,7 +1,7 @@
 import { Mail, MapPin, Play, Star } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import type { CSSProperties } from 'react';
-import { getSectionCopy } from '@siteforge/shared';
+import { getOrderedSections, getSectionCopy } from '@siteforge/shared';
 import type { Award, Project, SiteData, VideoItem } from '@siteforge/shared';
 
 const cyan = '#49c5b6';
@@ -178,9 +178,12 @@ export function TemplateAura({ data }: { data: SiteData }) {
   const mouseRef = useRef({ x: 0.5, y: 0.5 });
   const hoverRef = useRef({ x: 0, y: 0 });
   const [selectedVideo, setSelectedVideo] = useState<VideoItem | null>(null);
+  const [showAllSkills, setShowAllSkills] = useState(false);
   const projects = sortByOrder(data.projects);
   const experiences = sortByOrder(data.experiences);
   const skills = sortByOrder(data.skills);
+  const previewSkills = skills.slice(0, 6);
+  const hiddenSkillCount = Math.max(0, skills.length - previewSkills.length);
   const awards = sortByOrder(data.awards ?? []).filter((award) => award.title.trim());
   const videos = sortByOrder(data.videos ?? []).filter((video) => video.videoUrl.trim());
   const socials = sortByOrder(data.socialLinks);
@@ -190,6 +193,17 @@ export function TemplateAura({ data }: { data: SiteData }) {
   const experienceCopy = getSectionCopy(data, 'experience', { label: '// EXPERIENCE CHRONOLOGY', title: 'BIOGRAPHY DATABASE' });
   const skillsCopy = getSectionCopy(data, 'skills', { label: '// CAPABILITY STACK', title: 'SKILL PROTOCOLS' });
   const contactCopy = getSectionCopy(data, 'contact', { label: '// CONTACT', title: 'CONNECT TO PORT', description: 'Establish a secure channel for collaboration, roles, or experimental digital systems.' });
+  const sectionOrder = Object.fromEntries(getOrderedSections(data).map((section, index) => [section, index])) as Record<string, number>;
+  const navTargets: Record<string, string> = { projects: 'projects', videos: 'video-section', awards: 'awards', experience: 'resume', skills: 'skills', contact: 'contact' };
+  const navLabels: Record<string, string> = { projects: 'PROJECTS', videos: 'REELS', awards: 'AWARDS', experience: 'BIOGRAPHY', skills: 'SKILLS', contact: 'CONTACT' };
+  const navSections = getOrderedSections(data).filter((section) => {
+    if (section === 'projects') return projects.length;
+    if (section === 'videos') return data.config.showVideos && videos.length;
+    if (section === 'awards') return data.config.showAwards && awards.length;
+    if (section === 'experience') return data.config.showExperience && experiences.length;
+    if (section === 'skills') return data.config.showSkills && skills.length;
+    return section === 'contact';
+  });
 
   useEffect(() => {
     const root = rootRef.current;
@@ -398,16 +412,13 @@ export function TemplateAura({ data }: { data: SiteData }) {
         <a href="#home" className="aura-interactive text-sm font-bold tracking-[0.22em] text-white"><ScrambleText>{(data.user.username || data.user.displayName || 'AURA').toUpperCase()}</ScrambleText></a>
         <div className="hidden space-x-10 text-xs tracking-[0.2em] md:flex">
           <a href="#home" className="aura-interactive transition hover:text-[#49c5b6]">INDEX</a>
-          <a href="#projects" className="aura-interactive transition hover:text-[#49c5b6]">PROJECTS</a>
-          {data.config.showVideos && videos.length ? <a href="#video-section" className="aura-interactive transition hover:text-[#49c5b6]">REELS</a> : null}
-          {data.config.showAwards && awards.length ? <a href="#awards" className="aura-interactive transition hover:text-[#49c5b6]">AWARDS</a> : null}
-          {data.config.showExperience && experiences.length ? <a href="#resume" className="aura-interactive transition hover:text-[#49c5b6]">BIOGRAPHY</a> : null}
+          {navSections.map((section) => <a key={section} href={`#${navTargets[section]}`} className="aura-interactive transition hover:text-[#49c5b6]">{navLabels[section]}</a>)}
         </div>
         <div className="border border-[#49c5b6]/30 px-3 py-1 text-xs text-[#49c5b6]">CORE_V3.0</div>
       </nav>
 
-      <main className="relative z-10 mx-auto max-w-6xl">
-        <section id="home" className="flex min-h-screen flex-col items-start justify-center pt-20">
+      <main className="relative z-10 mx-auto flex max-w-6xl flex-col">
+        <section id="home" className="flex min-h-screen flex-col items-start justify-center pt-20" style={{ order: -1 }}>
           <div className="aura-reveal mb-8 border-l-2 border-[#49c5b6] pl-6">
             <p className="mb-1 text-xs uppercase tracking-[0.4em] text-[#49c5b6]">{data.user.title || 'SYSTEM ONLINE // CORE_V3'}</p>
             <span className="text-[10px] uppercase tracking-[0.22em] text-slate-500">{data.user.location || 'GPU MULTI-AXIS WAVE DEFORMATION'}</span>
@@ -422,7 +433,7 @@ export function TemplateAura({ data }: { data: SiteData }) {
           </a>
         </section>
 
-        <section id="projects" className="border-t border-white/5 py-28">
+        <section id="projects" className="border-t border-white/5 py-28" style={{ order: sectionOrder.projects }}>
           <div className="aura-reveal mb-16"><p className="mb-2 text-xs tracking-[0.22em] text-[#49c5b6]">{projectsCopy.label}</p><h2 className="text-4xl font-bold text-white"><ScrambleText>{projectsCopy.title}</ScrambleText></h2>{projectsCopy.description ? <p className="mt-4 max-w-xl text-xs leading-7 text-slate-500">{projectsCopy.description}</p> : null}</div>
           <div className={`grid grid-cols-1 gap-8 ${data.config.layout === 'list' ? '' : 'md:grid-cols-3'}`}>
             {projects.map((project, index) => <ProjectNode key={project.id || project.slug} project={project} index={index} />)}
@@ -430,21 +441,21 @@ export function TemplateAura({ data }: { data: SiteData }) {
         </section>
 
         {data.config.showVideos && videos.length ? (
-          <section id="video-section" className="border-t border-white/5 py-28">
+          <section id="video-section" className="border-t border-white/5 py-28" style={{ order: sectionOrder.videos }}>
             <div className="aura-reveal mb-14"><p className="mb-2 text-xs tracking-[0.22em] text-[#49c5b6]">{videosCopy.label}</p><h2 className="text-4xl font-bold text-white"><ScrambleText>{videosCopy.title}</ScrambleText></h2>{videosCopy.description ? <p className="mt-4 max-w-xl text-xs leading-7 text-slate-500">{videosCopy.description}</p> : null}</div>
             <div className="grid grid-cols-1 gap-8 md:grid-cols-2">{videos.map((video) => <VideoTerminal key={video.id || video.videoUrl} video={video} onOpen={setSelectedVideo} />)}</div>
           </section>
         ) : null}
 
         {data.config.showAwards && awards.length ? (
-          <section id="awards" className="border-t border-white/5 py-28">
+          <section id="awards" className="border-t border-white/5 py-28" style={{ order: sectionOrder.awards }}>
             <div className="aura-reveal mb-14"><p className="mb-2 text-xs tracking-[0.22em] text-[#49c5b6]">{awardsCopy.label}</p><h2 className="text-4xl font-bold text-white"><ScrambleText>{awardsCopy.title}</ScrambleText></h2>{awardsCopy.description ? <p className="mt-4 max-w-xl text-xs leading-7 text-slate-500">{awardsCopy.description}</p> : null}</div>
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">{awards.map((award, index) => <AwardTerminal key={award.id || award.title} award={award} index={index} />)}</div>
           </section>
         ) : null}
 
         {data.config.showExperience && experiences.length ? (
-          <section id="resume" className="border-t border-white/5 py-28">
+          <section id="resume" className="border-t border-white/5 py-28" style={{ order: sectionOrder.experience }}>
             <div className="aura-reveal mb-16"><p className="mb-2 text-xs tracking-[0.22em] text-[#49c5b6]">{experienceCopy.label}</p><h2 className="text-4xl font-bold text-white"><ScrambleText>{experienceCopy.title}</ScrambleText></h2>{experienceCopy.description ? <p className="mt-4 max-w-xl text-xs leading-7 text-slate-500">{experienceCopy.description}</p> : null}</div>
             <div className="relative space-y-14 border-l border-white/10 pl-8 md:pl-12">
               {experiences.map((experience, index) => (
@@ -463,15 +474,20 @@ export function TemplateAura({ data }: { data: SiteData }) {
         ) : null}
 
         {data.config.showSkills && skills.length ? (
-          <section id="skills" className="border-t border-white/5 py-28">
+          <section id="skills" className="border-t border-white/5 py-28" style={{ order: sectionOrder.skills }}>
             <div className="aura-reveal mb-14"><p className="mb-2 text-xs tracking-[0.22em] text-[#49c5b6]">{skillsCopy.label}</p><h2 className="text-4xl font-bold text-white"><ScrambleText>{skillsCopy.title}</ScrambleText></h2>{skillsCopy.description ? <p className="mt-4 max-w-xl text-xs leading-7 text-slate-500">{skillsCopy.description}</p> : null}</div>
             <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-              {skills.map((skill, index) => <SkillProtocolCard key={skill.id || skill.name} skill={skill} index={index} />)}
+              {previewSkills.map((skill, index) => <SkillProtocolCard key={skill.id || skill.name} skill={skill} index={index} />)}
             </div>
+            {hiddenSkillCount ? (
+              <button type="button" onClick={() => setShowAllSkills(true)} className="aura-interactive mt-8 border border-[#49c5b6]/40 px-5 py-3 text-xs font-bold tracking-[0.2em] text-[#49c5b6] transition hover:bg-[#49c5b6] hover:text-black">
+                VIEW_ALL_PROTOCOLS +{hiddenSkillCount}
+              </button>
+            ) : null}
           </section>
         ) : null}
 
-        <section id="contact" className="border-t border-white/5 py-28 text-center">
+        <section id="contact" className="border-t border-white/5 py-28 text-center" style={{ order: sectionOrder.contact }}>
           <p className="mb-3 text-xs tracking-[0.22em] text-[#49c5b6]">{contactCopy.label}</p>
           <h2 className="mb-6 text-3xl font-bold text-white md:text-6xl"><ScrambleText>{contactCopy.title}</ScrambleText></h2>
           {contactCopy.description ? <p className="mx-auto mb-10 max-w-sm text-xs leading-7 text-slate-500">{contactCopy.description}</p> : null}
@@ -482,6 +498,23 @@ export function TemplateAura({ data }: { data: SiteData }) {
           </div>
         </section>
       </main>
+
+      {showAllSkills ? (
+        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/88 p-4 backdrop-blur-xl" role="dialog" aria-modal="true" onClick={() => setShowAllSkills(false)}>
+          <div className="aura-panel max-h-[86vh] w-full max-w-5xl overflow-y-auto border border-[#49c5b6]/30 bg-[#04030a]/95 p-6 md:p-8" onClick={(event) => event.stopPropagation()}>
+            <div className="mb-7 flex items-start justify-between gap-4">
+              <div>
+                <p className="text-[10px] font-bold tracking-[0.28em] text-[#49c5b6]">// FULL CAPABILITY STACK</p>
+                <h3 className="mt-3 text-3xl font-bold text-white">SKILL PROTOCOLS</h3>
+              </div>
+              <button type="button" onClick={() => setShowAllSkills(false)} className="aura-interactive border border-white/10 px-4 py-2 text-xs tracking-[0.18em] text-white transition hover:border-[#49c5b6] hover:text-[#49c5b6]">CLOSE</button>
+            </div>
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+              {skills.map((skill, index) => <SkillProtocolCard key={skill.id || skill.name} skill={skill} index={index} />)}
+            </div>
+          </div>
+        </div>
+      ) : null}
 
       {selectedVideo ? (
         <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/95 p-4 backdrop-blur-md">

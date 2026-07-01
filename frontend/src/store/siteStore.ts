@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { defaultSiteData, type Award, type BlogPost, type Experience, type Project, type SiteConfig, type SiteData, type Skill, type SocialLink, type TemplateId, type User, type VideoItem } from '@siteforge/shared';
+import { defaultSiteData, normalizeModuleOrder, type Award, type Experience, type Project, type SiteConfig, type SiteData, type Skill, type SocialLink, type TemplateId, type User, type VideoItem } from '@siteforge/shared';
 
 const STORAGE_KEY = 'siteforge:data:v1';
 const TEMPLATE_STORAGE_KEY = 'siteforge:template:v1';
@@ -24,7 +24,6 @@ interface SiteStore {
   removeSocialLink: (id: number) => void;
   upsertVideo: (video: VideoItem) => void;
   removeVideo: (id: number) => void;
-  upsertBlogPost: (post: BlogPost) => void;
   reset: () => void;
 }
 
@@ -42,13 +41,12 @@ function normalizeSiteData(data: Partial<SiteData>): SiteData {
     ...defaultSiteData,
     ...data,
     user: { ...defaultSiteData.user, ...data.user },
-    config: { ...defaultSiteData.config, ...data.config, sectionCopies },
+    config: { ...defaultSiteData.config, ...data.config, moduleOrder: normalizeModuleOrder(data.config?.moduleOrder), sectionCopies },
     projects: data.projects ?? defaultSiteData.projects,
     experiences: data.experiences ?? defaultSiteData.experiences,
     skills: data.skills ?? defaultSiteData.skills,
     awards: data.awards ?? defaultSiteData.awards,
     socialLinks: data.socialLinks ?? defaultSiteData.socialLinks,
-    blogPosts: data.blogPosts ?? defaultSiteData.blogPosts,
     videos: data.videos ?? defaultSiteData.videos
   };
 }
@@ -180,13 +178,6 @@ export const useSiteStore = create<SiteStore>((set, get) => ({
   removeVideo: (id) => {
     const current = get().data;
     const data = { ...current, videos: current.videos.filter((video) => video.id !== id) };
-    persist(data);
-    set({ data });
-  },
-  upsertBlogPost: (post) => {
-    const current = get().data;
-    const blogPosts = current.blogPosts.some((item) => item.id === post.id) ? current.blogPosts.map((item) => (item.id === post.id ? post : item)) : [...current.blogPosts, post];
-    const data = { ...current, blogPosts };
     persist(data);
     set({ data });
   },

@@ -1,4 +1,5 @@
-import { getAboutSectionCopy, getSectionCopy } from '@siteforge/shared';
+import { getAboutSectionCopy, getOrderedSections, getSectionCopy } from '@siteforge/shared';
+import type { OrderedSectionKey } from '@siteforge/shared';
 import type { Award, Project, SiteData, SocialLink, VideoItem } from '@siteforge/shared';
 
 function escapeHtml(value: unknown) {
@@ -12,6 +13,13 @@ function escapeHtml(value: unknown) {
 
 function sortByOrder<T extends { displayOrder: number }>(items: T[]) {
   return [...items].sort((a, b) => a.displayOrder - b.displayOrder);
+}
+
+function orderedHtmlSections(data: SiteData, sections: Partial<Record<OrderedSectionKey, string>>) {
+  return getOrderedSections(data)
+    .map((section) => sections[section] ?? '')
+    .filter(Boolean)
+    .join('');
 }
 
 function socialLabel(link: SocialLink) {
@@ -1272,6 +1280,15 @@ function renderJakartaHtml(data: SiteData) {
   const title = data.config.seoTitle || `${data.user.displayName || data.user.username} - Jakarta Portfolio`;
   const description = data.config.seoDescription || data.user.bio || 'Built with SiteForge';
   const layoutClass = data.config.layout === 'list' ? 'list' : '';
+  const navLinks = getOrderedSections(data)
+    .map((section) => {
+      if (section === 'projects' && projects.length) return '<a href="#projects" data-nav-section="projects">Work</a>';
+      if (section === 'videos' && data.config.showVideos && videos.length) return '<a href="#videos" data-nav-section="videos">Videos</a>';
+      if (section === 'skills' && data.config.showSkills && skills.length) return '<a href="#skills" data-nav-section="skills">Skills</a>';
+      if (section === 'contact') return '<a href="#contact" data-nav-section="contact">Contact</a>';
+      return '';
+    })
+    .join('');
 
   const projectImageFor = (project: Project) => project.coverImage || project.images?.find((image) => image.imageUrl)?.imageUrl || 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1200&q=80';
   const projectCards = projects.map((project, index) => {
@@ -1353,17 +1370,19 @@ function renderJakartaHtml(data: SiteData) {
   </style>
 </head>
 <body>
-  <header id="siteHeader"><div class="container nav"><a class="brand" href="#home"><span class="brand-icon">${data.user.avatarUrl ? `<img src="${escapeHtml(data.user.avatarUrl)}" alt="${escapeHtml(data.user.displayName)}">` : escapeHtml((data.user.displayName || data.user.username || 'S').slice(0, 1).toUpperCase())}</span>${escapeHtml(data.user.displayName || data.user.username || 'creator')}</a><nav class="links"><a href="#home" data-nav-section="home" class="active">Home</a><a href="#projects" data-nav-section="projects">Work</a>${data.config.showVideos && videos.length ? '<a href="#videos" data-nav-section="videos">Videos</a>' : ''}${data.config.showSkills && skills.length ? '<a href="#skills" data-nav-section="skills">Skills</a>' : ''}<a href="#contact" data-nav-section="contact">Contact</a></nav><div class="nav-actions">${data.user.email ? `<a class="login" href="mailto:${escapeHtml(data.user.email)}">Contact</a>` : ''}<a class="button" href="#projects">Get Started</a></div></div></header>
+  <header id="siteHeader"><div class="container nav"><a class="brand" href="#home"><span class="brand-icon">${data.user.avatarUrl ? `<img src="${escapeHtml(data.user.avatarUrl)}" alt="${escapeHtml(data.user.displayName)}">` : escapeHtml((data.user.displayName || data.user.username || 'S').slice(0, 1).toUpperCase())}</span>${escapeHtml(data.user.displayName || data.user.username || 'creator')}</a><nav class="links"><a href="#home" data-nav-section="home" class="active">Home</a>${navLinks}</nav><div class="nav-actions">${data.user.email ? `<a class="login" href="mailto:${escapeHtml(data.user.email)}">Contact</a>` : ''}<a class="button" href="#projects">Get Started</a></div></div></header>
   <main>
     <section id="home" class="hero"><div class="container"><div class="reveal"><p class="eyebrow">${escapeHtml(data.user.title || 'Personal Portfolio')}</p><h1>${escapeHtml(data.user.bio || 'Build a portfolio that feels polished and alive')}</h1><p class="hero-copy">${escapeHtml(data.user.fullBio || 'Use a clean SaaS-inspired system to present your identity, selected projects, videos, skills, awards, and collaboration channels.')}</p><div class="hero-actions"><a class="button ghost" href="${videos.length ? '#videos' : '#projects'}">Play Demo</a><a class="button primary" href="#projects">Explore Work</a></div></div>
       <div class="demo reveal"><img src="${escapeHtml(heroImage)}" alt="${escapeHtml(data.user.displayName || 'Portfolio space')}"><div class="demo-inner"><div class="demo-status"><span><i></i>PROFILE READY</span><span><i></i>PROJECT ADDED</span><span><i></i>LIVE PREVIEW</span><span><i></i>ONLINE LINK</span></div><div class="demo-grid"><div class="dark-card"><span>Selected Identity</span><h4>${escapeHtml(data.user.displayName || 'Your Name')} · ${escapeHtml(data.user.location || 'Live Portfolio')}</h4></div><div class="num-card"><span>Now Featuring</span><b>${featuredProject ? 'Featured Work' : 'Portfolio Ready'}</b><small>${escapeHtml(featuredProject?.title || 'Add your first project')}</small></div><div class="status-card"><h4>Portfolio Status</h4><p><span>${projects.length} Projects</span><span>Work</span></p><p><span>${skills.length} Skills</span><span>Stack</span></p><p><span>${videos.length} Videos</span><span>Media</span></p><p><span>${awards.length} Honors</span><span>Proof</span></p></div></div></div></div>
     </div></section>
-    ${projects.length ? `<section id="projects"><div class="container"><div class="section-title reveal"><p class="eyebrow">Selected Work</p><h2>A polished system for your best projects</h2><p>Project images and gallery assets stay front and center, with featured work promoted into a wider card.</p></div><div class="project-grid ${layoutClass}">${projectCards}</div></div></section>` : ''}
-    ${data.config.showVideos && videos.length ? `<section id="videos" class="white"><div class="container"><div class="section-title reveal"><p class="eyebrow">Video Proof</p><h2>Demos, reels, and walkthroughs</h2><p>If a video is marked as featured, it expands into the main demo slot.</p></div><div class="video-grid">${videoCards}</div></div></section>` : ''}
-    ${data.config.showSkills && skills.length ? `<section id="skills" class="white"><div class="container"><p class="eyebrow" style="text-align:center;margin-bottom:40px;color:#94a3b8">Tools and capabilities</p><div class="skill-grid">${skillGrid}</div></div></section>` : ''}
-    ${data.config.showExperience && experiences.length ? `<section class="process"><div class="container process-grid"><div class="reveal"><p class="eyebrow" style="color:#a5b4fc">How It Works</p><h2>Experience becomes a guided story</h2><div style="margin-top:32px"><button class="step-btn active-step" data-step="1">01. Profile <span>></span></button><button class="step-btn" data-step="2">02. Projects <span>></span></button><button class="step-btn" data-step="3">03. Live Preview <span>></span></button><button class="step-btn" data-step="4">04. Publish <span>></span></button></div></div><div class="panel reveal"><div class="metric-grid">${metricCards}</div><div class="step-copy"><p class="eyebrow">Current Step</p><h3 id="stepTitle">Profile</h3><p id="stepDesc">Start from your identity, location, avatar, and a clear portfolio positioning statement.</p></div>${experienceCards}</div></div></section>` : ''}
-    ${data.config.showAwards && awards.length ? `<section id="awards"><div class="container"><div class="section-title reveal"><p class="eyebrow">Recognition</p><h2>Honors and proof points</h2></div><div class="award-grid">${awardCards}</div></div></section>` : ''}
-    <section id="contact" class="white"><div class="container"><div class="contact-card reveal"><div class="contact-grid"><div><p class="eyebrow" style="color:#a5b4fc">Contact</p><h2>Ready to start a new conversation?</h2><p>Portfolio reviews, project collaboration, role opportunities, and creative conversations can all start here.</p></div><div class="contact-actions">${data.user.email ? `<a class="button primary" href="mailto:${escapeHtml(data.user.email)}">Contact Me</a>` : ''}${data.user.location ? `<p>${escapeHtml(data.user.location)}</p>` : ''}<div class="socials">${socials.map((social) => `<a href="${escapeHtml(social.url)}">${escapeHtml(social.platform)}</a>`).join('')}</div></div></div></div></div></section>
+    ${orderedHtmlSections(data, {
+      projects: projects.length ? `<section id="projects"><div class="container"><div class="section-title reveal"><p class="eyebrow">Selected Work</p><h2>A polished system for your best projects</h2><p>Project images and gallery assets stay front and center, with featured work promoted into a wider card.</p></div><div class="project-grid ${layoutClass}">${projectCards}</div></div></section>` : '',
+      videos: data.config.showVideos && videos.length ? `<section id="videos" class="white"><div class="container"><div class="section-title reveal"><p class="eyebrow">Video Proof</p><h2>Demos, reels, and walkthroughs</h2><p>If a video is marked as featured, it expands into the main demo slot.</p></div><div class="video-grid">${videoCards}</div></div></section>` : '',
+      skills: data.config.showSkills && skills.length ? `<section id="skills" class="white"><div class="container"><p class="eyebrow" style="text-align:center;margin-bottom:40px;color:#94a3b8">Tools and capabilities</p><div class="skill-grid">${skillGrid}</div></div></section>` : '',
+      experience: data.config.showExperience && experiences.length ? `<section id="experience" class="process"><div class="container process-grid"><div class="reveal"><p class="eyebrow" style="color:#a5b4fc">How It Works</p><h2>Experience becomes a guided story</h2><div style="margin-top:32px"><button class="step-btn active-step" data-step="1">01. Profile <span>></span></button><button class="step-btn" data-step="2">02. Projects <span>></span></button><button class="step-btn" data-step="3">03. Live Preview <span>></span></button><button class="step-btn" data-step="4">04. Publish <span>></span></button></div></div><div class="panel reveal"><div class="metric-grid">${metricCards}</div><div class="step-copy"><p class="eyebrow">Current Step</p><h3 id="stepTitle">Profile</h3><p id="stepDesc">Start from your identity, location, avatar, and a clear portfolio positioning statement.</p></div>${experienceCards}</div></div></section>` : '',
+      awards: data.config.showAwards && awards.length ? `<section id="awards"><div class="container"><div class="section-title reveal"><p class="eyebrow">Recognition</p><h2>Honors and proof points</h2></div><div class="award-grid">${awardCards}</div></div></section>` : '',
+      contact: `<section id="contact" class="white"><div class="container"><div class="contact-card reveal"><div class="contact-grid"><div><p class="eyebrow" style="color:#a5b4fc">Contact</p><h2>Ready to start a new conversation?</h2><p>Portfolio reviews, project collaboration, role opportunities, and creative conversations can all start here.</p></div><div class="contact-actions">${data.user.email ? `<a class="button primary" href="mailto:${escapeHtml(data.user.email)}">Contact Me</a>` : ''}${data.user.location ? `<p>${escapeHtml(data.user.location)}</p>` : ''}<div class="socials">${socials.map((social) => `<a href="${escapeHtml(social.url)}">${escapeHtml(social.platform)}</a>`).join('')}</div></div></div></div></div></section>`
+    })}
   </main>
   <footer class="footer"><div class="container"><div class="brand"><span class="brand-icon">${escapeHtml((data.user.displayName || data.user.username || 'S').slice(0, 1).toUpperCase())}</span>${escapeHtml(data.user.displayName || 'creator')}</div><p>Copyright 2026 - ${escapeHtml(data.user.displayName || 'Portfolio')}. Built with SiteForge.</p></div></footer>
   <div class="modal" id="imageModal"><button type="button" id="closeImage">Close</button><img id="modalImg" src="" alt=""></div>

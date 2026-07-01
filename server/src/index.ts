@@ -78,7 +78,7 @@ function sanitizeFileName(fileName: string) {
 
 function isSiteData(value: unknown): value is SiteData {
   const data = value as Partial<SiteData>;
-  return Boolean(data && data.user && data.config && Array.isArray(data.projects) && Array.isArray(data.experiences) && Array.isArray(data.skills) && (data.awards === undefined || Array.isArray(data.awards)) && Array.isArray(data.socialLinks) && Array.isArray(data.blogPosts) && (data.videos === undefined || Array.isArray(data.videos)));
+  return Boolean(data && data.user && data.config && Array.isArray(data.projects) && Array.isArray(data.experiences) && Array.isArray(data.skills) && (data.awards === undefined || Array.isArray(data.awards)) && Array.isArray(data.socialLinks) && (data.videos === undefined || Array.isArray(data.videos)));
 }
 
 app.get('/api/health', (_request, response) => {

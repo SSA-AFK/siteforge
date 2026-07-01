@@ -1,12 +1,15 @@
 import { AlertTriangle, ArrowRight, Award as AwardIcon, BriefcaseBusiness, ChevronLeft, ChevronRight, Github, Linkedin, Mail, MapPin, PhoneCall, Sparkles, Star, Wand2 } from 'lucide-react';
 import type { CSSProperties } from 'react';
 import { useEffect, useState } from 'react';
-import { getAboutSectionCopy, getSectionCopy } from '@siteforge/shared';
+import { getAboutSectionCopy, getOrderedSections, getSectionCopy } from '@siteforge/shared';
 import type { Award, Project, SiteData, SocialLink } from '@siteforge/shared';
 
 interface TemplateSnowlyProps {
   data: SiteData;
 }
+
+const snowlyNavTargets: Record<string, string> = { projects: 'work', videos: 'videos', awards: 'awards', skills: 'skills', contact: 'contact' };
+const snowlyNavLabels: Record<string, string> = { projects: 'Work', videos: 'Videos', awards: 'Awards', skills: 'Skills', contact: 'Contact' };
 
 function textColor(primaryColor: string) {
   return { color: primaryColor };
@@ -39,7 +42,6 @@ function EmptyMediaPlaceholder({ label }: { label: string }) {
     </div>
   );
 }
-
 function ProjectCard({
   project,
   featured,
@@ -81,7 +83,7 @@ function ProjectCard({
           {project.tools ? <span className="rounded-full bg-slate-100 px-3 py-1">{project.tools}</span> : null}
           {project.startDate ? <span className="rounded-full bg-slate-100 px-3 py-1">{project.startDate}{project.endDate ? ` - ${project.endDate}` : ''}</span> : null}
         </div>
-        {project.content ? <p className="text-sm leading-6 text-slate-600">{project.content}</p> : null}
+        {project.content ? <p className="whitespace-pre-line text-sm leading-6 text-slate-600">{project.content}</p> : null}
         {gallery.length ? (
           <div className="grid grid-cols-2 gap-2">
             {gallery.filter((image) => image.imageUrl).map((image) => (
@@ -133,12 +135,15 @@ export function TemplateSnowly({ data }: TemplateSnowlyProps) {
   const visibleProjects = [...data.projects].sort((a, b) => a.displayOrder - b.displayOrder);
   const visibleExperiences = [...data.experiences].sort((a, b) => a.displayOrder - b.displayOrder);
   const visibleSkills = [...data.skills].sort((a, b) => a.displayOrder - b.displayOrder);
+  const previewSkills = visibleSkills.slice(0, 6);
+  const hiddenSkillCount = Math.max(0, visibleSkills.length - previewSkills.length);
   const visibleAwards = [...data.awards].sort((a, b) => a.displayOrder - b.displayOrder);
   const visibleSocials = [...data.socialLinks].sort((a, b) => a.displayOrder - b.displayOrder);
   const visibleVideos = [...data.videos].sort((a, b) => a.displayOrder - b.displayOrder);
   const heroImages = (config.heroImages ?? []).filter(Boolean);
   const [heroIndex, setHeroIndex] = useState(0);
   const [previewImage, setPreviewImage] = useState<{ src: string; alt: string } | null>(null);
+  const [showAllSkills, setShowAllSkills] = useState(false);
   const [activeSection, setActiveSection] = useState('');
   const heroImage = heroImages[heroIndex] || 'https://images.unsplash.com/photo-1612240498936-65f5101365d2?auto=format&fit=crop&w=1920&q=80';
   const showHeroControls = heroImages.length > 1;
@@ -151,6 +156,18 @@ export function TemplateSnowly({ data }: TemplateSnowlyProps) {
   const videosCopy = getSectionCopy(data, 'videos', { label: 'Video', title: 'Stories, demos, and walkthroughs.' });
   const experienceCopy = getSectionCopy(data, 'experience', { label: 'Experience', title: 'Experience' });
   const contactCopy = getSectionCopy(data, 'contact', { label: 'Contact', title: 'Available for selected collaborations', description: 'Portfolio reviews, freelance projects, and role opportunities can start here.' });
+  const sectionOrder = Object.fromEntries(getOrderedSections(data).map((section, index) => [section, index])) as Record<string, number>;
+  const aboutBody = user.fullBio || user.bio || '';
+  const aboutDescription = aboutCopy.description?.trim() && aboutCopy.description.trim() !== aboutBody.trim()
+    ? aboutCopy.description
+    : '';
+  const navSections = getOrderedSections(data).filter((section) => {
+    if (section === 'projects') return visibleProjects.length;
+    if (section === 'videos') return config.showVideos && visibleVideos.length;
+    if (section === 'awards') return config.showAwards && visibleAwards.length;
+    if (section === 'skills') return config.showSkills && visibleSkills.length;
+    return section === 'contact';
+  });
 
   function showHeroImage(index: number) {
     if (!heroImages.length) return;
@@ -205,7 +222,7 @@ export function TemplateSnowly({ data }: TemplateSnowlyProps) {
   }, [data]);
 
   useEffect(() => {
-    const sectionIds = ['about', 'work', 'awards', 'skills', 'contact'];
+    const sectionIds = ['about', ...navSections.map((section) => snowlyNavTargets[section])];
     const sections = sectionIds
       .map((sectionId) => document.getElementById(sectionId))
       .filter((section): section is HTMLElement => Boolean(section));
@@ -234,7 +251,7 @@ export function TemplateSnowly({ data }: TemplateSnowlyProps) {
       window.removeEventListener('scroll', updateActiveSection);
       window.removeEventListener('resize', updateActiveSection);
     };
-  }, [config.showAwards, config.showSkills, visibleAwards.length, visibleProjects.length]);
+  }, [config.showAwards, config.showSkills, config.showVideos, data.config.moduleOrder, navSections, visibleAwards.length, visibleProjects.length, visibleSkills.length, visibleVideos.length]);
 
   return (
     <div className="min-h-screen bg-[#fafbfe] font-sans text-slate-800">
@@ -255,26 +272,12 @@ export function TemplateSnowly({ data }: TemplateSnowlyProps) {
               <span className="absolute inset-x-0 -bottom-1 h-0.5 rounded-full" style={{ backgroundColor: activeSection === 'about' ? primaryColor : 'transparent' }} />
               About
             </a>
-            <a href="#work" className={navLinkClass('work')} style={activeSection === 'work' ? ({ color: '#0f172a' } as CSSProperties) : undefined}>
-              <span className="absolute inset-x-0 -bottom-1 h-0.5 rounded-full" style={{ backgroundColor: activeSection === 'work' ? primaryColor : 'transparent' }} />
-              Work
-            </a>
-            {config.showAwards && visibleAwards.length > 0 ? (
-              <a href="#awards" className={navLinkClass('awards')} style={activeSection === 'awards' ? ({ color: '#0f172a' } as CSSProperties) : undefined}>
-                <span className="absolute inset-x-0 -bottom-1 h-0.5 rounded-full" style={{ backgroundColor: activeSection === 'awards' ? primaryColor : 'transparent' }} />
-                Awards
+            {navSections.map((section) => (
+              <a key={section} href={`#${snowlyNavTargets[section]}`} className={navLinkClass(snowlyNavTargets[section])} style={activeSection === snowlyNavTargets[section] ? ({ color: '#0f172a' } as CSSProperties) : undefined}>
+                <span className="absolute inset-x-0 -bottom-1 h-0.5 rounded-full" style={{ backgroundColor: activeSection === snowlyNavTargets[section] ? primaryColor : 'transparent' }} />
+                {snowlyNavLabels[section]}
               </a>
-            ) : null}
-            {config.showSkills && visibleSkills.length > 0 ? (
-              <a href="#skills" className={navLinkClass('skills')} style={activeSection === 'skills' ? ({ color: '#0f172a' } as CSSProperties) : undefined}>
-                <span className="absolute inset-x-0 -bottom-1 h-0.5 rounded-full" style={{ backgroundColor: activeSection === 'skills' ? primaryColor : 'transparent' }} />
-                Skills
-              </a>
-            ) : null}
-            <a href="#contact" className={navLinkClass('contact')} style={activeSection === 'contact' ? ({ color: '#0f172a' } as CSSProperties) : undefined}>
-              <span className="absolute inset-x-0 -bottom-1 h-0.5 rounded-full" style={{ backgroundColor: activeSection === 'contact' ? primaryColor : 'transparent' }} />
-              Contact
-            </a>
+            ))}
           </div>
           <div className="hidden items-center gap-2 lg:flex">
             {visibleSocials.slice(0, 3).map((link) => (
@@ -352,7 +355,7 @@ export function TemplateSnowly({ data }: TemplateSnowlyProps) {
               <Sparkles className="h-4 w-4" /> {aboutCopy.label}
             </span>
             <h2 className="text-3xl font-black leading-tight text-slate-950 md:text-5xl">{aboutCopy.title}</h2>
-            {aboutCopy.description ? <p className="mt-4 text-sm leading-7 text-slate-500">{aboutCopy.description}</p> : null}
+            {aboutDescription ? <p className="mt-4 text-sm leading-7 text-slate-500">{aboutDescription}</p> : null}
           </div>
         </div>
         <div className="grid grid-cols-1 gap-10 lg:grid-cols-12 lg:items-center">
@@ -360,7 +363,7 @@ export function TemplateSnowly({ data }: TemplateSnowlyProps) {
             <img src={user.avatarUrl || 'https://i.pravatar.cc/300?img=11'} alt={user.displayName} className="sf-float-subtle aspect-square w-full rounded-3xl object-cover shadow-xl" />
           </div>
           <div className="space-y-6 lg:col-span-7" data-aos="fade-left">
-            <p className="text-lg leading-8 text-slate-600">{user.fullBio || user.bio}</p>
+            <p className="text-lg leading-8 text-slate-600">{aboutBody}</p>
             <div className="grid grid-cols-2 gap-4">
               <div className="rounded-2xl border border-slate-100 bg-white p-6 shadow-sm">
                 <p className="text-4xl font-black" style={textColor(primaryColor)}>{visibleProjects.length}+</p>
@@ -375,8 +378,9 @@ export function TemplateSnowly({ data }: TemplateSnowlyProps) {
         </div>
       </section>
 
+      <div className="flex flex-col">
       {visibleProjects.length > 0 ? (
-        <section id="work" className="sf-reveal border-y border-slate-200/70 bg-white px-4 py-20 md:px-8">
+        <section id="work" className="sf-reveal border-y border-slate-200/70 bg-white px-4 py-20 md:px-8" style={{ order: sectionOrder.projects }}>
           <div className="mx-auto max-w-7xl">
             <div className="mb-12 max-w-2xl" data-aos="fade-up">
               <span className="mb-4 inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1 text-xs font-extrabold uppercase tracking-wider" style={textColor(primaryColor)}>
@@ -395,7 +399,7 @@ export function TemplateSnowly({ data }: TemplateSnowlyProps) {
       ) : null}
 
       {config.showAwards && visibleAwards.length > 0 ? (
-        <section id="awards" className="sf-reveal bg-slate-50 px-4 py-20 md:px-8">
+        <section id="awards" className="sf-reveal bg-slate-50 px-4 py-20 md:px-8" style={{ order: sectionOrder.awards }}>
           <div className="mx-auto max-w-7xl">
             <div className="mb-10 max-w-2xl" data-aos="fade-up">
               <span className="mb-4 inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 text-xs font-extrabold uppercase tracking-wider shadow-sm" style={textColor(primaryColor)}>
@@ -414,7 +418,7 @@ export function TemplateSnowly({ data }: TemplateSnowlyProps) {
       ) : null}
 
       {config.showSkills && visibleSkills.length > 0 ? (
-        <section id="skills" className="sf-reveal mx-auto max-w-7xl px-4 py-20 md:px-8">
+        <section id="skills" className="sf-reveal mx-auto max-w-7xl px-4 py-20 md:px-8" style={{ order: sectionOrder.skills }}>
           <div className="mb-10 max-w-2xl" data-aos="fade-up">
             <span className="mb-4 inline-flex items-center gap-2 rounded-full bg-purple-100 px-3 py-1 text-xs font-extrabold uppercase tracking-wider" style={textColor(primaryColor)}>
               <Wand2 className="h-4 w-4" /> {skillsCopy.label}
@@ -423,7 +427,7 @@ export function TemplateSnowly({ data }: TemplateSnowlyProps) {
             {skillsCopy.description ? <p className="mt-4 text-sm leading-7 text-slate-500">{skillsCopy.description}</p> : null}
           </div>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-            {visibleSkills.map((skill, index) => (
+            {previewSkills.map((skill, index) => (
               <div key={skill.id || skill.name} data-aos="fade-up" style={{ transitionDelay: `${(index % 3) * 100}ms` }} className="rounded-2xl border border-slate-100 bg-white p-6 shadow-sm">
                 <div className="mb-3 flex items-center justify-between">
                   <h3 className="font-extrabold text-slate-950">{skill.name}</h3>
@@ -435,11 +439,16 @@ export function TemplateSnowly({ data }: TemplateSnowlyProps) {
               </div>
             ))}
           </div>
+          {hiddenSkillCount ? (
+            <button type="button" onClick={() => setShowAllSkills(true)} className="mt-8 rounded-2xl bg-white px-5 py-3 text-sm font-extrabold text-slate-950 shadow-sm ring-1 ring-slate-100 transition hover:-translate-y-0.5 hover:shadow-md">
+              查看全部技能 +{hiddenSkillCount}
+            </button>
+          ) : null}
         </section>
       ) : null}
 
       {config.showVideos && visibleVideos.length > 0 ? (
-        <section id="videos" className="sf-reveal border-y border-slate-200/70 bg-white px-4 py-20 md:px-8">
+        <section id="videos" className="sf-reveal border-y border-slate-200/70 bg-white px-4 py-20 md:px-8" style={{ order: sectionOrder.videos }}>
           <div className="mx-auto max-w-7xl">
             <div className="mb-10 max-w-2xl" data-aos="fade-up">
               <span className="mb-4 inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1 text-xs font-extrabold uppercase tracking-wider" style={textColor(primaryColor)}>
@@ -481,7 +490,7 @@ export function TemplateSnowly({ data }: TemplateSnowlyProps) {
       ) : null}
 
       {config.showExperience && visibleExperiences.length > 0 ? (
-        <section className="sf-reveal bg-slate-50 px-4 py-20 md:px-8">
+        <section id="experience" className="sf-reveal bg-slate-50 px-4 py-20 md:px-8" style={{ order: sectionOrder.experience }}>
           <div className="mx-auto max-w-7xl">
             <div data-aos="fade-up" className="mb-10 max-w-2xl">
               <span className="mb-4 inline-flex rounded-full bg-white px-3 py-1 text-xs font-extrabold uppercase tracking-wider" style={textColor(primaryColor)}>{experienceCopy.label}</span>
@@ -507,7 +516,7 @@ export function TemplateSnowly({ data }: TemplateSnowlyProps) {
         </section>
       ) : null}
 
-      <section id="contact" className="sf-reveal">
+      <section id="contact" className="sf-reveal" style={{ order: sectionOrder.contact }}>
         <div className="px-4 py-12 text-white md:px-8" style={bgColor(primaryColor)}>
           <div data-aos="fade-up" className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-6 md:flex-row">
             <div className="flex items-center gap-4 text-center md:text-left">
@@ -578,6 +587,7 @@ export function TemplateSnowly({ data }: TemplateSnowlyProps) {
           </div>
         </footer>
       </section>
+      </div>
 
       <section className="hidden">
         <div data-aos="fade-up" className="mx-auto grid max-w-7xl grid-cols-1 gap-10 rounded-3xl p-8 text-white shadow-xl md:p-12 lg:grid-cols-12" style={bgColor(primaryColor)}>
@@ -614,6 +624,36 @@ export function TemplateSnowly({ data }: TemplateSnowlyProps) {
           </div>
         </div>
       ) : null}
+      {showAllSkills ? (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm" role="dialog" aria-modal="true" onClick={() => setShowAllSkills(false)}>
+          <div className="max-h-[86vh] w-full max-w-5xl overflow-y-auto rounded-3xl bg-white p-6 shadow-2xl md:p-8" onClick={(event) => event.stopPropagation()}>
+            <div className="mb-7 flex items-start justify-between gap-4">
+              <div>
+                <p className="text-xs font-extrabold uppercase tracking-wider" style={textColor(primaryColor)}>{skillsCopy.label}</p>
+                <h3 className="mt-2 text-3xl font-black text-slate-950">全部技能</h3>
+              </div>
+              <button type="button" className="rounded-full bg-slate-100 px-4 py-2 text-xs font-black text-slate-700 transition hover:bg-slate-200" onClick={() => setShowAllSkills(false)}>
+                关闭
+              </button>
+            </div>
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+              {visibleSkills.map((skill) => (
+                <div key={skill.id || skill.name} className="rounded-2xl border border-slate-100 bg-slate-50 p-5">
+                  <div className="mb-3 flex items-center justify-between gap-4">
+                    <h4 className="font-extrabold text-slate-950">{skill.name}</h4>
+                    <span className="rounded-full bg-white px-3 py-1 text-xs font-black text-slate-500">{skill.proficiency}/5</span>
+                  </div>
+                  {skill.category ? <p className="mb-3 text-xs font-bold uppercase tracking-wider text-slate-400">{skill.category}</p> : null}
+                  <div className="h-2 overflow-hidden rounded-full bg-white">
+                    <div className="h-full rounded-full" style={{ ...bgColor(primaryColor), width: `${skill.proficiency * 20}%` }} />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }
+

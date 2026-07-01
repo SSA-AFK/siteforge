@@ -1,6 +1,6 @@
 import { ChevronRight, Layers, Mail, MapPin, Play, Sparkles, Star, User } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
-import { getSectionCopy } from '@siteforge/shared';
+import { getOrderedSections, getSectionCopy } from '@siteforge/shared';
 import type { Project, SiteData, VideoItem } from '@siteforge/shared';
 
 const fallbackHero = 'https://images.unsplash.com/photo-1517502884422-41eaaced0168?auto=format&fit=crop&w=1600&q=80';
@@ -91,6 +91,8 @@ function VideoCard({ video, index }: { video: VideoItem; index: number }) {
 export function TemplateJakarta({ data }: { data: SiteData }) {
   const projects = useMemo(() => sortByOrder(data.projects).filter((project) => project.status !== 'archived'), [data.projects]);
   const skills = sortByOrder(data.skills).filter((skill) => skill.name.trim());
+  const previewSkills = skills.slice(0, 10);
+  const hiddenSkillCount = Math.max(0, skills.length - previewSkills.length);
   const experiences = sortByOrder(data.experiences).filter((experience) => experience.position || experience.company);
   const awards = sortByOrder(data.awards ?? []).filter((award) => award.title.trim());
   const videos = sortByOrder(data.videos ?? []).filter((video) => video.videoUrl.trim()).sort((a, b) => Number(b.isFeatured) - Number(a.isFeatured) || a.displayOrder - b.displayOrder);
@@ -99,6 +101,7 @@ export function TemplateJakarta({ data }: { data: SiteData }) {
   const featuredProject = projects.find((project) => project.isFeatured) || projects[0];
   const [activeStep, setActiveStep] = useState(1);
   const [previewImage, setPreviewImage] = useState<{ src: string; alt: string } | null>(null);
+  const [showAllSkills, setShowAllSkills] = useState(false);
   const [activeSection, setActiveSection] = useState('home');
   const [isScrolled, setIsScrolled] = useState(false);
 
@@ -119,10 +122,14 @@ export function TemplateJakarta({ data }: { data: SiteData }) {
   useEffect(() => {
     const sectionIds = [
       'home',
-      ...(projects.length ? ['projects'] : []),
-      ...(data.config.showVideos && videos.length ? ['videos'] : []),
-      ...(data.config.showSkills && skills.length ? ['skills'] : []),
-      'contact'
+      ...getOrderedSections(data).filter((section) => {
+        if (section === 'projects') return projects.length;
+        if (section === 'videos') return data.config.showVideos && videos.length;
+        if (section === 'skills') return data.config.showSkills && skills.length;
+        if (section === 'awards') return data.config.showAwards && awards.length;
+        if (section === 'experience') return data.config.showExperience && experiences.length;
+        return section === 'contact';
+      })
     ];
     const sections = sectionIds.map((id) => document.getElementById(id)).filter((section): section is HTMLElement => Boolean(section));
     const observer = new IntersectionObserver((entries) => {
@@ -135,7 +142,7 @@ export function TemplateJakarta({ data }: { data: SiteData }) {
     }, { threshold: [0.18, 0.35, 0.6], rootMargin: '-96px 0px -45% 0px' });
     sections.forEach((section) => observer.observe(section));
     return () => observer.disconnect();
-  }, [data.config.showSkills, data.config.showVideos, projects.length, videos.length, skills.length]);
+  }, [data, projects.length, videos.length, skills.length, awards.length, experiences.length]);
 
   useEffect(() => {
     const preview = document.getElementById('preview');
@@ -180,6 +187,15 @@ export function TemplateJakarta({ data }: { data: SiteData }) {
   const experienceCopy = getSectionCopy(data, 'experience', { label: 'Experience', title: 'Experience becomes a guided story' });
   const awardsCopy = getSectionCopy(data, 'awards', { label: 'Recognition', title: 'Honors and proof points' });
   const contactCopy = getSectionCopy(data, 'contact', { label: 'Contact', title: 'Ready to start a new conversation?', description: 'Portfolio reviews, project collaboration, role opportunities, and creative conversations can all start here.' });
+  const sectionOrder = Object.fromEntries(getOrderedSections(data).map((section, index) => [section, index])) as Record<string, number>;
+  const navSections = getOrderedSections(data).filter((section) => {
+    if (section === 'projects') return projects.length;
+    if (section === 'videos') return data.config.showVideos && videos.length;
+    if (section === 'skills') return data.config.showSkills && skills.length;
+    if (section === 'contact') return true;
+    return false;
+  });
+  const navLabels: Record<string, string> = { projects: 'Work', videos: 'Videos', skills: 'Skills', contact: 'Contact' };
 
   return (
     <div className="min-h-screen overflow-x-hidden bg-[#FAFAFC] font-sans text-slate-800">
@@ -201,10 +217,7 @@ export function TemplateJakarta({ data }: { data: SiteData }) {
           </a>
           <nav className="hidden items-center gap-8 text-sm font-semibold md:flex">
             <a href="#home" className={navLinkClass('home')}>Home</a>
-            <a href="#projects" className={navLinkClass('projects')}>Work</a>
-            {data.config.showVideos && videos.length ? <a href="#videos" className={navLinkClass('videos')}>Videos</a> : null}
-            {data.config.showSkills && skills.length ? <a href="#skills" className={navLinkClass('skills')}>Skills</a> : null}
-            <a href="#contact" className={navLinkClass('contact')}>Contact</a>
+            {navSections.map((section) => <a key={section} href={`#${section}`} className={navLinkClass(section)}>{navLabels[section]}</a>)}
           </nav>
           <div className="flex items-center gap-3">
             {data.user.email ? <a href={`mailto:${data.user.email}`} className="hidden items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-semibold text-slate-600 transition hover:text-indigo-600 sm:flex"><User className="h-4 w-4" /> Contact</a> : null}
@@ -262,13 +275,14 @@ export function TemplateJakarta({ data }: { data: SiteData }) {
         </div>
       </section>
 
+      <div className="flex flex-col">
       {false && data.config.showSkills && skills.length ? (
         <section id="skills" className="border-y border-slate-100 bg-white py-16">
           <div className="mx-auto max-w-7xl px-8">
             <p className="mb-3 text-center text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">{skillsCopy.label}</p>
             <h2 className="mb-10 text-center text-3xl font-extrabold tracking-tight text-[#0B0F19]">{skillsCopy.title}</h2>
             <div className="grid grid-cols-1 overflow-hidden rounded-2xl border border-slate-100 bg-slate-50 sm:grid-cols-2 lg:grid-cols-5">
-              {skills.slice(0, 10).map((skill) => (
+              {previewSkills.map((skill) => (
                 <div key={skill.id || skill.name} className="border-b border-r border-slate-100 bg-white px-6 py-7 transition hover:bg-slate-50/50">
                   <div className="flex items-center justify-between gap-3">
                     <span className="flex min-w-0 items-center gap-1.5 text-sm font-extrabold tracking-wide text-slate-700"><Sparkles className="h-4 w-4 flex-none text-indigo-500" /> <span className="truncate">{skill.name}</span></span>
@@ -286,12 +300,19 @@ export function TemplateJakarta({ data }: { data: SiteData }) {
                 </div>
               ))}
             </div>
+            {hiddenSkillCount ? (
+              <div className="mt-8 text-center">
+                <button type="button" onClick={() => setShowAllSkills(true)} className="rounded-xl bg-[#0B0F19] px-5 py-3 text-xs font-bold text-white shadow-sm transition hover:bg-black">
+                  查看全部技能 +{hiddenSkillCount}
+                </button>
+              </div>
+            ) : null}
           </div>
         </section>
       ) : null}
 
       {projects.length ? (
-        <section id="projects" className="bg-[#FAFAFC] py-24">
+        <section id="projects" className="bg-[#FAFAFC] py-24" style={{ order: sectionOrder.projects }}>
           <div className="mx-auto max-w-7xl px-8">
             <SectionTitle label={projectsCopy.label} title={projectsCopy.title} copy={projectsCopy.description} />
             <div className={`grid grid-cols-1 gap-8 ${data.config.layout === 'list' ? '' : 'md:grid-cols-2'}`}>
@@ -302,7 +323,7 @@ export function TemplateJakarta({ data }: { data: SiteData }) {
       ) : null}
 
       {data.config.showVideos && videos.length ? (
-        <section id="videos" className="bg-white py-24">
+        <section id="videos" className="bg-white py-24" style={{ order: sectionOrder.videos }}>
           <div className="mx-auto max-w-7xl px-8">
             <SectionTitle label={videosCopy.label} title={videosCopy.title} copy={videosCopy.description} />
             <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
@@ -313,7 +334,7 @@ export function TemplateJakarta({ data }: { data: SiteData }) {
       ) : null}
 
       {data.config.showSkills && skills.length ? (
-        <section id="skills" className="border-y border-slate-100 bg-white py-16">
+        <section id="skills" className="border-y border-slate-100 bg-white py-16" style={{ order: sectionOrder.skills }}>
           <div className="mx-auto max-w-7xl px-8">
             <p className="mb-3 text-center text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">{skillsCopy.label}</p>
             <h2 className="mb-10 text-center text-3xl font-extrabold tracking-tight text-[#0B0F19]">{skillsCopy.title}</h2>
@@ -341,7 +362,7 @@ export function TemplateJakarta({ data }: { data: SiteData }) {
       ) : null}
 
       {data.config.showExperience && experiences.length ? (
-        <section className="bg-[#0B0F19] py-24 text-white">
+        <section id="experience" className="bg-[#0B0F19] py-24 text-white" style={{ order: sectionOrder.experience }}>
           <div className="mx-auto grid max-w-7xl grid-cols-1 gap-10 px-8 lg:grid-cols-[0.9fr_1.1fr]">
             <div className="jakarta-reveal">
               <span className="text-xs font-extrabold uppercase tracking-[0.24em] text-indigo-300">{experienceCopy.label}</span>
@@ -388,7 +409,7 @@ export function TemplateJakarta({ data }: { data: SiteData }) {
       ) : null}
 
       {data.config.showAwards && awards.length ? (
-        <section id="awards" className="bg-[#FAFAFC] py-24">
+        <section id="awards" className="bg-[#FAFAFC] py-24" style={{ order: sectionOrder.awards }}>
           <div className="mx-auto max-w-7xl px-8">
             <SectionTitle label={awardsCopy.label} title={awardsCopy.title} copy={awardsCopy.description} />
             <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
@@ -405,7 +426,7 @@ export function TemplateJakarta({ data }: { data: SiteData }) {
         </section>
       ) : null}
 
-      <section id="contact" className="bg-white py-24">
+      <section id="contact" className="bg-white py-24" style={{ order: sectionOrder.contact }}>
         <div className="mx-auto max-w-7xl px-8">
           <div className="jakarta-reveal overflow-hidden rounded-[2rem] bg-[#0B0F19] p-8 text-white md:p-12">
             <div className="grid gap-8 md:grid-cols-[1.2fr_.8fr] md:items-end">
@@ -423,6 +444,7 @@ export function TemplateJakarta({ data }: { data: SiteData }) {
           </div>
         </div>
       </section>
+      </div>
 
       <footer className="border-t border-slate-900 bg-[#0B0F19] py-16 text-slate-500">
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-6 px-8 text-center md:flex-row md:text-left">
@@ -435,6 +457,33 @@ export function TemplateJakarta({ data }: { data: SiteData }) {
         <div className="fixed inset-0 z-[80] flex items-center justify-center bg-slate-950/90 p-4 backdrop-blur-md" role="dialog" aria-modal="true" onClick={() => setPreviewImage(null)}>
           <button type="button" className="absolute right-6 top-6 rounded-full bg-white px-4 py-2 text-xs font-extrabold text-slate-900" onClick={() => setPreviewImage(null)}>Close</button>
           <img src={previewImage.src} alt={previewImage.alt} className="max-h-[86vh] max-w-[92vw] rounded-3xl object-contain shadow-2xl" onClick={(event) => event.stopPropagation()} />
+        </div>
+      ) : null}
+      {showAllSkills ? (
+        <div className="fixed inset-0 z-[75] flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-md" role="dialog" aria-modal="true" onClick={() => setShowAllSkills(false)}>
+          <div className="max-h-[86vh] w-full max-w-5xl overflow-y-auto rounded-[2rem] bg-white p-6 shadow-2xl md:p-8" onClick={(event) => event.stopPropagation()}>
+            <div className="mb-7 flex items-start justify-between gap-4">
+              <div>
+                <p className="text-xs font-extrabold uppercase tracking-[0.22em] text-indigo-600">{skillsCopy.label}</p>
+                <h3 className="mt-2 text-3xl font-extrabold text-[#0B0F19]">全部技能</h3>
+              </div>
+              <button type="button" className="rounded-full bg-slate-100 px-4 py-2 text-xs font-extrabold text-slate-700 transition hover:bg-slate-200" onClick={() => setShowAllSkills(false)}>Close</button>
+            </div>
+            <div className="grid grid-cols-1 overflow-hidden rounded-2xl border border-slate-100 bg-slate-50 sm:grid-cols-2 lg:grid-cols-3">
+              {skills.map((skill) => (
+                <div key={skill.id || skill.name} className="border-b border-r border-slate-100 bg-white px-6 py-6">
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="flex min-w-0 items-center gap-1.5 text-sm font-extrabold tracking-wide text-slate-700"><Sparkles className="h-4 w-4 flex-none text-indigo-500" /> <span className="truncate">{skill.name}</span></span>
+                    <span className="rounded-full bg-indigo-50 px-2.5 py-1 text-[10px] font-black text-indigo-600">{skill.proficiency}/5</span>
+                  </div>
+                  {skill.category ? <p className="mt-2 truncate text-[11px] font-bold uppercase tracking-[0.16em] text-slate-400">{skill.category}</p> : null}
+                  <div className="mt-5 h-1.5 overflow-hidden rounded-full bg-slate-100">
+                    <span className="block h-full rounded-full bg-indigo-600" style={{ width: `${skill.proficiency * 20}%` }} />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       ) : null}
     </div>

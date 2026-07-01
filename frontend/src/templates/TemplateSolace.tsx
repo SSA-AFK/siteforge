@@ -1,7 +1,7 @@
 import { ArrowRight, Mail, MapPin, Play, Star } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
-import { getSectionCopy } from '@siteforge/shared';
+import { getOrderedSections, getSectionCopy } from '@siteforge/shared';
 import type { Project, SiteData, VideoItem } from '@siteforge/shared';
 
 const fallbackHero = 'https://images.unsplash.com/photo-1502224562085-639556652f33?auto=format&fit=crop&w=1600&q=80';
@@ -65,6 +65,8 @@ export function TemplateSolace({ data }: { data: SiteData }) {
   const featuredProjects = projects.filter((project) => project.isFeatured);
   const sliderProjects = (featuredProjects.length ? featuredProjects : projects).slice(0, 4);
   const skills = sortByOrder(data.skills).filter((skill) => skill.name.trim());
+  const previewSkills = skills.slice(0, 6);
+  const hiddenSkillCount = Math.max(0, skills.length - previewSkills.length);
   const experiences = sortByOrder(data.experiences).filter((experience) => experience.position || experience.company);
   const awards = sortByOrder(data.awards ?? []).filter((award) => award.title.trim());
   const videos = sortByOrder(data.videos ?? [])
@@ -76,6 +78,7 @@ export function TemplateSolace({ data }: { data: SiteData }) {
   const [activeSlide, setActiveSlide] = useState(0);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [previewImage, setPreviewImage] = useState<{ src: string; alt: string } | null>(null);
+  const [showAllSkills, setShowAllSkills] = useState(false);
   const activeProject = sliderProjects[activeSlide] ?? projects[0];
   const projectsCopy = getSectionCopy(data, 'projects', { label: '[ Selected Work ]', title: 'Confidence starts with a focused story', description: 'Add projects in the form to drive this slider.' });
   const archiveCopy = getSectionCopy(data, 'projects', { label: '[ Project Archive ]', title: 'All work at a glance', description: 'A compact index for scanning every project without repeating the featured visual showcase above.' });
@@ -84,6 +87,17 @@ export function TemplateSolace({ data }: { data: SiteData }) {
   const skillsCopy = getSectionCopy(data, 'skills', { label: '[ Skill Stack ]', title: '' });
   const awardsCopy = getSectionCopy(data, 'awards', { label: '[ Honors ]', title: '' });
   const contactCopy = getSectionCopy(data, 'contact', { label: 'Contact', title: 'Invest in the most important story you have.', description: 'Available for selected collaborations, portfolio reviews, product design work, and digital experience projects.' });
+  const sectionOrder = Object.fromEntries(getOrderedSections(data).map((section, index) => [section, index])) as Record<string, number>;
+  const navTargets: Record<string, string> = { projects: 'projects', videos: 'videos', experience: 'experience', skills: 'skills', awards: 'skills', contact: 'contact' };
+  const navLabels: Record<string, string> = { projects: 'WORK', videos: 'VIDEOS', experience: 'EXPERIENCE', skills: 'SKILLS', awards: 'AWARDS', contact: 'CONTACT' };
+  const navSections = getOrderedSections(data).filter((section) => {
+    if (section === 'projects') return projects.length;
+    if (section === 'videos') return data.config.showVideos && videos.length;
+    if (section === 'experience') return data.config.showExperience && experiences.length;
+    if (section === 'skills') return data.config.showSkills && skills.length;
+    if (section === 'awards') return data.config.showAwards && awards.length && !data.config.showSkills;
+    return section === 'contact';
+  });
 
   useEffect(() => {
     if (sliderProjects.length <= 1) return undefined;
@@ -183,9 +197,7 @@ export function TemplateSolace({ data }: { data: SiteData }) {
           <a href="#home" className="solace-interactive text-xl font-bold tracking-tight text-[#021b13]">{data.user.username || data.user.displayName || 'siteforge'}</a>
           <nav className="hidden items-center gap-8 text-xs font-semibold tracking-[0.28em] text-[#021b13]/60 md:flex">
             <a className="solace-interactive transition hover:text-[#00b875]" href="#home">HOME</a>
-            <a className="solace-interactive transition hover:text-[#00b875]" href="#projects">WORK</a>
-            {data.config.showSkills && skills.length ? <a className="solace-interactive transition hover:text-[#00b875]" href="#skills">SKILLS</a> : null}
-            <a className="solace-interactive transition hover:text-[#00b875]" href="#contact">CONTACT</a>
+            {navSections.map((section) => <a key={section} className="solace-interactive transition hover:text-[#00b875]" href={`#${navTargets[section]}`}>{navLabels[section]}</a>)}
           </nav>
           <a href="#contact" className="solace-interactive rounded-full border border-[#021b13]/15 px-5 py-2.5 text-xs font-semibold tracking-[0.18em] text-[#021b13] transition hover:border-[#00b875]/50 hover:bg-[#00f294]/15">CONTACT ME</a>
         </header>
@@ -231,8 +243,9 @@ export function TemplateSolace({ data }: { data: SiteData }) {
         ) : null}
       </section>
 
+      <div className="flex flex-col">
       {sliderProjects.length ? (
-        <section id="projects" className="relative overflow-hidden bg-[#01110d] py-24">
+        <section id="projects" className="relative overflow-hidden bg-[#01110d] py-24" style={{ order: sectionOrder.projects }}>
           <div className="mx-auto grid max-w-7xl grid-cols-1 items-center gap-12 px-6 lg:grid-cols-12">
             <div className="solace-reveal flex min-h-[420px] flex-col justify-between lg:col-span-5">
               <div>
@@ -267,7 +280,7 @@ export function TemplateSolace({ data }: { data: SiteData }) {
       ) : null}
 
       {data.config.showExperience && experiences.length ? (
-        <section className="bg-[#f8faf9] py-24 text-[#021b13]">
+        <section id="experience" className="bg-[#f8faf9] py-24 text-[#021b13]" style={{ order: sectionOrder.experience }}>
           <div className="mx-auto max-w-7xl px-6">
             <div className="solace-reveal mb-14 text-center">
               <span className="text-xs font-bold uppercase tracking-[0.28em] text-[#637d77]">{experienceCopy.label}</span>
@@ -289,7 +302,7 @@ export function TemplateSolace({ data }: { data: SiteData }) {
       ) : null}
 
       {projects.length ? (
-        <section className="bg-[#f8faf9] py-24 text-[#021b13]">
+        <section className="bg-[#f8faf9] py-24 text-[#021b13]" style={{ order: sectionOrder.projects }}>
           <div className="mx-auto max-w-7xl px-6">
             <div className="solace-reveal mb-12 flex flex-col justify-between gap-5 md:flex-row md:items-end">
               <div>
@@ -322,7 +335,7 @@ export function TemplateSolace({ data }: { data: SiteData }) {
       ) : null}
 
       {data.config.showVideos && videos.length ? (
-        <section className="bg-[#01110d] py-24">
+        <section id="videos" className="bg-[#01110d] py-24" style={{ order: sectionOrder.videos }}>
           <div className="mx-auto max-w-7xl px-6">
             <div className="solace-reveal mb-12"><p className="text-xs font-bold uppercase tracking-[0.28em] text-[#00f294]">{videosCopy.label}</p><h2 className="mt-4 text-4xl font-light">{videosCopy.title}</h2>{videosCopy.description ? <p className="mt-4 max-w-xl text-sm leading-7 text-[#637d77]">{videosCopy.description}</p> : null}</div>
             <div className="grid grid-cols-1 gap-8 md:grid-cols-2">{videos.map((video) => <VideoCard key={video.id || video.videoUrl} video={video} />)}</div>
@@ -331,7 +344,7 @@ export function TemplateSolace({ data }: { data: SiteData }) {
       ) : null}
 
       {((data.config.showSkills && skills.length) || (data.config.showAwards && awards.length)) ? (
-        <section id="skills" className="bg-[#f8faf9] py-24 text-[#021b13]">
+        <section id="skills" className="bg-[#f8faf9] py-24 text-[#021b13]" style={{ order: Math.min(sectionOrder.skills ?? 99, sectionOrder.awards ?? 99) }}>
           <div className="mx-auto grid max-w-7xl grid-cols-1 gap-8 px-6 lg:grid-cols-2">
             {data.config.showSkills && skills.length ? (
               <div className="solace-reveal rounded-[2rem] border border-emerald-100 bg-white p-8 shadow-sm">
@@ -339,8 +352,13 @@ export function TemplateSolace({ data }: { data: SiteData }) {
                 {skillsCopy.title ? <h2 className="mt-4 text-3xl font-light">{skillsCopy.title}</h2> : null}
                 {skillsCopy.description ? <p className="mt-3 text-sm leading-7 text-[#637d77]">{skillsCopy.description}</p> : null}
                 <div className="mt-8 space-y-5">
-                  {skills.map((skill) => <div key={skill.id || skill.name}><div className="mb-2 flex justify-between text-sm font-semibold"><span>{skill.name}</span><span>{skill.proficiency}/5</span></div><div className="h-2 overflow-hidden rounded-full bg-emerald-100"><span className="block h-full rounded-full bg-[#00f294]" style={{ width: `${skill.proficiency * 20}%` }} /></div></div>)}
+                  {previewSkills.map((skill) => <div key={skill.id || skill.name}><div className="mb-2 flex justify-between text-sm font-semibold"><span>{skill.name}</span><span>{skill.proficiency}/5</span></div><div className="h-2 overflow-hidden rounded-full bg-emerald-100"><span className="block h-full rounded-full bg-[#00f294]" style={{ width: `${skill.proficiency * 20}%` }} /></div></div>)}
                 </div>
+                {hiddenSkillCount ? (
+                  <button type="button" onClick={() => setShowAllSkills(true)} className="solace-interactive mt-8 rounded-full border border-[#021b13]/10 px-5 py-2.5 text-xs font-bold uppercase tracking-[0.16em] text-[#021b13] transition hover:border-[#00b875]/50 hover:bg-[#00f294]/15">
+                    View all skills +{hiddenSkillCount}
+                  </button>
+                ) : null}
               </div>
             ) : null}
             {data.config.showAwards && awards.length ? (
@@ -357,7 +375,7 @@ export function TemplateSolace({ data }: { data: SiteData }) {
         </section>
       ) : null}
 
-      <section id="contact" className="relative overflow-hidden bg-[#01110d] py-24 text-white">
+      <section id="contact" className="relative overflow-hidden bg-[#01110d] py-24 text-white" style={{ order: sectionOrder.contact }}>
         <div className="solace-glow bottom-[-220px] left-[20%]" />
         <div className="relative z-10 mx-auto grid max-w-7xl grid-cols-1 items-center gap-12 px-6 lg:grid-cols-12">
           <div className="solace-reveal space-y-8 lg:col-span-8">
@@ -372,6 +390,7 @@ export function TemplateSolace({ data }: { data: SiteData }) {
           </div>
         </div>
       </section>
+      </div>
 
       {selectedProject ? (
         <div className="solace-modal-overlay fixed inset-0 z-[90] flex items-center justify-center bg-[#01110d]/88 p-4 backdrop-blur-xl" role="dialog" aria-modal="true">
@@ -409,6 +428,34 @@ export function TemplateSolace({ data }: { data: SiteData }) {
                 ))}
               </div>
             ) : null}
+          </div>
+        </div>
+      ) : null}
+
+      {showAllSkills ? (
+        <div className="solace-modal-overlay fixed inset-0 z-[92] flex items-center justify-center bg-[#01110d]/88 p-4 backdrop-blur-xl" role="dialog" aria-modal="true" onClick={() => setShowAllSkills(false)}>
+          <div className="solace-modal-panel max-h-[86vh] w-full max-w-5xl overflow-y-auto rounded-[2rem] p-6 text-white md:p-8" onClick={(event) => event.stopPropagation()}>
+            <div className="mb-7 flex items-start justify-between gap-4">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-[0.28em] text-[#00f294]">{skillsCopy.label}</p>
+                <h3 className="mt-3 text-3xl font-light">Skill Stack</h3>
+              </div>
+              <button type="button" onClick={() => setShowAllSkills(false)} className="solace-interactive rounded-full border border-white/10 px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-[#a3e3cc] transition hover:border-[#00f294] hover:text-[#00f294]">Close</button>
+            </div>
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              {skills.map((skill) => (
+                <div key={skill.id || skill.name} className="rounded-[1.5rem] border border-white/10 bg-white/[.04] p-5">
+                  <div className="mb-3 flex items-center justify-between gap-4 text-sm font-semibold">
+                    <span>{skill.name}</span>
+                    <span className="text-[#00f294]">{skill.proficiency}/5</span>
+                  </div>
+                  {skill.category ? <p className="mb-3 text-xs uppercase tracking-[0.2em] text-[#a3e3cc]/55">{skill.category}</p> : null}
+                  <div className="h-2 overflow-hidden rounded-full bg-[#a3e3cc]/12">
+                    <span className="block h-full rounded-full bg-[#00f294]" style={{ width: `${skill.proficiency * 20}%` }} />
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       ) : null}
