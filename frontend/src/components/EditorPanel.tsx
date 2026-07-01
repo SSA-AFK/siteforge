@@ -3,7 +3,9 @@ import { useState, type ReactNode } from 'react';
 import type { Award, Experience, Project, ProjectImage, Skill, SocialLink, TemplateId, VideoItem } from '@siteforge/shared';
 import { useSiteStore } from '../store/siteStore';
 import { publishSite } from '../utils/exportHtml';
+import { defaultPrivacySettings, type PrivacySettings } from '../utils/privacy';
 import { ImageUploadField } from './ImageUploadField';
+import { PublishSettingsModal } from './PublishSettingsModal';
 import { VideoUploadField } from './VideoUploadField';
 
 function nextId(items: Array<{ id?: number }>) {
@@ -36,11 +38,16 @@ const inputClass = 'w-full rounded-lg border border-slate-200 bg-white px-3 py-2
 export function EditorPanel() {
   const { data, templateId, setTemplateId, updateUser, updateConfig, upsertProject, removeProject, upsertExperience, removeExperience, upsertSkill, removeSkill, upsertAward, removeAward, upsertSocialLink, removeSocialLink, upsertVideo, removeVideo, reset } = useSiteStore();
   const [publishedUrl, setPublishedUrl] = useState('');
+  const [privacySettings, setPrivacySettings] = useState<PrivacySettings>(defaultPrivacySettings);
+  const [isPublishModalOpen, setIsPublishModalOpen] = useState(false);
+  const [isPublishing, setIsPublishing] = useState(false);
   const templateCapabilities = {
     snowly: { primaryColor: true, heroImages: true, layout: true, awards: true, videos: true, blog: true },
     elena: { primaryColor: false, heroImages: false, layout: true, awards: true, videos: true, blog: false },
     aura: { primaryColor: false, heroImages: false, layout: true, awards: true, videos: true, blog: false },
-    solace: { primaryColor: false, heroImages: true, layout: true, awards: true, videos: true, blog: false }
+    solace: { primaryColor: false, heroImages: true, layout: true, awards: true, videos: true, blog: false },
+    jakarta: { primaryColor: false, heroImages: true, layout: true, awards: true, videos: true, blog: false },
+    aqua: { primaryColor: false, heroImages: false, layout: true, awards: true, videos: true, blog: false }
   }[templateId];
   const shouldHidePrimaryColor = !templateCapabilities.primaryColor;
 
@@ -56,11 +63,17 @@ export function EditorPanel() {
     }
   }
 
-  async function publishCurrentSite() {
-    const result = await publishSite(data, templateId);
-    setPublishedUrl(result.url);
-    if (navigator.clipboard) {
-      await navigator.clipboard.writeText(result.url).catch(() => undefined);
+  async function publishCurrentSite(publicData = data) {
+    setIsPublishing(true);
+    try {
+      const result = await publishSite(publicData, templateId);
+      setPublishedUrl(result.url);
+      setIsPublishModalOpen(false);
+      if (navigator.clipboard) {
+        await navigator.clipboard.writeText(result.url).catch(() => undefined);
+      }
+    } finally {
+      setIsPublishing(false);
     }
   }
 
@@ -212,7 +225,7 @@ export function EditorPanel() {
           <button className="inline-flex items-center justify-center gap-2 rounded-lg bg-slate-950 px-3 py-2.5 text-xs font-extrabold text-white transition hover:bg-slate-800" onClick={() => saveToServer().catch((error) => alert(error.message))}>
             <Save className="h-4 w-4" /> 保存
           </button>
-          <button className="inline-flex items-center justify-center gap-2 rounded-lg px-3 py-2.5 text-xs font-extrabold text-white transition hover:opacity-90" style={{ backgroundColor: templateCapabilities.primaryColor ? data.config.primaryColor : '#0f172a' }} onClick={() => publishCurrentSite().catch((error) => alert(error.message))}>
+          <button className="inline-flex items-center justify-center gap-2 rounded-lg px-3 py-2.5 text-xs font-extrabold text-white transition hover:opacity-90" style={{ backgroundColor: templateCapabilities.primaryColor ? data.config.primaryColor : '#0f172a' }} onClick={() => setIsPublishModalOpen(true)}>
             <ExternalLink className="h-4 w-4" /> 发布
           </button>
         </div>
@@ -244,6 +257,8 @@ export function EditorPanel() {
               <option value="elena">Elena / 暗色荧光交互作品集</option>
               <option value="aura">Aura / 赛博终端 WebGL 风格</option>
               <option value="solace">Solace / 深绿玻璃高级作品集</option>
+              <option value="jakarta">Jakarta / 亮色 SaaS 产品作品集</option>
+              <option value="aqua">Aqua / 紫粉玻璃互动作品集</option>
             </select>
           </Field>
           <Field label="主色"><input className={`${inputClass} h-12`} type="color" value={data.config.primaryColor} onChange={(event) => updateConfig({ primaryColor: event.target.value })} /></Field>
@@ -439,6 +454,17 @@ export function EditorPanel() {
           ))}
         </section>
       </div>
+      {isPublishModalOpen ? (
+        <PublishSettingsModal
+          data={data}
+          templateId={templateId}
+          settings={privacySettings}
+          isPublishing={isPublishing}
+          onClose={() => setIsPublishModalOpen(false)}
+          onChange={setPrivacySettings}
+          onPublish={(publicData) => publishCurrentSite(publicData).catch((error) => alert(error.message))}
+        />
+      ) : null}
     </aside>
   );
 }

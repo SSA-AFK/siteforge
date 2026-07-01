@@ -57,7 +57,7 @@ function loadInitialData(): SiteData {
 function loadInitialTemplateId(): TemplateId {
   if (typeof window === 'undefined') return 'snowly';
   const templateId = window.localStorage.getItem(TEMPLATE_STORAGE_KEY);
-  return templateId === 'aura' || templateId === 'elena' || templateId === 'snowly' || templateId === 'solace' ? templateId : 'snowly';
+  return templateId === 'aura' || templateId === 'elena' || templateId === 'snowly' || templateId === 'solace' || templateId === 'jakarta' || templateId === 'aqua' ? templateId : 'snowly';
 }
 
 function persist(data: SiteData) {

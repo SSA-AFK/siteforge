@@ -24,9 +24,21 @@ function SpotlightCard({ children, className = '' }: { children: ReactNode; clas
 
 function VideoCard({ video }: { video: VideoItem }) {
   const direct = isDirectVideoUrl(video.videoUrl);
+  const featured = Boolean(video.isFeatured);
   return (
-    <article className="solace-reveal overflow-hidden rounded-[2rem] border border-white/10 bg-[#021b13]/80 p-4 text-white shadow-2xl shadow-black/30 backdrop-blur-xl">
-      <div className="relative aspect-video overflow-hidden rounded-[1.5rem] bg-black/50">
+    <article
+      className={`solace-reveal overflow-hidden rounded-[2rem] border p-4 text-white shadow-2xl backdrop-blur-xl transition duration-500 ${
+        featured
+          ? 'md:col-span-2 border-[#00f294]/45 bg-[linear-gradient(135deg,rgba(0,242,148,0.16),rgba(2,27,19,0.9)_42%,rgba(1,17,13,0.92))] shadow-[#00f294]/15'
+          : 'border-white/10 bg-[#021b13]/80 shadow-black/30'
+      }`}
+    >
+      <div className={`relative overflow-hidden rounded-[1.5rem] bg-black/50 ${featured ? 'aspect-[21/9]' : 'aspect-video'}`}>
+        {featured ? (
+          <span className="pointer-events-none absolute left-4 top-4 z-10 rounded-full border border-[#00f294]/40 bg-[#01110d]/70 px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.26em] text-[#00f294] backdrop-blur-md">
+            Featured Reel
+          </span>
+        ) : null}
         {direct ? (
           <video className="h-full w-full object-cover" src={video.videoUrl} poster={video.thumbnailUrl} controls />
         ) : (
@@ -39,8 +51,8 @@ function VideoCard({ video }: { video: VideoItem }) {
         )}
       </div>
       <p className="mt-5 text-[10px] font-bold uppercase tracking-[0.28em] text-[#00f294]">{video.platform}</p>
-      <h3 className="mt-2 text-xl font-semibold">{video.title || 'Video'}</h3>
-      {video.description ? <p className="mt-3 text-xs leading-6 text-[#a3e3cc]/75">{video.description}</p> : null}
+      <h3 className={`mt-2 font-semibold ${featured ? 'text-3xl' : 'text-xl'}`}>{video.title || 'Video'}</h3>
+      {video.description ? <p className={`${featured ? 'max-w-3xl text-sm' : 'text-xs'} mt-3 leading-6 text-[#a3e3cc]/75`}>{video.description}</p> : null}
     </article>
   );
 }
@@ -54,11 +66,15 @@ export function TemplateSolace({ data }: { data: SiteData }) {
   const skills = sortByOrder(data.skills).filter((skill) => skill.name.trim());
   const experiences = sortByOrder(data.experiences).filter((experience) => experience.position || experience.company);
   const awards = sortByOrder(data.awards ?? []).filter((award) => award.title.trim());
-  const videos = sortByOrder(data.videos ?? []).filter((video) => video.videoUrl.trim());
+  const videos = sortByOrder(data.videos ?? [])
+    .filter((video) => video.videoUrl.trim())
+    .sort((a, b) => Number(b.isFeatured) - Number(a.isFeatured) || a.displayOrder - b.displayOrder);
   const socials = sortByOrder(data.socialLinks);
   const heroImages = (data.config.heroImages ?? []).filter(Boolean);
   const heroImage = heroImages[0] || data.user.avatarUrl || fallbackHero;
   const [activeSlide, setActiveSlide] = useState(0);
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+  const [previewImage, setPreviewImage] = useState<{ src: string; alt: string } | null>(null);
   const activeProject = sliderProjects[activeSlide] ?? projects[0];
 
   useEffect(() => {
@@ -135,8 +151,11 @@ export function TemplateSolace({ data }: { data: SiteData }) {
         .solace-reveal { opacity:0; transform:translate3d(0, 42px, 0); transition:opacity .95s cubic-bezier(.16,1,.3,1), transform .95s cubic-bezier(.16,1,.3,1); }
         .solace-visible { opacity:1; transform:translate3d(0, 0, 0); }
         .solace-nav { background:rgba(255,255,255,.78); backdrop-filter:blur(22px); border:1px solid rgba(255,255,255,.58); box-shadow:0 18px 60px rgba(1,17,13,.16); }
-        .solace-title-highlight { color:#00f294; text-shadow:0 0 38px rgba(0,242,148,.18); }
+        .solace-title-highlight { color:#bffbe0; text-shadow:0 0 28px rgba(0,242,148,.12); }
+        .solace-hero-card { background:linear-gradient(145deg, rgba(3,38,27,.72), rgba(1,17,13,.5)); border-color:rgba(163,227,204,.12); box-shadow:inset 0 1px 1px rgba(255,255,255,.08), 0 24px 70px rgba(0,0,0,.28); }
         .solace-skill-dock { background:rgba(1,17,13,.62); backdrop-filter:blur(18px); border:1px solid rgba(255,255,255,.08); box-shadow:0 18px 60px rgba(0,0,0,.22); }
+        .solace-modal-panel { background:linear-gradient(145deg, rgba(3,38,27,.94), rgba(1,17,13,.92)); border:1px solid rgba(163,227,204,.16); box-shadow:0 30px 100px rgba(0,0,0,.52), inset 0 1px 1px rgba(255,255,255,.08); }
+        .solace-modal-overlay, .solace-modal-overlay * { cursor:auto !important; }
         .solace-progress { transition:width .45s ease; }
         .solace-cursor { transition:width .24s ease, height .24s ease, border-color .24s ease, background-color .24s ease; }
         .solace-cursor-active { width:48px; height:48px; border-color:#00f294; background:rgba(0,242,148,.06); }
@@ -163,23 +182,23 @@ export function TemplateSolace({ data }: { data: SiteData }) {
           <a href="#contact" className="solace-interactive rounded-full border border-[#021b13]/15 px-5 py-2.5 text-xs font-semibold tracking-[0.18em] text-[#021b13] transition hover:border-[#00b875]/50 hover:bg-[#00f294]/15">CONTACT ME</a>
         </header>
 
-        <div className="relative z-10 mx-auto grid w-full max-w-7xl grid-cols-1 items-center gap-10 px-6 pb-24 pt-20 lg:grid-cols-12">
+        <div className="relative z-10 mx-auto grid w-full max-w-7xl grid-cols-1 items-center gap-12 px-6 pb-24 pt-16 lg:grid-cols-12">
           <div className="solace-reveal lg:col-span-7">
-            <p className="mb-5 text-sm font-medium uppercase tracking-[0.36em] text-[#00f294]">{data.user.title || 'Creative Portfolio'}</p>
-            <h1 className="max-w-4xl text-5xl font-semibold leading-[0.96] tracking-tight text-white md:text-7xl">
-              <span className="block text-white/78">{data.user.displayName || 'Your portfolio'}</span>
-              <span className="solace-title-highlight block">{data.user.bio || 'Crafting better digital experiences.'}</span>
+            <p className="mb-5 text-xs font-semibold uppercase tracking-[0.42em] text-[#00f294]">{data.user.title || 'Creative Portfolio'}</p>
+            <h1 className="max-w-3xl text-5xl font-semibold leading-[1.02] tracking-tight text-white/86 md:text-6xl">
+              <span className="block">{data.user.displayName || 'Your portfolio'}</span>
+              <span className="solace-title-highlight mt-4 block text-2xl font-medium leading-[1.35] tracking-normal md:text-4xl">{data.user.bio || 'Crafting better digital experiences.'}</span>
             </h1>
-            <div className="mt-8 flex flex-wrap items-center gap-4">
-              <a href="#projects" className="solace-interactive inline-flex items-center gap-3 rounded-full bg-[#00f294] px-7 py-4 text-xs font-bold uppercase tracking-[0.2em] text-[#021b13] shadow-[0_0_22px_rgba(0,242,148,.35)] transition hover:brightness-110">Explore Work <ArrowRight className="h-4 w-4" /></a>
-              {data.user.location ? <span className="rounded-full border border-white/10 bg-white/[.04] px-4 py-3 text-xs font-semibold tracking-[0.12em] text-[#a3e3cc]/70">{data.user.location}</span> : null}
+            <div className="mt-9 flex flex-wrap items-center gap-4">
+              <a href="#projects" className="solace-interactive inline-flex items-center gap-3 rounded-full bg-[#00f294] px-7 py-4 text-xs font-bold uppercase tracking-[0.2em] text-[#021b13] shadow-[0_0_20px_rgba(0,242,148,.24)] transition hover:brightness-110">Explore Work <ArrowRight className="h-4 w-4" /></a>
+              {data.user.location ? <span className="rounded-full border border-[#a3e3cc]/15 bg-[#a3e3cc]/[.06] px-4 py-3 text-xs font-semibold tracking-[0.12em] text-[#a3e3cc]/72">{data.user.location}</span> : null}
             </div>
           </div>
           <div className="solace-reveal lg:col-span-5" style={{ transitionDelay: '160ms' }}>
-            <div className="solace-glass rounded-[2rem] p-7">
+            <div className="solace-glass solace-hero-card rounded-[2rem] p-7">
               {data.user.avatarUrl ? <img src={data.user.avatarUrl} alt={data.user.displayName} className="mb-6 h-16 w-16 rounded-2xl object-cover ring-1 ring-white/15" /> : null}
-              <p className="text-xs font-bold uppercase tracking-[0.28em] text-[#00f294]">Portfolio Signal</p>
-              <p className="mt-5 max-w-sm text-sm leading-7 text-[#a3e3cc]/78">{data.user.fullBio || 'A refined portfolio template for focused storytelling, selected projects, measurable skills, and polished motion.'}</p>
+              <p className="text-[11px] font-bold uppercase tracking-[0.32em] text-[#00f294]">Portfolio Signal</p>
+              <p className="mt-5 max-w-sm text-sm leading-7 text-[#d7f7ea]/76">{data.user.fullBio || 'A refined portfolio template for focused storytelling, selected projects, measurable skills, and polished motion.'}</p>
               <div className="mt-8 grid grid-cols-3 gap-3 text-center">
                 <span className="rounded-2xl border border-white/10 bg-white/[.04] p-3"><b className="block text-lg text-white">{projects.length}</b><small className="text-[10px] uppercase tracking-[0.16em] text-white/45">Works</small></span>
                 {data.config.showSkills ? <span className="rounded-2xl border border-white/10 bg-white/[.04] p-3"><b className="block text-lg text-white">{skills.length}</b><small className="text-[10px] uppercase tracking-[0.16em] text-white/45">Skills</small></span> : null}
@@ -211,7 +230,7 @@ export function TemplateSolace({ data }: { data: SiteData }) {
               <div>
                 <span className="text-xs font-bold uppercase tracking-[0.28em] text-[#637d77]">[ Selected Work ]</span>
                 <h2 className="mt-6 text-4xl font-light leading-tight tracking-tight md:text-5xl">Confidence starts<br /><span className="font-normal text-[#a3e3cc]">with a focused story</span></h2>
-                <a href={activeProject?.projectUrl || '#contact'} className="solace-interactive mt-8 inline-flex rounded-full bg-[#00f294] px-5 py-2.5 text-xs font-bold text-[#021b13] transition hover:brightness-110">View Project</a>
+                <button type="button" onClick={() => activeProject && setSelectedProject(activeProject)} className="solace-interactive mt-8 inline-flex rounded-full bg-[#00f294] px-5 py-2.5 text-xs font-bold text-[#021b13] transition hover:brightness-110">View Project</button>
               </div>
               <div className="mt-12 space-y-8">
                 <p className="min-h-[72px] max-w-sm text-xs leading-7 text-[#637d77]">{activeProject?.description || activeProject?.content || 'Add projects in the form to drive this slider.'}</p>
@@ -225,7 +244,9 @@ export function TemplateSolace({ data }: { data: SiteData }) {
               </div>
             </div>
             <SpotlightCard className="solace-reveal h-[550px] rounded-[2rem] shadow-2xl shadow-black/40 lg:col-span-7">
-              <img src={projectImage(activeProject)} alt={activeProject?.title || 'Selected project'} className="h-full w-full object-cover object-center opacity-85 saturate-90 transition duration-700 hover:scale-105" />
+              <button type="button" className="solace-interactive h-full w-full" onClick={() => setPreviewImage({ src: projectImage(activeProject), alt: activeProject?.title || 'Selected project' })}>
+                <img src={projectImage(activeProject)} alt={activeProject?.title || 'Selected project'} className="h-full w-full object-cover object-center opacity-85 saturate-90 transition duration-700 hover:scale-105" />
+              </button>
               <div className="absolute inset-0 bg-gradient-to-t from-[#01110d]/80 via-transparent to-transparent" />
               <div className="solace-glass absolute bottom-6 left-6 right-6 rounded-2xl p-6 md:left-auto md:w-[340px]">
                 <p className="text-xs font-bold uppercase tracking-[0.22em] text-[#00f294]">{activeProject?.category || 'Portfolio'}</p>
@@ -258,20 +279,32 @@ export function TemplateSolace({ data }: { data: SiteData }) {
         </section>
       ) : null}
 
-      {projects.length > sliderProjects.length ? (
-        <section className="bg-white py-24 text-[#021b13]">
+      {projects.length ? (
+        <section className="bg-[#f8faf9] py-24 text-[#021b13]">
           <div className="mx-auto max-w-7xl px-6">
-            <div className="solace-reveal mb-14 text-center">
-              <span className="text-xs font-bold uppercase tracking-[0.28em] text-[#637d77]">[ The Approach ]</span>
-              <h2 className="mt-4 text-4xl font-light tracking-tight md:text-5xl">More work, cleaner proof</h2>
+            <div className="solace-reveal mb-12 flex flex-col justify-between gap-5 md:flex-row md:items-end">
+              <div>
+                <span className="text-xs font-bold uppercase tracking-[0.28em] text-[#637d77]">[ Project Archive ]</span>
+                <h2 className="mt-4 text-4xl font-light tracking-tight md:text-5xl">All work at a glance</h2>
+              </div>
+              <p className="max-w-sm text-sm leading-7 text-[#637d77]">A compact index for scanning every project without repeating the featured visual showcase above.</p>
             </div>
-            <div className={`grid grid-cols-1 gap-8 ${data.config.layout === 'list' ? '' : 'md:grid-cols-3'}`}>
-              {projects.slice(sliderProjects.length).map((project) => (
-                <article key={project.id || project.slug} className="solace-reveal group">
-                  {project.coverImage ? <a href={project.coverImage} target="_blank" rel="noreferrer" className="solace-interactive block aspect-square overflow-hidden rounded-[2rem] bg-slate-100 shadow-sm"><img src={project.coverImage} alt={project.title} className="h-full w-full object-cover brightness-110 transition duration-700 group-hover:scale-105" /></a> : null}
-                  <h3 className="mt-6 text-xl font-semibold">{project.title}</h3>
-                  <p className="mt-2 text-xs font-bold uppercase tracking-[0.2em] text-[#637d77]">{project.category}</p>
-                  <p className="mt-4 text-xs leading-6 text-[#637d77]">{project.description}</p>
+            <div className="grid grid-cols-1 gap-4">
+              {projects.map((project, index) => (
+                <article key={project.id || project.slug} className="solace-reveal group grid grid-cols-[auto_1fr] items-center gap-4 rounded-[1.5rem] border border-emerald-100 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-200 hover:shadow-md md:grid-cols-[80px_1fr_auto]">
+                  <button type="button" onClick={() => setPreviewImage({ src: projectImage(project), alt: project.title })} className="solace-interactive h-16 w-16 overflow-hidden rounded-2xl bg-emerald-50 md:h-20 md:w-20">
+                    <img src={projectImage(project)} alt={project.title} className="h-full w-full object-cover brightness-105 transition group-hover:scale-105" />
+                  </button>
+                  <div>
+                    <div className="mb-2 flex flex-wrap items-center gap-2">
+                      <span className="text-[10px] font-bold uppercase tracking-[0.22em] text-[#00b875]">#{String(index + 1).padStart(2, '0')}</span>
+                      {project.isFeatured ? <span className="rounded-full bg-[#00f294]/15 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-[#007d55]">Featured</span> : null}
+                    </div>
+                    <h3 className="text-xl font-semibold">{project.title || 'Untitled Project'}</h3>
+                    <p className="mt-1 text-xs font-bold uppercase tracking-[0.2em] text-[#637d77]">{project.category}</p>
+                    {project.description ? <p className="mt-3 max-w-2xl text-xs leading-6 text-[#637d77]">{project.description}</p> : null}
+                  </div>
+                  <button type="button" onClick={() => setSelectedProject(project)} className="solace-interactive col-span-2 rounded-full border border-[#021b13]/10 px-4 py-2 text-xs font-bold uppercase tracking-[0.16em] text-[#021b13] transition hover:border-[#00b875]/50 hover:bg-[#00f294]/15 md:col-span-1">Details</button>
                 </article>
               ))}
             </div>
@@ -325,6 +358,53 @@ export function TemplateSolace({ data }: { data: SiteData }) {
           </div>
         </div>
       </section>
+
+      {selectedProject ? (
+        <div className="solace-modal-overlay fixed inset-0 z-[90] flex items-center justify-center bg-[#01110d]/88 p-4 backdrop-blur-xl" role="dialog" aria-modal="true">
+          <div className="solace-modal-panel max-h-[88vh] w-full max-w-5xl overflow-y-auto rounded-[2rem] p-5 text-white md:p-8">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="text-[11px] font-bold uppercase tracking-[0.3em] text-[#00f294]">{selectedProject.category || 'Selected Work'}</p>
+                <h3 className="mt-3 text-3xl font-semibold md:text-5xl">{selectedProject.title || 'Untitled Project'}</h3>
+              </div>
+              <button type="button" onClick={() => setSelectedProject(null)} className="solace-interactive rounded-full border border-white/10 px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-[#a3e3cc] transition hover:border-[#00f294] hover:text-[#00f294]">Close</button>
+            </div>
+            {projectImage(selectedProject) ? (
+              <button type="button" onClick={() => setPreviewImage({ src: projectImage(selectedProject), alt: selectedProject.title })} className="solace-interactive mt-6 block max-h-[360px] w-full overflow-hidden rounded-[1.5rem] bg-black/30">
+                <img src={projectImage(selectedProject)} alt={selectedProject.title} className="h-full max-h-[360px] w-full object-cover brightness-105" />
+              </button>
+            ) : null}
+            <div className="mt-7 grid gap-7 md:grid-cols-[1.2fr_.8fr]">
+              <div className="space-y-4 text-sm leading-7 text-[#d7f7ea]/78">
+                {selectedProject.description ? <p>{selectedProject.description}</p> : null}
+                {selectedProject.content ? <p className="whitespace-pre-line">{selectedProject.content}</p> : null}
+              </div>
+              <div className="rounded-[1.5rem] border border-white/10 bg-white/[.04] p-5">
+                {selectedProject.role ? <p className="text-xs uppercase tracking-[0.2em] text-[#a3e3cc]/55">Role<br /><span className="mt-2 block text-sm normal-case tracking-normal text-white">{selectedProject.role}</span></p> : null}
+                {selectedProject.tools ? <p className="mt-5 text-xs uppercase tracking-[0.2em] text-[#a3e3cc]/55">Tools<br /><span className="mt-2 block text-sm normal-case tracking-normal text-white">{selectedProject.tools}</span></p> : null}
+                {selectedProject.startDate || selectedProject.endDate ? <p className="mt-5 text-xs uppercase tracking-[0.2em] text-[#a3e3cc]/55">Period<br /><span className="mt-2 block text-sm normal-case tracking-normal text-white">{selectedProject.startDate}{selectedProject.endDate ? ` - ${selectedProject.endDate}` : ''}</span></p> : null}
+                {selectedProject.projectUrl ? <a href={selectedProject.projectUrl} target="_blank" rel="noreferrer" className="solace-interactive mt-6 inline-flex rounded-full bg-[#00f294] px-5 py-2.5 text-xs font-bold uppercase tracking-[0.18em] text-[#021b13]">Open Link</a> : null}
+              </div>
+            </div>
+            {(selectedProject.images ?? []).filter((image) => image.imageUrl).length ? (
+              <div className="mt-7 grid grid-cols-2 gap-3 md:grid-cols-4">
+                {(selectedProject.images ?? []).filter((image) => image.imageUrl).map((image) => (
+                  <button key={image.id || image.imageUrl} type="button" onClick={() => setPreviewImage({ src: image.imageUrl, alt: image.caption || selectedProject.title })} className="solace-interactive aspect-square overflow-hidden rounded-2xl bg-black/30">
+                    <img src={image.imageUrl} alt={image.caption || selectedProject.title} className="h-full w-full object-cover transition hover:scale-105" />
+                  </button>
+                ))}
+              </div>
+            ) : null}
+          </div>
+        </div>
+      ) : null}
+
+      {previewImage ? (
+        <div className="solace-modal-overlay fixed inset-0 z-[100] flex items-center justify-center bg-black/90 p-4 backdrop-blur-xl" role="dialog" aria-modal="true" onClick={() => setPreviewImage(null)}>
+          <button type="button" onClick={() => setPreviewImage(null)} className="solace-interactive absolute right-6 top-6 rounded-full border border-white/15 px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-white transition hover:border-[#00f294] hover:text-[#00f294]">Close</button>
+          <img src={previewImage.src} alt={previewImage.alt} className="max-h-[86vh] max-w-[92vw] rounded-[1.5rem] object-contain shadow-2xl" onClick={(event) => event.stopPropagation()} />
+        </div>
+      ) : null}
     </div>
   );
 }

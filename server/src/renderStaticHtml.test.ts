@@ -205,6 +205,8 @@ describe('renderStaticHtml', () => {
     expect(html).toContain(defaultSiteData.skills[0].name);
     expect(html).toContain(defaultSiteData.awards[0].title);
     expect(html).toContain(defaultSiteData.videos[0].title);
+    expect(html).toContain('video-card featured');
+    expect(html).toContain('Featured Reel');
     expect(html).toContain('CONTACT ME');
   });
 
@@ -228,5 +230,46 @@ describe('renderStaticHtml', () => {
     expect(html).not.toContain('Video showcase');
     expect(html).not.toContain('Skill Stack');
     expect(html).not.toContain('Honors');
+  });
+
+  it('exports Jakarta HTML with SaaS visuals and portfolio modules', () => {
+    const html = renderStaticHtml(defaultSiteData, 'jakarta');
+
+    expect(html).toContain('Jakarta Portfolio');
+    expect(html).not.toContain('Portfolio Builder');
+    expect(html).not.toContain('topbar');
+    expect(html).toContain('Now Featuring');
+    expect(html).toContain(defaultSiteData.projects[0].title);
+    expect(html).toContain(defaultSiteData.videos[0].title);
+    expect(html).toContain(defaultSiteData.skills[0].name);
+    expect(html).toContain(`${defaultSiteData.skills[0].proficiency}/5`);
+    expect(html).toContain('skill-bar');
+    expect(html).toContain(defaultSiteData.awards[0].title);
+    expect(html).toContain('metric-card');
+    expect(html).not.toContain('renderKeypad');
+    expect(html).not.toContain('P-10');
+  });
+
+  it('exports Aqua HTML with glass visuals and form-driven modules', () => {
+    const html = renderStaticHtml(defaultSiteData, 'aqua');
+
+    expect(html).toContain('Aqua Portfolio');
+    expect(html).not.toContain('marquee-track');
+    expect(html).toContain('class="particles"');
+    expect(html).toContain('particle-drift');
+    expect(html).toContain('card-center');
+    expect(html).toContain('orbit-saucer');
+    expect(html).toContain(defaultSiteData.projects[0].title);
+    expect(html).toContain('Experience Timeline');
+    expect(html).toContain(defaultSiteData.experiences[0].position);
+    expect(html).toContain('Skill Matrix');
+    expect(html).toContain(`${defaultSiteData.skills[0].proficiency}/5`);
+    expect(html).toContain('tool-meter');
+    expect(html).toContain('tool-orb');
+    expect(html).toContain(defaultSiteData.awards[0].title);
+    expect(html).toContain(defaultSiteData.videos[0].title);
+    expect(html).not.toContain('Project Cost Estimator');
+    expect(html).not.toContain('Select Project Type');
+    expect(html).not.toContain('skills-slider');
   });
 });

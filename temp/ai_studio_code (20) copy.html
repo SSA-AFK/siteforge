@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aqua.dev - Creative Developer & Interactive Designer Portfolio</title>
+    <!-- 引入 Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                    },
+                    colors: {
+                        brandBg: '#05030a',
+                        brandPurple: '#8570EE',
+                        brandPink: '#D946EF',
+                        brandTextMuted: '#9595B1'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* 全局深度背景与紫粉舞台光 */
+        body {
+            background-color: #05030a;
+            background-image: 
+                radial-gradient(circle at 50% -20%, rgba(133, 112, 238, 0.22) 0%, transparent 60%),
+                radial-gradient(circle at 10% 40%, rgba(133, 112, 238, 0.05) 0%, transparent 40%),
+                radial-gradient(circle at 90% 70%, rgba(217, 70, 239, 0.05) 0%, transparent 40%),
+                radial-gradient(circle at 50% 120%, rgba(133, 112, 238, 0.08) 0%, transparent 50%);
+            overflow-x: hidden;
+            color: #ffffff;
+        }
+
+        /* 纵向格栅线 */
+        .grid-lines {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            justify-content: space-between;
+            pointer-events: none;
+            z-index: 1;
+            padding: 0 4%;
+        }
+        .grid-line {
+            width: 1px;
+            height: 100%;
+            background: linear-gradient(to bottom, rgba(133, 112, 238, 0.02), rgba(133, 112, 238, 0.06) 50%, rgba(133, 112, 238, 0.02));
+            position: relative;
+        }
+
+        /* 磨砂玻璃态 */
+        .glass-card {
+            background: rgba(13, 10, 25, 0.5);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.07);
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .glass-card:hover {
+            border-color: rgba(133, 112, 238, 0.25);
+            box-shadow: 0 12px 40px rgba(133, 112, 238, 0.05);
+        }
+
+        /* 3D 作品透视效果 */
+        .deck-container {
+            perspective: 1500px;
+        }
+        .card-left {
+            transform: rotateY(20deg) translateZ(-30px) rotateX(4deg);
+            transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1), border-color 0.4s;
+        }
+        .card-left:hover {
+            transform: rotateY(8deg) translateZ(10px) rotateX(2deg);
+        }
+        .card-right {
+            transform: rotateY(-20deg) translateZ(-30px) rotateX(4deg);
+            transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1), border-color 0.4s;
+        }
+        .card-right:hover {
+            transform: rotateY(-8deg) translateZ(10px) rotateX(2deg);
+        }
+        .card-center {
+            transform: translateZ(40px) translateY(-10px);
+            box-shadow: 0 20px 50px rgba(133, 112, 238, 0.15);
+            border: 1px solid rgba(133, 112, 238, 0.25);
+        }
+
+        /* 跑马灯动画 */
+        @keyframes marquee {
+            0% { transform: translateX(0%); }
+            100% { transform: translateX(-50%); }
+        }
+        .animate-marquee {
+            animation: marquee 25s linear infinite;
+        }
+
+        /* 3D 旋转星轨动画（作为 3D 交互项目缩略图） */
+        .orbit-line {
+            border: 1px dashed rgba(133, 112, 238, 0.3);
+            transform: rotateX(72deg) rotateY(-12deg);
+        }
+        .orbit-ball {
+            animation: spinOrbit 9s linear infinite;
+        }
+        @keyframes spinOrbit {
+            0% { transform: rotate(0deg) translate(80px) rotate(0deg); }
+            100% { transform: rotate(360deg) translate(80px) rotate(-360deg); }
+        }
+
+        /* 聚光圈脉冲 */
+        .glow-pulse::before {
+            content: '';
+            position: absolute;
+            inset: -4px;
+            border-radius: 9999px;
+            background: linear-gradient(45deg, #8570ee, #d946ef);
+            opacity: 0.5;
+            z-index: -1;
+            filter: blur(8px);
+            animation: pulseGlow 3s infinite ease-in-out;
+        }
+        @keyframes pulseGlow {
+            0%, 100% { transform: scale(1); opacity: 0.3; }
+            50% { transform: scale(1.15); opacity: 0.6; }
+        }
+
+        /* 滑块自定义美化 */
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #ffffff;
+            box-shadow: 0 0 10px #8570EE;
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.25);
+        }
+
+        /* 级联淡入 */
+        .reveal {
+            opacity: 0;
+            transform: translateY(24px);
+            animation: fadeUpReveal 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        @keyframes fadeUpReveal {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body class="min-h-screen relative flex flex-col justify-between overflow-y-auto pb-10">
+
+    <!-- 背景网格 -->
+    <div class="grid-lines">
+        <div class="grid-line"></div>
+        <div class="grid-line"></div>
+        <div class="grid-line"></div>
+        <div class="grid-line"></div>
+        <div class="grid-line"></div>
+    </div>
+
+    <!-- 顶部状态栏走马灯 (Personal Status Marquee) -->
+    <div class="reveal w-full border-b border-white/5 bg-black/40 backdrop-blur-md py-2 overflow-hidden z-20" style="animation-delay: 0.05s;">
+        <div class="flex whitespace-nowrap animate-marquee">
+            <div class="flex space-x-12 px-6">
+                <span class="inline-flex items-center gap-2 text-xs font-medium"><span class="text-[#10B981]">●</span> <span class="text-white">AVAILABLE FOR FREELANCE & CONTRACTS</span></span>
+                <span class="inline-flex items-center gap-2 text-xs font-medium"><span class="text-brandTextMuted">FOCUS:</span> <span class="text-white">INTERACTIVE UI, WEB3 & CREATIVE CODING</span></span>
+                <span class="inline-flex items-center gap-2 text-xs font-medium"><span class="text-brandTextMuted">LOCATED IN:</span> <span class="text-brandPurple font-semibold">TOKYO (GMT+9)</span></span>
+                <span class="inline-flex items-center gap-2 text-xs font-medium"><span class="text-brandPink font-semibold">#DRIBBBLE FEATURED CREATIVE</span></span>
+            </div>
+            <div class="flex space-x-12 px-6">
+                <span class="inline-flex items-center gap-2 text-xs font-medium"><span class="text-[#10B981]">●</span> <span class="text-white">AVAILABLE FOR FREELANCE & CONTRACTS</span></span>
+                <span class="inline-flex items-center gap-2 text-xs font-medium"><span class="text-brandTextMuted">FOCUS:</span> <span class="text-white">INTERACTIVE UI, WEB3 & CREATIVE CODING</span></span>
+                <span class="inline-flex items-center gap-2 text-xs font-medium"><span class="text-brandTextMuted">LOCATED IN:</span> <span class="text-brandPurple font-semibold">TOKYO (GMT+9)</span></span>
+                <span class="inline-flex items-center gap-2 text-xs font-medium"><span class="text-brandPink font-semibold">#DRIBBBLE FEATURED CREATIVE</span></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 导航栏 -->
+    <header class="reveal w-full max-w-7xl mx-auto flex items-center justify-between z-10 px-6 mt-4" style="animation-delay: 0.1s;">
+        <nav class="hidden md:flex items-center space-x-8 text-sm font-medium text-brandTextMuted">
+            <a href="#" class="hover:text-white transition">Works</a>
+            <a href="#" class="hover:text-white transition">About</a>
+            <a href="#" class="hover:text-white transition">Services</a>
+        </nav>
+
+        <!-- Logo -->
+        <div class="flex items-center gap-2 cursor-pointer">
+            <svg class="w-8 h-8" viewBox="0 0 100 100" fill="none">
+                <circle cx="50" cy="50" r="40" stroke="url(#logoGrad)" stroke-width="8"/>
+                <path d="M50 20C35 35 35 65 50 80C65 65 65 35 50 20Z" fill="url(#logoGrad)"/>
+                <defs>
+                    <linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="#8570EE" />
+                        <stop offset="100%" stop-color="#D946EF" />
+                    </linearGradient>
+                </defs>
+            </svg>
+            <span class="text-xl font-extrabold tracking-tight bg-gradient-to-r from-white to-[#b5aef5] bg-clip-text text-transparent">AQUA.dev</span>
+        </div>
+
+        <div class="flex items-center space-x-4 text-sm">
+            <button onclick="toggleDrawer()" class="px-5 py-2.5 rounded-full text-xs font-semibold glass-card border-brandPurple/30 text-white hover:bg-white/5 transition-all">
+                Hire Me
+            </button>
+        </div>
+    </header>
+
+    <!-- 主展示区 (Hero & Portfolio Perspective Deck) -->
+    <main class="w-full max-w-7xl mx-auto z-10 flex flex-col items-center mt-12 px-6">
+        
+        <!-- Hero 文本 -->
+        <div class="relative w-full flex flex-col md:flex-row items-center justify-between gap-8 mb-12">
+            
+            <!-- 左侧核心履历 -->
+            <div class="reveal flex flex-col space-y-8 text-center md:text-left order-2 md:order-1" style="animation-delay: 0.35s;">
+                <button class="w-11 h-11 rounded-full border border-white/10 flex items-center justify-center text-brandTextMuted hover:text-white hover:border-white/20 transition bg-white/5">←</button>
+                <div>
+                    <div class="text-3xl font-bold">5+ Yrs</div>
+                    <div class="text-xs text-brandTextMuted uppercase tracking-wider mt-1">Experience</div>
+                </div>
+                <div>
+                    <div class="text-3xl font-bold">40+</div>
+                    <div class="text-xs text-brandTextMuted uppercase tracking-wider mt-1">Delivered Projects</div>
+                </div>
+            </div>
+
+            <!-- 中间核心介绍 -->
+            <div class="reveal flex-1 max-w-2xl text-center flex flex-col items-center order-1 md:order-2" style="animation-delay: 0.2s;">
+                <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full glass-card border-brandPurple/20 text-[11px] font-medium text-brandTextMuted mb-6">
+                    <span class="w-1.5 h-1.5 rounded-full bg-brandPurple animate-ping"></span>
+                    Now Booking for Q3 2026
+                </div>
+                
+                <h1 class="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight leading-[1.12] mb-6">
+                    <span class="bg-gradient-to-r from-[#dcd7ff] via-[#8570EE] to-[#D946EF] bg-clip-text text-transparent">Crafting Immersive Interfaces</span> 
+                    <br class="hidden md:inline">
+                    <span class="text-white">& Digital Products</span>
+                </h1>
+
+                <p class="text-xs md:text-sm text-brandTextMuted max-w-lg leading-relaxed mb-8">
+                    Creative Developer & UI Designer specializing in WebGL, custom interactive experiences, and fluid decentralized interfaces designed with high precision.
+                </p>
+
+                <!-- 开始行动 -->
+                <div class="flex flex-col items-center gap-2">
+                    <span class="text-[10px] font-bold tracking-widest text-brandTextMuted">START A PROJECT</span>
+                    <button onclick="toggleDrawer()" class="w-12 h-12 rounded-full bg-white text-black flex items-center justify-center shadow-xl hover:scale-105 transition-all glow-pulse relative">
+                        <span class="text-lg font-bold">↗</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 右侧核心履历 -->
+            <div class="reveal flex flex-col items-center md:items-end space-y-8 text-center md:text-right order-3" style="animation-delay: 0.4s;">
+                <button class="w-11 h-11 rounded-full border border-brandPurple/30 flex items-center justify-center text-brandPurple hover:text-white hover:border-brandPurple/50 transition bg-brandPurple/10">→</button>
+                <div>
+                    <div class="text-3xl font-bold">Tokyo</div>
+                    <div class="text-xs text-brandTextMuted uppercase tracking-wider mt-1">Current Base</div>
+                </div>
+                <div>
+                    <div class="text-3xl font-bold">98%</div>
+                    <div class="text-xs text-brandTextMuted uppercase tracking-wider mt-1">Success Rate</div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- 3D 作品展示卡片栈 -->
+        <div class="reveal deck-container w-full max-w-6xl grid grid-cols-1 lg:grid-cols-3 gap-6 pt-6 relative z-10 mb-20" style="animation-delay: 0.5s;">
+            
+            <!-- 左卡片 (Works A: UI Design / Affiliate Network 布局转化) -->
+            <div class="glass-card card-left rounded-3xl p-6 flex flex-col justify-between h-72 cursor-pointer">
+                <div>
+                    <h3 class="text-lg font-semibold mb-2">Aether Glass Kit</h3>
+                    <div class="inline-block px-3 py-1 rounded-full bg-white/5 text-[11px] text-brandTextMuted mb-4">
+                        UI/UX • Design System
+                    </div>
+                    <p class="text-xs text-brandTextMuted leading-relaxed">
+                        A modern frosted glass design system downloaded by 15k+ developers worldwide, featured on Dribbble.
+                    </p>
+                </div>
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-full bg-brandPurple/20 flex items-center justify-center text-xs">🎨</div>
+                    <div class="w-8 h-8 rounded-full bg-brandPink/20 flex items-center justify-center text-xs">🛠️</div>
+                </div>
+            </div>
+
+            <!-- 中卡片 (明星项目: 3D Orbit Graphics / Transfer Orbit 布局转化) -->
+            <div class="glass-card card-center rounded-3xl p-6 flex flex-col justify-between h-80 z-20 cursor-pointer relative overflow-hidden">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center gap-2">
+                        <span class="w-2.5 h-2.5 rounded-full bg-brandPurple"></span>
+                        <span class="text-[10px] font-bold tracking-wider uppercase text-brandTextMuted">Featured WebGL Project</span>
+                    </div>
+                    <span class="text-brandTextMuted hover:text-white text-xs">✕</span>
+                </div>
+
+                <!-- 3D Orbit 视觉展示 -->
+                <div class="relative w-full h-24 flex items-center justify-center overflow-hidden">
+                    <div class="absolute w-36 h-12 orbit-line rounded-full flex items-center justify-center">
+                        <div class="w-3.5 h-3.5 rounded-full bg-brandPink shadow-lg shadow-brandPink/80 orbit-ball"></div>
+                    </div>
+                    <div class="w-11 h-11 rounded-full bg-gradient-to-tr from-brandPurple to-brandPink shadow-[0_0_24px_rgba(133,112,238,0.5)] flex items-center justify-center z-10 text-sm">
+                        🪐
+                    </div>
+                </div>
+
+                <!-- 项目细节 -->
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between px-3 py-2 rounded-xl bg-white/5 border border-white/5 text-[10px] font-mono">
+                        <span class="text-brandPurple truncate w-40">github.com/aqua-dev/celestial-webgl</span>
+                        <span class="text-brandTextMuted cursor-pointer hover:text-white">🔗</span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2 text-xs">
+                        <div class="p-2 rounded-xl bg-white/5 flex flex-col">
+                            <span class="text-brandTextMuted text-[10px]">GitHub Stars</span>
+                            <span class="font-bold text-white mt-1">1,378 ⭐</span>
+                        </div>
+                        <div class="p-2 rounded-xl bg-white/5 flex flex-col">
+                            <span class="text-brandTextMuted text-[10px]">Technologies Used</span>
+                            <span class="font-bold text-[#10B981] mt-1">Three.js / GLSL</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 右卡片 (Works C: Financial Analytics/Market Statistics 布局转化) -->
+            <div class="glass-card card-right rounded-3xl p-6 flex flex-col justify-between h-72 cursor-pointer">
+                <div>
+                    <h3 class="text-lg font-semibold mb-2">Vertex Analytics</h3>
+                    <div class="inline-block px-3 py-1 rounded-full bg-white/5 text-[11px] text-brandTextMuted mb-4">
+                        Web App • Fullstack Development
+                    </div>
+                    <p class="text-xs text-brandTextMuted leading-relaxed">
+                        A real-time charts integration dashboard for Web3 data tracking, optimized for high performance.
+                    </p>
+                </div>
+                <!-- 折线图展示 -->
+                <div class="w-full h-12 relative flex items-end">
+                    <svg class="w-full h-12 stroke-brandPink fill-none" viewBox="0 0 100 30" preserveAspectRatio="none">
+                        <path d="M0,25 C15,10 30,30 45,15 C60,2 75,25 90,8 L100,5" stroke-width="2" stroke-linecap="round"/>
+                        <path d="M0,25 C15,10 30,30 45,15 C60,2 75,25 90,8 L100,5 L100,30 L0,30 Z" fill="url(#chartGrad)" opacity="0.1"/>
+                        <defs>
+                            <linearGradient id="chartGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                                <stop offset="0%" stop-color="#D946EF" />
+                                <stop offset="100%" stop-color="#D946EF" stop-opacity="0" />
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ==================== BENTO GRID: 项目估算器 & 技术矩阵 ==================== -->
+        <section class="reveal w-full max-w-6xl mt-6 mb-16 z-10" style="animation-delay: 0.6s;">
+            <div class="mb-8">
+                <span class="text-xs font-bold tracking-widest text-brandPurple uppercase block mb-1">Cooperation Tool</span>
+                <h2 class="text-2xl md:text-3xl font-extrabold text-white">Interactive Planner & Skills</h2>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                
+                <!-- 1. 项目估算器 Budget Estimator (原闪兑转化) -->
+                <div class="glass-card rounded-3xl p-6 lg:col-span-5 flex flex-col justify-between relative overflow-hidden">
+                    <div>
+                        <div class="flex items-center justify-between mb-4">
+                            <span class="text-sm font-bold text-white">Project Cost Estimator</span>
+                            <span class="text-xs text-[#10B981] bg-[#10B981]/10 px-2 py-0.5 rounded-full">Fast Turnaround</span>
+                        </div>
+                        
+                        <!-- 需求选择 -->
+                        <div class="bg-black/40 border border-white/5 rounded-2xl p-4 mb-3">
+                            <div class="flex justify-between text-xs text-brandTextMuted mb-2">
+                                <span>Select Project Type</span>
+                                <span>Hourly Rate: $85</span>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <select id="project-type" class="bg-transparent text-lg font-bold text-white focus:outline-none w-full" onchange="calculateBudget()">
+                                    <option value="3000" class="bg-[#05030a]">✨ 3D Immersive Landing</option>
+                                    <option value="6000" class="bg-[#05030a]">🚀 Fullstack Web DApp</option>
+                                    <option value="1500" class="bg-[#05030a]">🎨 Design System / Figma</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- 估算交互反馈 -->
+                        <div class="flex justify-center my-[-12px] relative z-10">
+                            <div class="w-8 h-8 rounded-full bg-brandPurple flex items-center justify-center border border-black text-xs">
+                                📊
+                            </div>
+                        </div>
+
+                        <!-- 估算输出结果 -->
+                        <div class="bg-black/40 border border-white/5 rounded-2xl p-4 mt-1 mb-4">
+                            <div class="flex justify-between text-xs text-brandTextMuted mb-2">
+                                <span>Estimated Cost & Hours</span>
+                                <span>Starting Price</span>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <input id="budget-output" type="text" value="$3,000" class="bg-transparent text-xl font-bold text-brandPurple focus:outline-none w-3/4" readonly>
+                                <span id="hours-output" class="text-xs font-bold bg-white/10 px-3 py-1 rounded-xl">~35 Hrs</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button onclick="toggleDrawer()" class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-brandPurple to-brandPink text-sm font-bold text-white hover:opacity-90 transition-all shadow-lg shadow-brandPurple/20">
+                        Discuss My Project
+                    </button>
+                </div>
+
+                <!-- 2. 核心技术矩阵与技能协同 (原 Staking 转化) -->
+                <div class="glass-card rounded-3xl p-6 lg:col-span-7 flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between mb-4">
+                            <span class="text-sm font-bold text-white">Interactive Skill Synergy</span>
+                            <span class="text-xs text-brandPink border border-brandPink/30 px-2.5 py-0.5 rounded-full">Full Stack Capability</span>
+                        </div>
+                        <p class="text-xs text-brandTextMuted mb-6">Drag the slider to shift focus metrics between Creative UI Design and Hardcore Logic/Engineering.</p>
+                        
+                        <!-- 拖动控制技能侧重点 -->
+                        <div class="bg-black/40 border border-white/5 rounded-2xl p-6 mb-6">
+                            <div class="flex justify-between items-center mb-4">
+                                <span class="text-xs text-brandTextMuted">Select Focus Dimension</span>
+                                <span id="synergy-dimension" class="text-sm font-bold text-white">Perfect Balance (50/50)</span>
+                            </div>
+                            <input id="skills-slider" type="range" min="0" max="100" step="10" value="50" class="w-full h-1 bg-white/10 rounded-lg appearance-none cursor-pointer accent-brandPurple" oninput="calculateSkills()">
+                        </div>
+                    </div>
+
+                    <!-- 计算数据输出：当前属性值 -->
+                    <div class="grid grid-cols-3 gap-4 border-t border-white/5 pt-6">
+                        <div>
+                            <span class="text-[10px] text-brandTextMuted block mb-1">Visual Art & Figma</span>
+                            <span id="skill-design" class="text-sm md:text-base font-bold text-[#10B981]">90 %</span>
+                        </div>
+                        <div>
+                            <span class="text-[10px] text-brandTextMuted block mb-1">Frontend Engineering</span>
+                            <span id="skill-frontend" class="text-sm md:text-base font-bold text-[#10B981]">95 %</span>
+                        </div>
+                        <div>
+                            <span class="text-[10px] text-brandTextMuted block mb-1">Interactive WebGL</span>
+                            <span id="skill-webgl" class="text-sm md:text-base font-bold text-brandPurple">80 %</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- ==================== 常用技术栈 Logo 区 ==================== -->
+        <section class="reveal w-full max-w-6xl mb-16 z-10" style="animation-delay: 0.7s;">
+            <div class="text-center mb-8">
+                <span class="text-xs text-brandTextMuted uppercase tracking-widest">Selected Industry Tools I Master</span>
+            </div>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="glass-card py-4 flex items-center justify-center rounded-2xl border-white/5 hover:bg-white/5">
+                    <span class="text-xs font-semibold text-brandTextMuted hover:text-white transition">React / Next.js</span>
+                </div>
+                <div class="glass-card py-4 flex items-center justify-center rounded-2xl border-white/5 hover:bg-white/5">
+                    <span class="text-xs font-semibold text-brandTextMuted hover:text-white transition">WebGL / Three.js</span>
+                </div>
+                <div class="glass-card py-4 flex items-center justify-center rounded-2xl border-white/5 hover:bg-white/5">
+                    <span class="text-xs font-semibold text-brandTextMuted hover:text-white transition">Tailwind CSS</span>
+                </div>
+                <div class="glass-card py-4 flex items-center justify-center rounded-2xl border-white/5 hover:bg-white/5">
+                    <span class="text-xs font-semibold text-brandTextMuted hover:text-white transition">Figma Design</span>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- 底部 -->
+    <footer class="reveal w-full max-w-7xl mx-auto z-10 flex flex-col sm:flex-row items-center justify-between text-xs text-brandTextMuted py-4 border-t border-white/5 px-6" style="animation-delay: 0.8s;">
+        <p>© 2026 Aqua.dev. All rights reserved.</p>
+        <div class="flex space-x-6 mt-2 sm:mt-0">
+            <a href="#" class="hover:text-white transition">Email: hello@aqua.dev</a>
+            <a href="#" class="hover:text-white transition">Twitter / X</a>
+        </div>
+    </footer>
+
+    <!-- 右下角悬浮留言球 -->
+    <button onclick="toggleDrawer()" class="fixed bottom-6 right-6 w-12 h-12 rounded-full glass-card border-brandPurple/30 flex items-center justify-center text-lg shadow-2xl hover:scale-105 z-50">
+        ✉️
+    </button>
+
+    <!-- 侧边合作与简介抽屉 (Drawer) -->
+    <div id="side-drawer" class="fixed top-0 right-0 h-full w-full sm:w-96 bg-[#090715]/95 backdrop-blur-xl border-l border-white/10 transform translate-x-full transition-transform duration-500 cubic-bezier(0.16, 1, 0.3, 1) z-50 p-6 flex flex-col justify-between shadow-2xl">
+        <div>
+            <!-- 抽屉头部 -->
+            <div class="flex items-center justify-between border-b border-white/5 pb-4 mb-6">
+                <div class="flex items-center gap-2">
+                    <span class="w-2.5 h-2.5 rounded-full bg-brandPink animate-pulse"></span>
+                    <span class="text-sm font-bold text-white">Start a Collaboration</span>
+                </div>
+                <button onclick="toggleDrawer()" class="text-brandTextMuted hover:text-white text-lg">✕</button>
+            </div>
+
+            <!-- 在线留言表单 -->
+            <div class="space-y-4">
+                <p class="text-xs text-brandTextMuted">Have an project idea or want to hire me? Leave your details below.</p>
+                
+                <div class="bg-black/40 border border-white/5 rounded-2xl p-4">
+                    <label class="text-[10px] text-brandTextMuted block mb-1">Your Email</label>
+                    <input type="email" placeholder="name@company.com" class="bg-transparent text-sm w-full text-white focus:outline-none">
+                </div>
+
+                <div class="bg-black/40 border border-white/5 rounded-2xl p-4">
+                    <label class="text-[10px] text-brandTextMuted block mb-1">Project Brief / Message</label>
+                    <textarea placeholder="Tell me about your product..." class="bg-transparent text-sm w-full text-white focus:outline-none h-24 resize-none"></textarea>
+                </div>
+
+                <!-- 履历下载 -->
+                <div class="p-4 rounded-2xl bg-brandPurple/5 border border-brandPurple/10 text-center">
+                    <a href="#" class="text-xs text-brandPurple font-bold hover:underline">📄 Download My Resume / CV</a>
+                </div>
+            </div>
+        </div>
+
+        <button onclick="sendBrief()" class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-brandPurple to-brandPink text-sm font-bold text-white hover:opacity-90 transition-all shadow-lg">
+            Send Message
+        </button>
+    </div>
+
+    <!-- 交互脚本 -->
+    <script>
+        // 1. 3D 作品卡片摆动视差
+        const container = document.querySelector('.deck-container');
+        const cardLeft = document.querySelector('.card-left');
+        const cardCenter = document.querySelector('.card-center');
+        const cardRight = document.querySelector('.card-right');
+
+        container.addEventListener('mousemove', (e) => {
+            const rect = container.getBoundingClientRect();
+            const x = (e.clientX - rect.left) / rect.width - 0.5;
+            const y = (e.clientY - rect.top) / rect.height - 0.5;
+
+            cardLeft.style.transform = `rotateY(${20 + x * 15}deg) translateZ(${-30 + y * 15}px) rotateX(${4 - y * 15}deg)`;
+            cardCenter.style.transform = `translateZ(40px) translateY(${-10 + y * 15}px) rotateY(${x * 12}deg) rotateX(${-y * 12}deg)`;
+            cardRight.style.transform = `rotateY(${-20 + x * 15}deg) translateZ(${-30 + y * 15}px) rotateX(${4 - y * 15}deg)`;
+        });
+
+        container.addEventListener('mouseleave', () => {
+            cardLeft.style.transform = `rotateY(20deg) translateZ(-30px) rotateX(4deg)`;
+            cardCenter.style.transform = `translateZ(40px) translateY(-10px) rotateY(0deg) rotateX(0deg)`;
+            cardRight.style.transform = `rotateY(-20deg) translateZ(-30px) rotateX(4deg)`;
+        });
+
+        // 2. 项目费用与工时计算器
+        function calculateBudget() {
+            const selectVal = parseInt(document.getElementById('project-type').value);
+            const budgetOutput = document.getElementById('budget-output');
+            const hoursOutput = document.getElementById('hours-output');
+
+            budgetOutput.value = `$${selectVal.toLocaleString()}`;
+            // 假设费率为 $85/小时，由此折算估算工时
+            const calculatedHours = Math.round(selectVal / 85);
+            hoursOutput.innerText = `~${calculatedHours} Hrs`;
+        }
+
+        // 3. 技能协同变动（拖动滑杆，重新分配属性展示）
+        function calculateSkills() {
+            const slider = document.getElementById('skills-slider');
+            const display = document.getElementById('synergy-dimension');
+            const designEl = document.getElementById('skill-design');
+            const frontendEl = document.getElementById('skill-frontend');
+            const webglEl = document.getElementById('skill-webgl');
+
+            const val = parseInt(slider.value);
+
+            // 动态调节文字描述与核心展示数据
+            if (val < 40) {
+                display.innerText = "Heavy Creative / Visual Art Focus";
+                designEl.innerText = "98 %";
+                frontendEl.innerText = "75 %";
+                webglEl.innerText = "60 %";
+            } else if (val > 60) {
+                display.innerText = "Technical Implementation / Web3 Logic";
+                designEl.innerText = "65 %";
+                frontendEl.innerText = "98 %";
+                webglEl.innerText = "90 %";
+            } else {
+                display.innerText = `Balanced Creative Developer (${val}/${100-val})`;
+                designEl.innerText = `${90 - Math.round((val-50)/2)} %`;
+                frontendEl.innerText = `${95 + Math.round((val-50)/2)} %`;
+                webglEl.innerText = "80 %";
+            }
+        }
+
+        // 4. 侧边抽屉连接管理面板控制
+        function toggleDrawer() {
+            const drawer = document.getElementById('side-drawer');
+            drawer.classList.toggle('translate-x-full');
+        }
+
+        function sendBrief() {
+            alert("Thank you! Your message has been simulated as sent. We'll be in touch soon.");
+            toggleDrawer();
+        }
+
+        // 初始化估算
+        calculateBudget();
+        calculateSkills();
+    </script>
+</body>
+</html>

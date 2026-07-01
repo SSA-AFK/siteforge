@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>个人作品集 - Jakarta Portfolio</title>
+  <meta name="description" content="用创意和技术构建美好数字体验">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:#fafafc;color:#334155;font-family:"Plus Jakarta Sans",system-ui,sans-serif;overflow-x:hidden}a{color:inherit;text-decoration:none}button{font:inherit}img,video{max-width:100%;display:block}.container{width:min(1280px,100%);margin:auto;padding:0 32px}.reveal{opacity:0;transform:translateY(20px);transition:opacity 1.2s cubic-bezier(.16,1,.3,1),transform 1.2s cubic-bezier(.16,1,.3,1)}.active{opacity:1;transform:translateY(0)}
+    header{position:sticky;top:0;z-index:50;border-bottom:1px solid #f1f5f9;background:rgba(255,255,255,.76);backdrop-filter:blur(16px)}.nav{height:80px;display:flex;align-items:center;justify-content:space-between}.brand{display:flex;align-items:center;gap:10px;color:#0b0f19;font-size:18px;font-weight:900}.brand-icon{width:36px;height:36px;border-radius:12px;background:#4f46e5;color:white;display:grid;place-items:center;overflow:hidden}.brand-icon img{width:100%;height:100%;object-fit:cover}.links{display:flex;gap:32px;color:#64748b;font-size:14px;font-weight:700}.links a:hover,.links a:first-child{color:#4f46e5}.nav-actions{display:flex;gap:12px;align-items:center}.login{color:#475569;font-size:14px;font-weight:800}.button{display:inline-flex;align-items:center;gap:8px;border:0;border-radius:12px;background:#0b0f19;color:white;padding:12px 20px;font-size:12px;font-weight:900}.button.primary{background:#4f46e5}.button.ghost{border:1px solid #e2e8f0;background:white;color:#334155}
+    .hero{position:relative;padding:80px 0 112px;text-align:center}.eyebrow{color:#4f46e5;font-size:12px;font-weight:900;letter-spacing:.24em;text-transform:uppercase}.hero h1{max-width:900px;margin:16px auto 0;color:#0b0f19;font-size:clamp(40px,6vw,64px);line-height:1.08;letter-spacing:-.04em}.hero-copy{max-width:680px;margin:24px auto 0;color:#94a3b8;font-size:16px;line-height:1.8}.hero-actions{margin-top:40px;display:flex;flex-wrap:wrap;gap:12px;justify-content:center}
+    .demo{position:relative;max-width:1024px;margin:80px auto 0;aspect-ratio:16/9;overflow:hidden;border:1px solid rgba(226,232,240,.85);border-radius:32px;background:#f8fafc;box-shadow:0 20px 50px rgba(0,0,0,.04);text-align:left}.demo>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.55;filter:saturate(1.1) contrast(1.05)}.demo:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,255,255,.58),rgba(255,255,255,.28) 42%,rgba(255,255,255,.68)),radial-gradient(circle at 20% 80%,rgba(99,102,241,.18),transparent 36%)}.demo-inner{position:absolute;inset:0;z-index:2;display:flex;flex-direction:column;justify-content:space-between;padding:32px}.demo-status{display:flex;flex-wrap:wrap;gap:24px;color:#94a3b8;font-size:11px;font-weight:900;letter-spacing:.08em}.demo-status span{display:flex;gap:8px;align-items:center}.demo-status i{width:8px;height:8px;border-radius:50%;background:#cbd5e1}.demo-status span:first-child i{background:#6366f1;animation:pulse 1.4s infinite}.demo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;align-items:end}.dark-card,.num-card,.status-card{border-radius:24px;padding:24px;box-shadow:0 15px 30px rgba(0,0,0,.03);transition:transform .25s}.dark-card:hover,.num-card:hover,.status-card:hover{transform:translateY(-4px)}.dark-card{background:#0b0f19;color:white}.dark-card span{color:#ede9fe;font-size:10px;font-weight:900;letter-spacing:.16em}.dark-card h4{font-size:16px}.num-card{position:relative;overflow:hidden;background:white;text-align:center}.num-card span,.status-card h4{color:#94a3b8;font-size:11px;font-weight:900;letter-spacing:.12em;text-transform:uppercase}.num-card b{display:block;margin:20px 0 28px;color:#0b0f19;font-size:34px;line-height:1.1}.num-card small{position:absolute;left:0;right:0;bottom:0;background:#3b82f6;color:white;padding:8px 14px;font-weight:800}.status-card{background:white}.status-card p{display:flex;justify-content:space-between;border-top:1px solid #f8fafc;margin:0;padding:10px 0;color:#334155;font-size:12px;font-weight:800}.status-card p span:last-child{color:#94a3b8}
+    section{padding:96px 0}.white{background:white;border-top:1px solid #f1f5f9;border-bottom:1px solid #f1f5f9}.section-title{text-align:center;max-width:760px;margin:0 auto 48px}.section-title h2{margin:12px 0;color:#0b0f19;font-size:40px;line-height:1.12;letter-spacing:-.035em}.section-title p{color:#94a3b8;line-height:1.75}.skill-grid{display:grid;grid-template-columns:repeat(5,1fr);overflow:hidden;border:1px solid #f1f5f9;border-radius:24px;background:#f8fafc}.skill-cell{border-right:1px solid #f1f5f9;border-bottom:1px solid #f1f5f9;background:white;padding:28px 24px;transition:background .25s}.skill-cell:hover{background:#f8fafc}.skill-topline{display:flex;align-items:center;justify-content:space-between;gap:12px}.skill-topline span{min-width:0;color:#334155;font-size:14px;font-weight:900;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.skill-topline b{flex:none;border-radius:999px;background:#eef2ff;color:#4f46e5;padding:5px 10px;font-size:10px;font-weight:900}.skill-cell p{margin:10px 0 0;color:#94a3b8;font-size:11px;font-weight:900;letter-spacing:.16em;text-transform:uppercase;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.skill-bar{display:block;height:6px;border-radius:999px;background:#f1f5f9;overflow:hidden;margin-top:20px}.skill-bar em{display:block;height:100%;border-radius:999px;background:#4f46e5}.skill-cell small{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-top:12px}.skill-cell u{display:block;height:6px;border-radius:999px;background:#f1f5f9;text-decoration:none}.skill-cell u.on{background:#6366f1}
+    .project-grid,.video-grid,.award-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:32px}.project-grid.list{grid-template-columns:1fr}.project-card,.video-card,.award-card{overflow:hidden;border:1px solid #f1f5f9;border-radius:32px;background:white;box-shadow:0 1px 2px rgba(15,23,42,.03);transition:transform .45s,box-shadow .45s}.project-card:hover,.video-card:hover{transform:translateY(-4px);box-shadow:0 24px 60px rgba(15,23,42,.08)}.project-card.featured,.video-card.featured{grid-column:span 2}.media,.video-frame{position:relative;display:block;width:100%;aspect-ratio:4/3;border:0;padding:0;overflow:hidden;background:#f8fafc;cursor:pointer}.media.wide,.video-frame.wide{aspect-ratio:21/9}.media img,.video-frame img,.video-frame video{width:100%;height:100%;object-fit:cover;opacity:.9;transition:transform .7s}.project-card:hover img,.video-card:hover img{transform:scale(1.05)}.media-fade{position:absolute;inset:0;background:linear-gradient(to top,white,transparent);opacity:.7}.featured-pill{position:absolute;left:20px;top:20px;border-radius:999px;background:#4f46e5;color:white;padding:7px 12px;font-size:10px;font-weight:900;letter-spacing:.18em;text-transform:uppercase}.featured-pill.light{background:white;color:#4f46e5}.video-frame a{display:block;position:relative;height:100%;background:#020617}.video-frame a i{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);display:grid;place-items:center;width:58px;height:58px;border-radius:50%;background:white;color:#4f46e5;font-size:12px;font-weight:900;font-style:normal}.card-body{padding:28px}.card-head{display:flex;justify-content:space-between;gap:16px}.card-head p,.card-body>p:first-child{margin:0;color:#94a3b8;font-size:11px;font-weight:900;letter-spacing:.18em;text-transform:uppercase}.card-head h3,.card-body h3,.award-card h3{margin:8px 0 0;color:#0b0f19;font-size:26px;line-height:1.18}.card-head>span{height:max-content;border:1px solid #f1f5f9;border-radius:999px;background:#f8fafc;padding:7px 12px;color:#64748b;font-size:12px;font-weight:800}.copy{color:#64748b!important;font-size:14px!important;font-weight:500!important;letter-spacing:0!important;text-transform:none!important;line-height:1.75}.tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:20px}.tags span{border-radius:999px;background:#eef2ff;color:#4f46e5;padding:7px 12px;font-size:12px;font-weight:800}.tags span:nth-child(n+2){background:#f8fafc;color:#64748b}
+    .process{background:#0b0f19;color:white}.process-grid{display:grid;grid-template-columns:.9fr 1.1fr;gap:40px}.process h2{font-size:42px;line-height:1.1}.step-btn{width:100%;display:flex;justify-content:space-between;align-items:center;border:0;border-left:2px solid transparent;border-radius:14px;background:transparent;color:#94a3b8;padding:13px 16px;text-align:left;font-weight:800}.step-btn.active-step{border-left-color:#818cf8;background:rgba(255,255,255,.05);color:white}.panel{border:1px solid rgba(255,255,255,.1);border-radius:32px;background:rgba(255,255,255,.03);padding:24px}.metric-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}.metric-card{border:1px solid rgba(255,255,255,.1);border-radius:18px;background:rgba(255,255,255,.05);color:white;padding:20px;text-align:left;transition:transform .25s,background .25s}.metric-card:hover{transform:translateY(-2px);background:rgba(255,255,255,.08)}.metric-card i{display:block;width:32px;height:8px;border-radius:999px;margin-bottom:18px}.metric-card i.indigo{background:#6366f1}.metric-card i.violet{background:#8b5cf6}.metric-card i.blue{background:#3b82f6}.metric-card i.amber{background:#f59e0b}.metric-card b{display:block;font-size:30px}.metric-card span{display:block;margin-top:5px;color:#94a3b8;font-size:12px;font-weight:900;letter-spacing:.18em;text-transform:uppercase}.step-copy{margin-top:24px;border-radius:22px;background:white;color:#0b0f19;padding:24px}.step-copy p{color:#64748b;line-height:1.7}.experience-card{margin-top:16px;border:1px solid rgba(255,255,255,.1);border-radius:20px;background:rgba(255,255,255,.04);padding:20px}.experience-card div{display:flex;justify-content:space-between;gap:16px}.experience-card h3{margin:0}.experience-card p{margin:4px 0 0;color:#a5b4fc;font-size:12px;font-weight:900;letter-spacing:.16em;text-transform:uppercase}.experience-card span,.experience-card small{color:#94a3b8;font-size:13px;line-height:1.7}
+    .award-card{padding:32px}.stars{color:#f59e0b;letter-spacing:.1em}.award-card p{color:#4f46e5;font-size:12px;font-weight:900;letter-spacing:.16em;text-transform:uppercase}.award-card small{display:block;color:#64748b;line-height:1.75}.contact-card{overflow:hidden;border-radius:32px;background:#0b0f19;color:white;padding:48px}.contact-grid{display:grid;grid-template-columns:1.2fr .8fr;gap:40px;align-items:end}.contact-card h2{margin:14px 0 0;font-size:42px;line-height:1.1}.contact-card p{color:#94a3b8;line-height:1.75}.contact-actions{display:flex;flex-direction:column;align-items:flex-end;gap:12px}.socials{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end}.socials a{border:1px solid rgba(255,255,255,.12);border-radius:999px;color:#cbd5e1;padding:9px 14px;font-size:12px;font-weight:800}.footer{background:#0b0f19;border-top:1px solid #111827;color:#64748b;padding:64px 0}.footer .container{display:flex;justify-content:space-between;align-items:center;gap:24px}.modal{position:fixed;inset:0;z-index:90;display:none;align-items:center;justify-content:center;background:rgba(2,6,23,.9);backdrop-filter:blur(12px);padding:16px}.modal.open{display:flex}.modal img{max-width:92vw;max-height:86vh;object-fit:contain;border-radius:24px}.modal button{position:absolute;right:24px;top:24px;border:0;border-radius:999px;background:white;color:#0b0f19;padding:10px 16px;font-size:12px;font-weight:900}
+    @keyframes pulse{50%{opacity:.45}}@media(max-width:900px){.links{display:none}.hero{padding-top:56px}.demo{aspect-ratio:auto;min-height:720px}.demo-grid,.project-grid,.video-grid,.award-grid,.process-grid,.contact-grid{grid-template-columns:1fr}.project-card.featured,.video-card.featured{grid-column:auto}.media.wide,.video-frame.wide{aspect-ratio:4/3}.skill-grid{grid-template-columns:repeat(2,1fr)}.contact-actions{align-items:flex-start}.socials{justify-content:flex-start}.footer .container{flex-direction:column;text-align:center}}
+  </style>
+</head>
+<body>
+  <header><div class="container nav"><a class="brand" href="#home"><span class="brand-icon"><img src="http://localhost:4000/uploads/1782788991830-j46cw4-1f8b424b7927eec34fc6ef3c9924879e.jpg" alt="个人作品集"></span>个人作品集</a><nav class="links"><a href="#home">Home</a><a href="#projects">Work</a><a href="#videos">Videos</a><a href="#skills">Skills</a><a href="#contact">Contact</a></nav><div class="nav-actions"><a class="button" href="#projects">Get Started</a></div></div></header>
+  <main>
+    <section id="home" class="hero"><div class="container"><div class="reveal"><p class="eyebrow">设计师 / 开发者</p><h1>用创意和技术构建美好数字体验</h1><p class="hero-copy">我是一名热爱设计和开发的全栈创作者，致力于打造优雅、实用的数字产品。</p><div class="hero-actions"><a class="button ghost" href="#videos">Play Demo</a><a class="button primary" href="#projects">Explore Work</a></div></div>
+      <div class="demo reveal"><img src="http://localhost:4000/uploads/1782795600836-qymofb-E3-80-90-E5-93-B2-E9-A3-8E-E5-A3-81-E7-BA-B8-E3-80-91-E4-BA-B2-E5-AF-86-E4-BA-92.png" alt="个人作品集"><div class="demo-inner"><div class="demo-status"><span><i></i>PROFILE READY</span><span><i></i>PROJECT ADDED</span><span><i></i>LIVE PREVIEW</span><span><i></i>ONLINE LINK</span></div><div class="demo-grid"><div class="dark-card"><span>Selected Identity</span><h4>个人作品集 · 中国 · 杭州</h4></div><div class="num-card"><span>Now Featuring</span><b>Featured Work</b><small>Vortex Quantum Dashboard</small></div><div class="status-card"><h4>Portfolio Status</h4><p><span>3 Projects</span><span>Work</span></p><p><span>4 Skills</span><span>Stack</span></p><p><span>2 Videos</span><span>Media</span></p><p><span>2 Honors</span><span>Proof</span></p></div></div></div></div>
+    </div></section>
+    <section id="skills" class="white"><div class="container"><p class="eyebrow" style="text-align:center;margin-bottom:40px;color:#94a3b8">Tools and capabilities</p><div class="skill-grid">
+    <div class="skill-cell">
+      <div class="skill-topline"><span>* Figma</span><b>3/5</b></div>
+      <p>Design</p>
+      <i class="skill-bar"><em style="width:60%"></em></i>
+      <small><u class="on"></u><u class="on"></u><u class="on"></u><u class=""></u><u class=""></u></small>
+    </div>
+    <div class="skill-cell">
+      <div class="skill-topline"><span>* React</span><b>3/5</b></div>
+      <p>Frontend</p>
+      <i class="skill-bar"><em style="width:60%"></em></i>
+      <small><u class="on"></u><u class="on"></u><u class="on"></u><u class=""></u><u class=""></u></small>
+    </div>
+    <div class="skill-cell">
+      <div class="skill-topline"><span>* Motion Design</span><b>3/5</b></div>
+      <p>Interaction</p>
+      <i class="skill-bar"><em style="width:60%"></em></i>
+      <small><u class="on"></u><u class="on"></u><u class="on"></u><u class=""></u><u class=""></u></small>
+    </div>
+    <div class="skill-cell">
+      <div class="skill-topline"><span>* python</span><b>4/5</b></div>
+      <p>qweqwewq</p>
+      <i class="skill-bar"><em style="width:80%"></em></i>
+      <small><u class="on"></u><u class="on"></u><u class="on"></u><u class="on"></u><u class=""></u></small>
+    </div></div></div></section>
+    <section id="projects"><div class="container"><div class="section-title reveal"><p class="eyebrow">Selected Work</p><h2>A polished system for your best projects</h2><p>Project images and gallery assets stay front and center, with featured work promoted into a wider card.</p></div><div class="project-grid ">
+      <article class="reveal project-card " style="transition-delay:0ms">
+        <button class="media image-preview-trigger " type="button" data-preview-src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&amp;fit=crop&amp;w=1200&amp;q=80" data-preview-alt="Vortex Quantum Dashboard">
+          <img src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&amp;fit=crop&amp;w=1200&amp;q=80" alt="Vortex Quantum Dashboard">
+          <span class="media-fade"></span>
+          
+        </button>
+        <div class="card-body">
+          <div class="card-head"><div><p>Creative Engineering</p><h3>Vortex Quantum Dashboard</h3></div><span>#01</span></div>
+          <p class="copy">一套面向实时数据可视化的沉浸式仪表盘体验。</p>
+          <div class="tags"><span>Product Designer / Frontend</span><span>React, Three.js, Figma</span></div>
+        </div>
+      </article>
+      <article class="reveal project-card " style="transition-delay:90ms">
+        <button class="media image-preview-trigger " type="button" data-preview-src="https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&amp;fit=crop&amp;w=1200&amp;q=80" data-preview-alt="新项目 3">
+          <img src="https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&amp;fit=crop&amp;w=1200&amp;q=80" alt="新项目 3">
+          <span class="media-fade"></span>
+          
+        </button>
+        <div class="card-body">
+          <div class="card-head"><div><p>Portfolio</p><h3>新项目 3</h3></div><span>#02</span></div>
+          <p class="copy">描述这个项目的目标、过程和成果。</p>
+          <div class="tags"><span>负责人</span></div>
+        </div>
+      </article>
+      <article class="reveal project-card " style="transition-delay:180ms">
+        <button class="media image-preview-trigger " type="button" data-preview-src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&amp;fit=crop&amp;w=1200&amp;q=80" data-preview-alt="">
+          <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&amp;fit=crop&amp;w=1200&amp;q=80" alt="">
+          <span class="media-fade"></span>
+          
+        </button>
+        <div class="card-body">
+          <div class="card-head"><div><p>Project</p><h3>Untitled Project</h3></div><span>#03</span></div>
+          
+          
+        </div>
+      </article></div></div></section>
+    <section id="videos" class="white"><div class="container"><div class="section-title reveal"><p class="eyebrow">Video Proof</p><h2>Demos, reels, and walkthroughs</h2><p>If a video is marked as featured, it expands into the main demo slot.</p></div><div class="video-grid">
+    <article class="reveal video-card featured" style="transition-delay:0ms">
+      <div class="video-frame wide">
+        <a href="https://www.youtube.com/watch?v=dQw4w9WgXcQ" target="_blank" rel="noreferrer"><img src="http://localhost:4000/uploads/1782810592608-jeqki8-1.jpg" alt="Portfolio Walkthrough"><i>Play</i></a>
+        <b class="featured-pill light">Featured Demo</b>
+      </div>
+      <div class="card-body"><p>youtube</p><h3>Portfolio Walkthrough</h3><p class="copy">A short walkthrough of the design system, portfolio structure, and interaction direction.</p></div>
+    </article>
+    <article class="reveal video-card " style="transition-delay:90ms">
+      <div class="video-frame ">
+        <a href="https://www.youtube.com/watch?v=dQw4w9WgXcQ" target="_blank" rel="noreferrer"><img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&amp;fit=crop&amp;w=900&amp;q=80" alt="视频 2"><i>Play</i></a>
+        
+      </div>
+      <div class="card-body"><p>youtube</p><h3>视频 2</h3><p class="copy">补充视频简介、幕后过程或项目演示。</p></div>
+    </article></div></div></section>
+    <section class="process"><div class="container process-grid"><div class="reveal"><p class="eyebrow" style="color:#a5b4fc">How It Works</p><h2>Experience becomes a guided story</h2><div style="margin-top:32px"><button class="step-btn active-step" data-step="1">01. Profile <span>></span></button><button class="step-btn" data-step="2">02. Projects <span>></span></button><button class="step-btn" data-step="3">03. Live Preview <span>></span></button><button class="step-btn" data-step="4">04. Publish <span>></span></button></div></div><div class="panel reveal"><div class="metric-grid"><button class="metric-card" type="button" data-step="2"><i class="indigo"></i><b>3</b><span>Projects</span></button><button class="metric-card" type="button" data-step="1"><i class="violet"></i><b>4</b><span>Skills</span></button><button class="metric-card" type="button" data-step="3"><i class="blue"></i><b>2</b><span>Videos</span></button><button class="metric-card" type="button" data-step="4"><i class="amber"></i><b>2</b><span>Honors</span></button></div><div class="step-copy"><p class="eyebrow">Current Step</p><h3 id="stepTitle">Profile</h3><p id="stepDesc">Start from your identity, location, avatar, and a clear portfolio positioning statement.</p></div>
+    <article class="experience-card">
+      <div><h3>Creative Technologist</h3><p>Independent Studio</p></div>
+      <span>2022-01 - Now</span>
+      
+    </article></div></div></section>
+    <section id="awards"><div class="container"><div class="section-title reveal"><p class="eyebrow">Recognition</p><h2>Honors and proof points</h2></div><div class="award-grid">
+    <article class="reveal award-card" style="transition-delay:0ms">
+      <div class="stars">*****</div>
+      <h3>Awwwards Honorable Mention</h3>
+      <p>Awwwards / 2025-06</p>
+      <small>Recognized for visual craft, interaction detail, and responsive portfolio storytelling.</small>
+    </article>
+    <article class="reveal award-card" style="transition-delay:90ms">
+      <div class="stars">*****</div>
+      <h3>Design System Challenge Finalist</h3>
+      <p>Independent Studio Review / 2024</p>
+      <small>Selected for a polished component system and clear product thinking.</small>
+    </article></div></div></section>
+    <section id="contact" class="white"><div class="container"><div class="contact-card reveal"><div class="contact-grid"><div><p class="eyebrow" style="color:#a5b4fc">Contact</p><h2>Ready to start a new conversation?</h2><p>Portfolio reviews, project collaboration, role opportunities, and creative conversations can all start here.</p></div><div class="contact-actions"><p>中国 · 杭州</p><div class="socials"><a href="https://github.com">GitHub</a><a href="https://linkedin.com">LinkedIn</a></div></div></div></div></div></section>
+  </main>
+  <footer class="footer"><div class="container"><div class="brand"><span class="brand-icon">个</span>个人作品集</div><p>Copyright 2026 - 个人作品集. Built with SiteForge.</p></div></footer>
+  <div class="modal" id="imageModal"><button type="button" id="closeImage">Close</button><img id="modalImg" src="" alt=""></div>
+  <script>
+    const observer = new IntersectionObserver(function(entries, obs){ entries.forEach(function(entry){ if(entry.isIntersecting){ entry.target.classList.add('active'); obs.unobserve(entry.target); } }); }, { threshold:.1, rootMargin:'0px 0px -50px 0px' });
+    document.querySelectorAll('.reveal').forEach(function(el){ observer.observe(el); });
+    const steps = {1:['Profile','Start from your identity, location, avatar, and a clear portfolio positioning statement.'],2:['Projects','Add selected works, rich covers, galleries, roles, tools, and measurable outcomes.'],3:['Live Preview','Switch layouts and templates while the right side updates immediately.'],4:['Publish','Generate an online access link that keeps the same motion, style, and responsive behavior.']};
+    document.querySelectorAll('.step-btn').forEach(function(btn){ btn.addEventListener('click', function(){ const step=steps[btn.dataset.step]; document.querySelectorAll('.step-btn').forEach(function(item){ item.classList.remove('active-step'); }); btn.classList.add('active-step'); document.getElementById('stepTitle').textContent=step[0]; document.getElementById('stepDesc').textContent=step[1]; if(btn.dataset.step==='4' && 'speechSynthesis' in window){ speechSynthesis.cancel(); speechSynthesis.speak(new SpeechSynthesisUtterance('Portfolio is ready to publish.')); } }); });
+    document.querySelectorAll('.metric-card').forEach(function(card){ card.addEventListener('click', function(){ const step = card.dataset.step || '1'; const btn = document.querySelector('.step-btn[data-step="' + step + '"]'); if (btn) btn.click(); }); });
+    const modal = document.getElementById('imageModal'); const modalImg = document.getElementById('modalImg');
+    document.addEventListener('click', function(event){ const trigger = event.target.closest && event.target.closest('.image-preview-trigger'); if(trigger){ modalImg.src = trigger.dataset.previewSrc || ''; modalImg.alt = trigger.dataset.previewAlt || ''; modal.classList.add('open'); } });
+    document.getElementById('closeImage').addEventListener('click', function(){ modal.classList.remove('open'); modalImg.removeAttribute('src'); });
+    modal.addEventListener('click', function(event){ if(event.target === modal){ modal.classList.remove('open'); modalImg.removeAttribute('src'); } });
+  </script>
+</body>
+</html>

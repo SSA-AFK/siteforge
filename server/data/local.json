@@ -27,15 +27,8 @@
       "status": "published",
       "images": [
         {
-          "id": 1,
-          "imageUrl": "https://images.unsplash.com/photo-1550684848-fac1c5b4e853?auto=format&fit=crop&w=900&q=80",
-          "caption": "Gallery image 1",
-          "displayOrder": 0,
-          "isCover": false
-        },
-        {
           "id": 2,
-          "imageUrl": "https://images.unsplash.com/photo-1550684848-fac1c5b4e853?auto=format&fit=crop&w=900&q=80",
+          "imageUrl": "http://localhost:4000/uploads/1782811349378-t2oiw4-1f8b424b7927eec34fc6ef3c9924879e.jpg",
           "caption": "Gallery image 2",
           "displayOrder": 1,
           "isCover": false
@@ -54,7 +47,16 @@
       "isFeatured": true,
       "viewCount": 0,
       "status": "published",
-      "role": "负责人"
+      "role": "负责人",
+      "images": [
+        {
+          "id": 1,
+          "imageUrl": "http://localhost:4000/uploads/1782809517232-nfaixk-E3-80-90-E5-93-B2-E9-A3-8E-E5-A3-81-E7-BA-B8-E3-80-91f-E5-86-AF-E5-AE-9D-E5-AE-9.png",
+          "caption": "123123123666",
+          "displayOrder": 0,
+          "isCover": false
+        }
+      ]
     }
   ],
   "experiences": [
@@ -143,7 +145,7 @@
       "title": "Portfolio Walkthrough",
       "platform": "youtube",
       "videoUrl": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-      "thumbnailUrl": "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=900&q=80",
+      "thumbnailUrl": "http://localhost:4000/uploads/1782810592608-jeqki8-1.jpg",
       "description": "A short walkthrough of the design system, portfolio structure, and interaction direction.",
       "displayOrder": 0,
       "isFeatured": true
@@ -161,14 +163,14 @@
   ],
   "config": {
     "theme": "light",
-    "primaryColor": "#7413c3",
+    "primaryColor": "#4e091a",
     "layout": "list",
     "heroImages": [
       "http://localhost:4000/uploads/1782797752353-uvs8kc-2.jpg",
       "http://localhost:4000/uploads/1782795600836-qymofb-E3-80-90-E5-93-B2-E9-A3-8E-E5-A3-81-E7-BA-B8-E3-80-91-E4-BA-B2-E5-AF-86-E4-BA-92.png"
     ],
     "showBlog": true,
-    "showExperience": true,
+    "showExperience": false,
     "showSkills": true,
     "showVideos": true,
     "showAwards": true,
