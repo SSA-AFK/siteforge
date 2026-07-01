@@ -23,7 +23,13 @@ export function TemplateAqua({ data }: { data: SiteData }) {
   const rightProject = sideProjects[1] || projects[1] || featuredProject;
   const skills = useMemo(() => byOrder(data.skills).filter((skill) => skill.name.trim()), [data.skills]);
   const awards = useMemo(() => byOrder(data.awards ?? []).filter((award) => award.title.trim()), [data.awards]);
-  const videos = useMemo(() => byOrder(data.videos ?? []).filter((video) => video.videoUrl.trim()), [data.videos]);
+  const videos = useMemo(
+    () =>
+      byOrder(data.videos ?? [])
+        .filter((video) => video.videoUrl.trim())
+        .sort((a, b) => Number(b.isFeatured) - Number(a.isFeatured) || a.displayOrder - b.displayOrder),
+    [data.videos]
+  );
   const socials = useMemo(() => byOrder(data.socialLinks), [data.socialLinks]);
   const particles = useMemo(
     () =>
@@ -200,9 +206,12 @@ export function TemplateAqua({ data }: { data: SiteData }) {
         .aqua-tool-meter span { height:6px; border-radius:999px; background:rgba(255,255,255,.08); box-shadow:inset 0 0 0 1px rgba(255,255,255,.04); }
         .aqua-tool-meter span.active { background:linear-gradient(90deg,#8570ee,#d946ef); box-shadow:0 0 14px rgba(217,70,239,.32); }
         .aqua-media-grid, .aqua-award-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px; }
-        .aqua-media-card, .aqua-award-card { border-radius:22px; padding:18px; min-height:150px; transform:translateY(0); transition:transform .32s cubic-bezier(.16,1,.3,1), border-color .32s, box-shadow .32s; }
+        .aqua-media-card, .aqua-award-card { border-radius:22px; padding:18px; min-height:150px; transform:translateY(0); transition:transform .32s cubic-bezier(.16,1,.3,1), border-color .32s, box-shadow .32s; overflow:hidden; }
+        .aqua-media-card.featured { grid-column:span 2; border-color:rgba(217,70,239,.34); background:linear-gradient(135deg,rgba(133,112,238,.18),rgba(217,70,239,.11)), rgba(13,10,25,.58); box-shadow:0 28px 72px rgba(133,112,238,.16); }
+        .aqua-media-badge { display:inline-flex; width:max-content; margin-bottom:12px; border-radius:999px; background:rgba(217,70,239,.18); color:#fff; padding:6px 10px; font-size:10px; font-weight:900; text-transform:uppercase; letter-spacing:.14em; box-shadow:0 0 22px rgba(217,70,239,.22); }
         .aqua-media-card:hover, .aqua-award-card:hover { transform:translateY(-6px); }
         .aqua-media-card img, .aqua-media-card video { width:100%; height:130px; object-fit:cover; border-radius:16px; margin-bottom:14px; filter:brightness(1.12) saturate(1.12); }
+        .aqua-media-card.featured img, .aqua-media-card.featured video { height:190px; }
         .aqua-media-card h3, .aqua-award-card h3 { margin:0 0 8px; font-size:16px; font-weight:850; }
         .aqua-media-card p, .aqua-award-card p { color:#9595b1; font-size:12px; line-height:1.65; }
         .aqua-footer { max-width:1280px; margin:0 auto 24px; padding:24px; border:1px solid rgba(255,255,255,.07); border-radius:30px; display:grid; grid-template-columns:1.35fr .8fr 1fr; gap:28px; color:#9595b1; font-size:12px; background:linear-gradient(135deg,rgba(13,10,25,.78),rgba(10,7,20,.5)); backdrop-filter:blur(22px); box-shadow:0 24px 70px rgba(0,0,0,.18); }
@@ -402,7 +411,14 @@ export function TemplateAqua({ data }: { data: SiteData }) {
               <span className="aqua-section-label">Motion Proof</span>
               <h2>Videos and demos</h2>
               <div className="aqua-media-grid">
-                {videos.slice(0, 3).map((video) => <a className="aqua-glass aqua-media-card" href={video.videoUrl} target="_blank" rel="noreferrer" key={video.id || video.videoUrl}>{video.thumbnailUrl ? <img src={video.thumbnailUrl} alt={video.title} /> : null}<h3>{video.title}</h3><p>{video.description || video.platform}</p></a>)}
+                {videos.slice(0, 3).map((video) => (
+                  <a className={`aqua-glass aqua-media-card ${video.isFeatured ? 'featured' : ''}`} href={video.videoUrl} target="_blank" rel="noreferrer" key={video.id || video.videoUrl}>
+                    {video.isFeatured ? <span className="aqua-media-badge">Featured Demo</span> : null}
+                    {video.thumbnailUrl ? <img src={video.thumbnailUrl} alt={video.title} /> : null}
+                    <h3>{video.title}</h3>
+                    <p>{video.description || video.platform}</p>
+                  </a>
+                ))}
               </div>
             </section>
           ) : null}

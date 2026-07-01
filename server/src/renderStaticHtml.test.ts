@@ -268,6 +268,8 @@ describe('renderStaticHtml', () => {
     expect(html).toContain('tool-orb');
     expect(html).toContain(defaultSiteData.awards[0].title);
     expect(html).toContain(defaultSiteData.videos[0].title);
+    expect(html).toContain('media-card featured');
+    expect(html).toContain('Featured Demo');
     expect(html).not.toContain('Project Cost Estimator');
     expect(html).not.toContain('Select Project Type');
     expect(html).not.toContain('skills-slider');
