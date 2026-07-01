@@ -34,6 +34,7 @@ function Field({ label, children }: { label: string; children: ReactNode }) {
 }
 
 const inputClass = 'w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm font-medium text-slate-800 outline-none transition focus:border-purple-700 focus:ring-4 focus:ring-purple-100';
+const rangeInputClass = 'w-full accent-blue-600';
 
 function toMonthInputValue(value?: string) {
   if (!value) return '';
@@ -435,7 +436,7 @@ export function EditorPanel() {
               </div>
               <input className={inputClass} placeholder="例如：Frontend / Design / Interaction" value={skill.category || ''} onChange={(event) => upsertSkill({ ...skill, category: event.target.value })} />
               <Field label="熟练度">
-                <input className={inputClass} type="range" min={1} max={5} value={skill.proficiency} onChange={(event) => upsertSkill({ ...skill, proficiency: Number(event.target.value) as Skill['proficiency'] })} />
+                <input className={rangeInputClass} type="range" min={1} max={5} value={skill.proficiency} onChange={(event) => upsertSkill({ ...skill, proficiency: Number(event.target.value) as Skill['proficiency'] })} />
               </Field>
               <div className="flex items-center justify-between rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-500">
                 <span>当前等级</span>
