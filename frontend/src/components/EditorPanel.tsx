@@ -1,4 +1,4 @@
-import { ArrowDown, ArrowUp, ExternalLink, Lock, Plus, RotateCcw, Save, Trash2, Upload } from 'lucide-react';
+import { ArrowDown, ArrowUp, ChevronDown, ExternalLink, Lock, Plus, RotateCcw, Save, Trash2, Upload } from 'lucide-react';
 import { useRef, useState, type ReactNode } from 'react';
 import { defaultConfig, normalizeModuleOrder } from '@siteforge/shared';
 import type { Award, Experience, OrderedSectionKey, Project, ProjectImage, SectionCopy, SectionKey, Skill, SocialLink, TemplateId, VideoItem } from '@siteforge/shared';
@@ -32,6 +32,26 @@ function Field({ label, children }: { label: string; children: ReactNode }) {
       <span>{label}</span>
       {children}
     </label>
+  );
+}
+
+function FormSection({ title, description, defaultOpen = false, action, children }: { title: string; description?: string; defaultOpen?: boolean; action?: ReactNode; children: ReactNode }) {
+  return (
+    <details className="group rounded-xl border border-slate-200 bg-white" open={defaultOpen}>
+      <summary className="flex cursor-pointer list-none items-center justify-between gap-3 rounded-xl px-3 py-3 transition hover:bg-slate-50 [&::-webkit-details-marker]:hidden">
+        <div className="min-w-0">
+          <h2 className="text-sm font-black text-slate-950">{title}</h2>
+          {description ? <p className="mt-1 truncate text-xs font-medium text-slate-500">{description}</p> : null}
+        </div>
+        <div className="flex shrink-0 items-center gap-2">
+          {action}
+          <ChevronDown className="h-4 w-4 text-slate-400 transition group-open:rotate-180" />
+        </div>
+      </summary>
+      <div className="space-y-3 border-t border-slate-100 p-3">
+        {children}
+      </div>
+    </details>
   );
 }
 
@@ -389,9 +409,8 @@ export function EditorPanel() {
         ) : null}
       </div>
 
-      <div className="sf-scrollbar min-h-0 flex-1 space-y-6 overflow-y-auto p-5">
-        <section className="space-y-3">
-          <h2 className="text-sm font-black text-slate-950">个人信息</h2>
+      <div className="sf-scrollbar min-h-0 flex-1 space-y-3 overflow-y-auto p-5">
+        <FormSection title="个人信息" description="头像、名称、简介和位置" defaultOpen>
           <Field label="显示名称"><input className={inputClass} placeholder="例如：李明 / Alex Chen" value={data.user.displayName} onChange={(event) => updateUser({ displayName: event.target.value })} /></Field>
           <Field label="用户名"><input className={inputClass} placeholder="例如：alexchen" value={data.user.username} onChange={(event) => updateUser({ username: event.target.value })} /></Field>
           <Field label="邮箱"><input className={inputClass} type="email" placeholder="例如：hello@example.com" value={data.user.email} onChange={(event) => updateUser({ email: event.target.value })} /></Field>
@@ -400,10 +419,9 @@ export function EditorPanel() {
           <Field label="一句话简介"><textarea className={inputClass} rows={3} placeholder="例如：用设计和技术构建清晰、好用的数字体验" value={data.user.bio || ''} onChange={(event) => updateUser({ bio: event.target.value })} /></Field>
           <Field label="详细介绍"><textarea className={inputClass} rows={4} placeholder="例如：介绍你的背景、专长、工作方式和代表成果" value={data.user.fullBio || ''} onChange={(event) => updateUser({ fullBio: event.target.value })} /></Field>
           <Field label="位置"><input className={inputClass} placeholder="例如：中国 · 杭州" value={data.user.location || ''} onChange={(event) => updateUser({ location: event.target.value })} /></Field>
-        </section>
+        </FormSection>
 
-        <section className="space-y-3">
-          <h2 className="text-sm font-black text-slate-950">网站配置</h2>
+        <FormSection title="网站配置" description="模板、主题和模块开关">
           <Field label="模板">
             <select className={inputClass} value={templateId} onChange={(event) => setTemplateId(event.target.value as TemplateId)}>
               <option value="snowly">Snowly / 亮色紫色作品集</option>
@@ -426,13 +444,9 @@ export function EditorPanel() {
           <label className="flex items-center justify-between rounded-lg border border-slate-200 p-3 text-sm font-bold text-slate-700">显示技能 <input type="checkbox" checked={data.config.showSkills} onChange={(event) => updateConfig({ showSkills: event.target.checked })} /></label>
           {templateCapabilities.videos ? <label className="flex items-center justify-between rounded-lg border border-slate-200 p-3 text-sm font-bold text-slate-700">显示视频 <input type="checkbox" checked={data.config.showVideos} onChange={(event) => updateConfig({ showVideos: event.target.checked })} /></label> : null}
           {templateCapabilities.awards ? <label className="flex items-center justify-between rounded-lg border border-slate-200 p-3 text-sm font-bold text-slate-700">显示荣誉奖项 <input type="checkbox" checked={data.config.showAwards} onChange={(event) => updateConfig({ showAwards: event.target.checked })} /></label> : null}
-        </section>
+        </FormSection>
 
-        <section className="space-y-3">
-          <div>
-            <h2 className="text-sm font-black text-slate-950">模块展示顺序</h2>
-            <p className="mt-1 text-xs font-medium text-slate-500">首页 / About 固定第一，其他模块可用上移、下移调整。</p>
-          </div>
+        <FormSection title="模块展示顺序" description="首页固定第一，其余模块可上移或下移">
           <div className="space-y-2 rounded-xl border border-slate-200 bg-slate-50 p-3">
             <div className="flex items-center justify-between rounded-lg border border-slate-200 bg-white p-3">
               <div>
@@ -464,13 +478,9 @@ export function EditorPanel() {
               );
             })}
           </div>
-        </section>
+        </FormSection>
 
-        <section className="space-y-3">
-          <div>
-            <h2 className="text-sm font-black text-slate-950">模块标题文案</h2>
-            <p className="mt-1 text-xs font-medium text-slate-500">这里编辑各模块的标签、主标题和副标题。Aqua 的 About 标题已合并到个人信息中。</p>
-          </div>
+        <FormSection title="模块标题文案" description="编辑各模块标签、主标题和副标题">
           {sectionCopyFields.filter((field) => field.key !== 'about').filter(isSectionCopyVisible).map((field) => {
             const copy = getEditableSectionCopy(field.key);
             return (
@@ -491,16 +501,13 @@ export function EditorPanel() {
               </div>
             );
           })}
-        </section>
+        </FormSection>
 
-        {templateCapabilities.heroImages ? <section className="space-y-3">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-sm font-black text-slate-950">Hero 背景图</h2>
-              <p className="mt-1 text-xs font-medium text-slate-500">1 张为静态图，多张自动轮播</p>
-            </div>
-            <button className="rounded-lg bg-slate-100 p-2 text-slate-600 hover:bg-slate-200" onClick={addHeroImage}><Plus className="h-4 w-4" /></button>
-          </div>
+        {templateCapabilities.heroImages ? <FormSection
+          title="Hero 背景图"
+          description={`${(data.config.heroImages ?? []).length} 张图片，可自动轮播`}
+          action={<button className="rounded-lg bg-slate-100 p-2 text-slate-600 hover:bg-slate-200" onClick={(event) => { event.preventDefault(); addHeroImage(); }} aria-label="添加 Hero 背景图"><Plus className="h-4 w-4" /></button>}
+        >
           {(data.config.heroImages ?? []).map((imageUrl, index) => (
             <div key={`${imageUrl}-${index}`} className="grid gap-2 rounded-xl border border-slate-200 bg-slate-50 p-3">
               <div className="flex items-start gap-2">
@@ -509,13 +516,13 @@ export function EditorPanel() {
               </div>
             </div>
           ))}
-        </section> : null}
+        </FormSection> : null}
 
-        <section className="space-y-3">
-          <div className="flex items-center justify-between">
-            <h2 className="text-sm font-black text-slate-950">作品</h2>
-            <button className="rounded-lg bg-slate-100 p-2 text-slate-600 hover:bg-slate-200" onClick={addProject}><Plus className="h-4 w-4" /></button>
-          </div>
+        <FormSection
+          title="作品"
+          description={`${data.projects.length} 个作品项目`}
+          action={<button className="rounded-lg bg-slate-100 p-2 text-slate-600 hover:bg-slate-200" onClick={(event) => { event.preventDefault(); addProject(); }} aria-label="添加作品"><Plus className="h-4 w-4" /></button>}
+        >
           {data.projects.map((project, index) => (
             <div key={projectKey(project, index)} className="space-y-3 rounded-xl border border-slate-200 bg-slate-50 p-3">
               <div className="flex justify-between gap-2">
@@ -559,13 +566,13 @@ export function EditorPanel() {
               </div>
             </div>
           ))}
-        </section>
+        </FormSection>
 
-        {templateCapabilities.awards ? <section className="space-y-3">
-          <div className="flex items-center justify-between">
-            <h2 className="text-sm font-black text-slate-950">荣誉奖项</h2>
-            <button className="rounded-lg bg-slate-100 p-2 text-slate-600 hover:bg-slate-200" onClick={addAward}><Plus className="h-4 w-4" /></button>
-          </div>
+        {templateCapabilities.awards ? <FormSection
+          title="荣誉奖项"
+          description={`${data.awards.length} 条奖项记录`}
+          action={<button className="rounded-lg bg-slate-100 p-2 text-slate-600 hover:bg-slate-200" onClick={(event) => { event.preventDefault(); addAward(); }} aria-label="添加荣誉奖项"><Plus className="h-4 w-4" /></button>}
+        >
           {data.awards.map((award) => (
             <div key={award.id || award.title} className="space-y-3 rounded-xl border border-slate-200 bg-slate-50 p-3">
               <div className="flex justify-between gap-2">
@@ -577,13 +584,13 @@ export function EditorPanel() {
               <textarea className={inputClass} rows={2} placeholder="例如：说明获奖原因或认可内容" value={award.description || ''} onChange={(event) => upsertAward({ ...award, description: event.target.value })} />
             </div>
           ))}
-        </section> : null}
+        </FormSection> : null}
 
-        {templateCapabilities.videos ? <section className="space-y-3">
-          <div className="flex items-center justify-between">
-            <h2 className="text-sm font-black text-slate-950">视频</h2>
-            <button className="rounded-lg bg-slate-100 p-2 text-slate-600 hover:bg-slate-200" onClick={addVideo}><Plus className="h-4 w-4" /></button>
-          </div>
+        {templateCapabilities.videos ? <FormSection
+          title="视频"
+          description={`${data.videos.length} 个视频条目`}
+          action={<button className="rounded-lg bg-slate-100 p-2 text-slate-600 hover:bg-slate-200" onClick={(event) => { event.preventDefault(); addVideo(); }} aria-label="添加视频"><Plus className="h-4 w-4" /></button>}
+        >
           {data.videos.map((video) => (
             <div key={video.id || video.videoUrl} className="space-y-3 rounded-xl border border-slate-200 bg-slate-50 p-3">
               <div className="flex justify-between gap-2">
@@ -602,13 +609,13 @@ export function EditorPanel() {
               <label className="flex items-center justify-between rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-xs font-bold text-slate-600">精选视频 <input type="checkbox" checked={video.isFeatured} onChange={(event) => upsertVideo({ ...video, isFeatured: event.target.checked })} /></label>
             </div>
           ))}
-        </section> : null}
+        </FormSection> : null}
 
-        <section className="space-y-3">
-          <div className="flex items-center justify-between">
-            <h2 className="text-sm font-black text-slate-950">经历</h2>
-            <button className="rounded-lg bg-slate-100 p-2 text-slate-600 hover:bg-slate-200" onClick={addExperience}><Plus className="h-4 w-4" /></button>
-          </div>
+        <FormSection
+          title="经历"
+          description={`${data.experiences.length} 条经历`}
+          action={<button className="rounded-lg bg-slate-100 p-2 text-slate-600 hover:bg-slate-200" onClick={(event) => { event.preventDefault(); addExperience(); }} aria-label="添加经历"><Plus className="h-4 w-4" /></button>}
+        >
           {data.experiences.map((experience) => (
             <div key={experience.id || experience.company} className="space-y-3 rounded-xl border border-slate-200 bg-slate-50 p-3">
               <div className="flex justify-between gap-2">
@@ -630,13 +637,13 @@ export function EditorPanel() {
               <textarea className={inputClass} rows={4} placeholder="支持多行：职责、成果、项目经验..." value={experience.description || ''} onChange={(event) => upsertExperience({ ...experience, description: event.target.value })} />
             </div>
           ))}
-        </section>
+        </FormSection>
 
-        <section className="space-y-3">
-          <div className="flex items-center justify-between">
-            <h2 className="text-sm font-black text-slate-950">技能</h2>
-            <button className="rounded-lg bg-slate-100 p-2 text-slate-600 hover:bg-slate-200" onClick={addSkill}><Plus className="h-4 w-4" /></button>
-          </div>
+        <FormSection
+          title="技能"
+          description={`${data.skills.length} 项技能`}
+          action={<button className="rounded-lg bg-slate-100 p-2 text-slate-600 hover:bg-slate-200" onClick={(event) => { event.preventDefault(); addSkill(); }} aria-label="添加技能"><Plus className="h-4 w-4" /></button>}
+        >
           {data.skills.map((skill) => (
             <div key={skill.id || skill.name} className="space-y-3 rounded-xl border border-slate-200 bg-slate-50 p-3">
               <div className="flex justify-between gap-2">
@@ -653,13 +660,13 @@ export function EditorPanel() {
               </div>
             </div>
           ))}
-        </section>
+        </FormSection>
 
-        <section className="space-y-3">
-          <div className="flex items-center justify-between">
-            <h2 className="text-sm font-black text-slate-950">社交链接</h2>
-            <button className="rounded-lg bg-slate-100 p-2 text-slate-600 hover:bg-slate-200" onClick={addSocial}><Plus className="h-4 w-4" /></button>
-          </div>
+        <FormSection
+          title="社交链接"
+          description={`${data.socialLinks.length} 个链接`}
+          action={<button className="rounded-lg bg-slate-100 p-2 text-slate-600 hover:bg-slate-200" onClick={(event) => { event.preventDefault(); addSocial(); }} aria-label="添加社交链接"><Plus className="h-4 w-4" /></button>}
+        >
           {data.socialLinks.map((social) => (
             <div key={social.id || social.url} className="space-y-2 rounded-xl border border-slate-200 bg-slate-50 p-3">
               <div className="flex justify-between gap-2">
@@ -669,7 +676,7 @@ export function EditorPanel() {
               <input className={inputClass} placeholder="例如：https://github.com/yourname" value={social.url} onChange={(event) => upsertSocialLink({ ...social, url: event.target.value })} />
             </div>
           ))}
-        </section>
+        </FormSection>
       </div>
       {isPublishModalOpen ? (
         <PublishSettingsModal

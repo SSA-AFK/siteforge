@@ -1,4 +1,4 @@
-import { AlertTriangle, ArrowRight, Award as AwardIcon, BriefcaseBusiness, ChevronLeft, ChevronRight, Github, Linkedin, Mail, MapPin, PhoneCall, Sparkles, Star, Wand2 } from 'lucide-react';
+import { ArrowRight, Award as AwardIcon, BriefcaseBusiness, ChevronLeft, ChevronRight, Github, Linkedin, Mail, MapPin, PhoneCall, Sparkles, Star, Wand2 } from 'lucide-react';
 import type { CSSProperties } from 'react';
 import { useEffect, useState } from 'react';
 import { getAboutSectionCopy, getOrderedSections, getSectionCopy } from '@siteforge/shared';
@@ -426,15 +426,21 @@ export function TemplateSnowly({ data }: TemplateSnowlyProps) {
             <h2 className="text-3xl font-black text-slate-950 md:text-5xl">{skillsCopy.title}</h2>
             {skillsCopy.description ? <p className="mt-4 text-sm leading-7 text-slate-500">{skillsCopy.description}</p> : null}
           </div>
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
             {previewSkills.map((skill, index) => (
-              <div key={skill.id || skill.name} data-aos="fade-up" style={{ transitionDelay: `${(index % 3) * 100}ms` }} className="rounded-2xl border border-slate-100 bg-white p-6 shadow-sm">
-                <div className="mb-3 flex items-center justify-between">
-                  <h3 className="font-extrabold text-slate-950">{skill.name}</h3>
-                  <span className="text-xs font-bold text-slate-400">{skill.category}</span>
+              <div key={skill.id || skill.name} data-aos="fade-up" style={{ transitionDelay: `${(index % 4) * 100}ms` }} className="flex min-h-[148px] flex-col justify-between rounded-2xl border border-slate-100 bg-white p-5 shadow-sm">
+                <div className="space-y-3">
+                  <span className="inline-flex max-w-full rounded-full bg-slate-50 px-3 py-1 text-[11px] font-black uppercase text-slate-400">{skill.category || 'Capability'}</span>
+                  <h3 className="text-lg font-extrabold leading-snug text-slate-950">{skill.name}</h3>
                 </div>
-                <div className="h-2 rounded-full bg-slate-100">
-                  <div className="h-2 rounded-full" style={{ ...bgColor(primaryColor), width: `${skill.proficiency * 20}%` }} />
+                <div className="mt-5 space-y-2">
+                  <div className="flex items-center justify-between text-[11px] font-black uppercase text-slate-400">
+                    <span>Level</span>
+                    <span>{skill.proficiency}/5</span>
+                  </div>
+                  <div className="h-2 overflow-hidden rounded-full bg-slate-100">
+                    <div className="h-2 rounded-full" style={{ ...bgColor(primaryColor), width: `${skill.proficiency * 20}%` }} />
+                  </div>
                 </div>
               </div>
             ))}
@@ -517,30 +523,31 @@ export function TemplateSnowly({ data }: TemplateSnowlyProps) {
       ) : null}
 
       <section id="contact" className="sf-reveal" style={{ order: sectionOrder.contact }}>
-        <div className="px-4 py-12 text-white md:px-8" style={bgColor(primaryColor)}>
-          <div data-aos="fade-up" className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-6 md:flex-row">
-            <div className="flex items-center gap-4 text-center md:text-left">
-              <div className="hidden h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-white/10 sm:flex">
-                <AlertTriangle className="h-7 w-7 text-amber-300" />
-              </div>
-              <div className="hidden">
-                <h2 className="text-xl font-black md:text-2xl">准备好开启下一次合作？</h2>
-                <p className="mt-1 text-xs font-light text-white/75">作品交流、项目合作或职位机会，都可以从这里开始。</p>
-              </div>
-              <div>
-                <h2 className="text-xl font-black md:text-2xl">{contactCopy.title}</h2>
-                <p className="mt-1 text-xs font-light text-white/75">{contactCopy.description}</p>
+        <div className="border-y border-slate-200/70 bg-white px-4 py-16 md:px-8">
+          <div data-aos="fade-up" className="mx-auto grid max-w-7xl gap-8 md:grid-cols-[1fr_auto] md:items-end">
+            <div className="max-w-2xl">
+              <span className="mb-4 inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1 text-xs font-extrabold uppercase tracking-wider" style={textColor(primaryColor)}>
+                <PhoneCall className="h-4 w-4" /> {contactCopy.label}
+              </span>
+              <h2 className="text-3xl font-black leading-tight text-slate-950 md:text-5xl">{contactCopy.title}</h2>
+              {contactCopy.description ? <p className="mt-4 text-sm leading-7 text-slate-500">{contactCopy.description}</p> : null}
+            </div>
+            <div className="flex flex-col gap-3 md:items-end">
+              {user.email ? (
+                <a href={`mailto:${user.email}`} className="inline-flex items-center gap-3 rounded-2xl border border-slate-100 bg-slate-50 px-5 py-3 text-sm font-extrabold text-slate-950 shadow-sm transition hover:-translate-y-0.5 hover:bg-white hover:shadow-md">
+                  <Mail className="h-4 w-4" style={textColor(primaryColor)} />
+                  {user.email}
+                </a>
+              ) : null}
+              <div className="flex flex-wrap gap-2 md:justify-end">
+                {visibleSocials.map((link) => (
+                  <a key={link.id || link.url} href={link.url} className="inline-flex items-center gap-2 rounded-xl border border-slate-100 bg-white px-4 py-2.5 text-xs font-extrabold text-slate-600 shadow-sm transition hover:-translate-y-0.5 hover:text-slate-950 hover:shadow-md" aria-label={link.platform}>
+                    {iconForSocial(link)}
+                    {link.platform}
+                  </a>
+                ))}
               </div>
             </div>
-            <a href={user.email ? `mailto:${user.email}` : '#contact'} className="flex items-center gap-3.5 rounded-2xl bg-white px-6 py-3.5 text-slate-950 shadow-xl transition hover:scale-105 hover:shadow-2xl active:scale-95">
-              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-white" style={bgColor(primaryColor)}>
-                <PhoneCall className="h-4 w-4" />
-              </span>
-              <div>
-                <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Start a conversation</p>
-                <p className="text-sm font-black text-slate-950">{user.email || 'Get in touch'}</p>
-              </div>
-            </a>
           </div>
         </div>
 

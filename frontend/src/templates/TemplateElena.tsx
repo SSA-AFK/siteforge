@@ -385,19 +385,23 @@ export function TemplateElena({ data }: { data: SiteData }) {
             <h2 className="font-display text-3xl font-extrabold md:text-5xl">{skillsCopy.title}</h2>
             {skillsCopy.description ? <p className="mx-auto max-w-xl text-sm leading-7 text-[#899E97]">{skillsCopy.description}</p> : null}
           </div>
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
             {previewSkills.map((skill, index) => (
-              <TiltCard key={skill.id || skill.name} className="flex flex-col justify-between space-y-8 p-6" delay={index * 100}>
-                <div className="elena-fluid relative z-10 flex h-64 items-center justify-center overflow-hidden rounded-2xl border border-white/5">
-                  <span className="font-display select-none text-2xl font-black tracking-[0.2em] text-white/25">{skill.category || 'CRAFT'}</span>
-                </div>
-                <div className="relative z-10 space-y-3">
-                  <div className="flex items-center justify-between gap-4">
-                    <h3 className="font-display text-xl font-bold text-white">{skill.name || 'Untitled Skill'}</h3>
-                    <span className="rounded-full border border-white/10 bg-[#04130f] px-3 py-1.5 font-mono text-xs text-[#00E699]">{skill.proficiency}/5</span>
+              <TiltCard key={skill.id || skill.name} className="group flex min-h-[164px] flex-col justify-between overflow-hidden p-5" delay={index * 70}>
+                <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#00E699]/70 to-transparent opacity-0 transition group-hover:opacity-100" />
+                <div className="relative z-10 space-y-5">
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="rounded-full border border-[#00E699]/20 bg-[#00E699]/10 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-[#00E699]">{skill.category || 'Capability'}</span>
+                    <span className="font-mono text-xs text-[#899E97]">{skill.proficiency}/5</span>
                   </div>
-                  {skill.category ? <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#00E699]">{skill.category}</p> : null}
-                  <div className="h-2 overflow-hidden rounded-full bg-white/10">
+                  <h3 className="font-display text-xl font-bold leading-tight text-white transition group-hover:text-[#00E699]">{skill.name || 'Untitled Skill'}</h3>
+                </div>
+                <div className="relative z-10 mt-6 space-y-2">
+                  <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-[0.16em] text-[#899E97]">
+                    <span>Depth</span>
+                    <span>{skill.category || 'Craft'}</span>
+                  </div>
+                  <div className="h-1.5 overflow-hidden rounded-full bg-white/10">
                     <div className="h-full rounded-full bg-[#00E699]" style={{ width: `${skill.proficiency * 20}%` }} />
                   </div>
                 </div>
