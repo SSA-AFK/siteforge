@@ -667,23 +667,25 @@ function renderElenaHtml(data: SiteData) {
     .noise-layer, .grid-layer { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
     .grid-layer { opacity: .06; background-image: linear-gradient(rgba(255,255,255,.22) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.22) 1px, transparent 1px); background-size: 48px 48px; }
     .noise-layer { opacity: .045; background-image: radial-gradient(circle at center, white 1px, transparent 1px); background-size: 18px 18px; }
-    .hero { position: relative; z-index: 1; min-height: 85vh; display: grid; grid-template-columns: 8fr 4fr; gap: 64px; align-items: center; padding-top: 48px; padding-bottom: 96px; }
-    .hero-copy { min-height: 560px; display: flex; flex-direction: column; justify-content: center; }
-    .identity-label { margin: 0 0 20px; color: var(--accent); font-family: 'Plus Jakarta Sans'; font-size: clamp(14px, 1.4vw, 18px); font-weight: 500; letter-spacing: .32em; text-transform: uppercase; }
-    .hero h1 { max-width: 880px; margin: 0; font-size: clamp(50px, 7vw, 86px); line-height: 1.04; letter-spacing: -.04em; font-weight: 800; }
+    .hero { position: relative; z-index: 1; min-height: 78vh; display: grid; grid-template-columns: 7fr 5fr; gap: 56px; align-items: center; padding-top: 40px; padding-bottom: 80px; }
+    .hero-copy { display: flex; flex-direction: column; justify-content: center; }
+    .identity-label { margin: 0; color: var(--accent); font-family: 'Plus Jakarta Sans'; font-size: clamp(12px, 1.1vw, 14px); font-weight: 700; letter-spacing: .3em; text-transform: uppercase; }
+    .hero h1 { max-width: 880px; margin: 20px 0 0; font-size: clamp(40px, 5.6vw, 72px); line-height: 1.06; letter-spacing: -.04em; font-weight: 800; }
     .hero h1 span { color: var(--accent); }
+    .hero-intro { margin-top: 32px; display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 24px; align-items: end; }
     .hero p, .muted { color: var(--muted); line-height: 1.75; }
-    .button { display: inline-flex; align-items: center; justify-content: center; gap: 12px; min-width: 210px; margin-top: 28px; border-radius: 999px; background: var(--accent); color: black; padding: 16px 32px; font-size: 11px; font-weight: 900; letter-spacing: .2em; transition: box-shadow .25s ease, transform .25s ease; }
+    .hero-intro p { margin: 0; max-width: 680px; }
+    .button { display: inline-flex; align-items: center; justify-content: center; gap: 12px; min-width: 176px; height: 48px; border-radius: 999px; background: var(--accent); color: black; padding: 0 24px; font-size: 11px; font-weight: 900; letter-spacing: .18em; transition: box-shadow .25s ease, transform .25s ease; }
     .button:hover { transform: translateY(-2px); box-shadow: 0 18px 38px rgba(0,230,153,.24); }
     .tilt-card { position: relative; border: 1px solid rgba(255,255,255,.06); border-radius: 28px; background: rgba(9,34,27,.42); box-shadow: 0 26px 80px rgba(0,0,0,.24); backdrop-filter: blur(25px); transform-style: preserve-3d; transition: transform .5s cubic-bezier(.16,1,.3,1), border-color .4s; overflow: hidden; }
     .tilt-card::after { content: ""; position: absolute; inset: -1px; border-radius: inherit; padding: 1px; background: radial-gradient(120px circle at var(--mouse-x,0) var(--mouse-y,0), rgba(0,230,153,.22), transparent 72%); -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0); -webkit-mask-composite: xor; mask-composite: exclude; pointer-events: none; opacity: 0; transition: opacity .35s; }
     .tilt-card:hover::after { opacity: .55; }
-    .hero-tags { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 56px; color: var(--accent); font-size: 11px; font-weight: 800; letter-spacing: .2em; text-transform: uppercase; }
-    .hero-tags div, .hero-tags a { border: 1px solid rgba(255,255,255,.1); border-radius: 999px; background: rgba(9,34,27,.45); padding: 9px 16px; backdrop-filter: blur(18px); }
+    .hero-tags { display: flex; flex-wrap: wrap; gap: 8px; max-width: 760px; margin-top: 32px; color: var(--accent); font-size: 11px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; }
+    .hero-tags div, .hero-tags a { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; border: 1px solid rgba(255,255,255,.1); border-radius: 999px; background: rgba(9,34,27,.45); padding: 8px 14px; backdrop-filter: blur(18px); }
     .hero-tags a { border-color: rgba(0,230,153,.22); background: rgba(0,230,153,.1); color: var(--accent); }
     .hero-tags a:hover { background: var(--accent); color: black; }
     .hero-tags span { opacity: .45; margin-right: 8px; }
-    .portrait { width: 92%; height: 540px; margin-left: auto; }
+    .portrait { width: 100%; height: 460px; margin-left: auto; }
     .portrait img { width: 100%; height: 100%; object-fit: cover; filter: brightness(1.1) saturate(1.05); transition: transform .7s ease; }
     .portrait:hover img { transform: scale(1.05); }
     .portrait::before { content: ""; position: absolute; inset: 0; z-index: 1; background: linear-gradient(90deg, rgba(4,19,15,.85), rgba(4,19,15,.28), transparent), linear-gradient(0deg, rgba(4,19,15,.85), transparent), rgba(0,230,153,.05); opacity: .8; mix-blend-mode: soft-light; }
@@ -775,6 +777,8 @@ function renderElenaHtml(data: SiteData) {
       nav { display: none; }
       .hero, .process-grid, .skill-grid-elena, .contact-grid, .video-grid, .elena-award-grid { grid-template-columns: 1fr; }
       .hero-copy { min-height: auto; }
+      .hero-intro { grid-template-columns: 1fr; }
+      .button { width: max-content; }
       .portrait { width: 100%; height: 460px; }
       .project-grid { grid-template-columns: 1fr; }
       .project-card, .project-card.wide, .video-card, .video-card.wide, .contact-copy, .contact-links { grid-column: auto; }
@@ -803,8 +807,9 @@ function renderElenaHtml(data: SiteData) {
       <div class="hero-copy fade-up-element">
         <p class="identity-label">${escapeHtml(identityLabel)}</p>
         <h1>${elenaHighlightedHeroTitle(heroMainTitle)}</h1>
-        <p style="max-width:440px">${escapeHtml(data.user.fullBio || 'A dark, interactive portfolio built around visual craft, motion, and technical depth.')}</p>
+        <div class="hero-intro"><p>${escapeHtml(data.user.fullBio || 'A dark, interactive portfolio built around visual craft, motion, and technical depth.')}</p>
         <a class="button" href="#works">EXPLORE WORK <span aria-hidden="true">→</span></a>
+        </div>
         ${data.config.showSkills && skills.length ? `<div class="hero-tags">${skillStrip}</div>` : ''}
       </div>
       <article class="tilt-card portrait fade-up-element" style="transition-delay:150ms">

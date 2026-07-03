@@ -267,30 +267,30 @@ export function TemplateElena({ data }: { data: SiteData }) {
         </a>
       </header>
 
-      <section id="hero" className="relative z-10 mx-auto grid min-h-[85vh] max-w-7xl grid-cols-1 items-center gap-12 pb-24 pt-12 lg:grid-cols-12 lg:gap-16">
-        <div className="elena-reveal z-10 flex min-h-[560px] flex-col justify-center space-y-8 lg:col-span-8">
-          <div className="space-y-5">
-            <p className="font-display text-sm font-medium uppercase tracking-[0.32em] text-[#00E699] md:text-[18px]">{identityLabel}</p>
-            <h1 className="font-display max-w-4xl text-5xl font-extrabold leading-[1.04] tracking-tight md:text-7xl">
+      <section id="hero" className="relative z-10 mx-auto grid min-h-[78vh] max-w-7xl grid-cols-1 items-center gap-10 pb-20 pt-10 lg:grid-cols-12 lg:gap-14">
+        <div className="elena-reveal z-10 flex flex-col justify-center lg:col-span-7">
+          <div>
+            <p className="font-display text-xs font-semibold uppercase tracking-[0.3em] text-[#00E699] md:text-sm">{identityLabel}</p>
+            <h1 className="font-display mt-5 max-w-4xl text-4xl font-extrabold leading-[1.06] tracking-tight sm:text-5xl md:text-6xl">
               <HighlightedHeroTitle text={heroMainTitle} />
             </h1>
           </div>
-          <div className="max-w-xl space-y-7">
-            <p className="text-sm leading-relaxed text-[#899E97] md:text-base">{user.fullBio || 'A dark, interactive portfolio built around visual craft, motion, and technical depth.'}</p>
-            <a href="#works" className="inline-flex min-w-[210px] items-center justify-center gap-3 rounded-full bg-[#00E699] px-8 py-4 text-xs font-bold tracking-[0.2em] text-black transition hover:shadow-lg hover:shadow-[#00e699]/30">
+          <div className="mt-8 grid gap-6 md:grid-cols-[minmax(0,1fr)_auto] md:items-end">
+            <p className="max-w-2xl text-sm leading-7 text-[#899E97] md:text-base">{user.fullBio || 'A dark, interactive portfolio built around visual craft, motion, and technical depth.'}</p>
+            <a href="#works" className="inline-flex h-12 min-w-[176px] items-center justify-center gap-3 rounded-full bg-[#00E699] px-6 text-[11px] font-bold tracking-[0.18em] text-black transition hover:shadow-lg hover:shadow-[#00e699]/30">
               EXPLORE WORK <span aria-hidden="true">→</span>
             </a>
           </div>
           {config.showSkills && skills.length ? (
-            <div className="flex flex-wrap items-center gap-3 pt-8 text-xs font-semibold uppercase tracking-[0.2em] text-[#00E699]">
+            <div className="mt-8 flex max-w-3xl flex-wrap items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-[#00E699]">
               {heroSkills.map((skill) => (
-                <div key={skill.id || skill.name} className="rounded-full border border-white/10 bg-[#09221b]/45 px-4 py-2 backdrop-blur-xl"><span className="mr-2 opacity-40">◆</span>{skill.name}</div>
+                <div key={skill.id || skill.name} className="max-w-full truncate rounded-full border border-white/10 bg-[#09221b]/45 px-3.5 py-2 backdrop-blur-xl"><span className="mr-2 opacity-40">◆</span>{skill.name}</div>
               ))}
-              {hiddenHeroSkillCount ? <button type="button" onClick={() => setShowAllSkills(true)} className="rounded-full border border-[#00E699]/20 bg-[#00E699]/10 px-4 py-2 text-[#00E699] backdrop-blur-xl transition hover:bg-[#00E699] hover:text-black">+{hiddenHeroSkillCount}</button> : null}
+              {hiddenHeroSkillCount ? <button type="button" onClick={() => setShowAllSkills(true)} className="rounded-full border border-[#00E699]/20 bg-[#00E699]/10 px-3.5 py-2 text-[#00E699] backdrop-blur-xl transition hover:bg-[#00E699] hover:text-black">+{hiddenHeroSkillCount}</button> : null}
             </div>
           ) : null}
         </div>
-        <TiltCard className="elena-reveal relative ml-auto h-[420px] w-full overflow-hidden md:h-[540px] lg:col-span-4 lg:w-[92%]" delay={150}>
+        <TiltCard className="elena-reveal relative ml-auto h-[360px] w-full overflow-hidden md:h-[460px] lg:col-span-5 lg:w-full" delay={150}>
           {user.avatarUrl ? <img src={user.avatarUrl} alt={user.displayName} className="absolute inset-0 h-full w-full object-cover brightness-110 saturate-105 transition duration-700 hover:scale-105" /> : null}
           <div className="absolute inset-0 bg-gradient-to-r from-[#04130f]/85 via-[#04130f]/28 to-transparent opacity-80" />
           <div className="absolute inset-0 bg-gradient-to-t from-[#04130f]/85 via-transparent to-transparent opacity-55" />
