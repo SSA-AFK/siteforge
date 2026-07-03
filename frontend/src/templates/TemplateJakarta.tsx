@@ -1,4 +1,4 @@
-import { ChevronRight, Layers, Mail, MapPin, Play, Sparkles, Star, User } from 'lucide-react';
+import { Layers, Mail, MapPin, Play, Sparkles, Star, User } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { getOrderedSections, getSectionCopy } from '@siteforge/shared';
 import type { Project, SiteData, VideoItem } from '@siteforge/shared';
@@ -20,6 +20,10 @@ function projectImage(project?: Project) {
 
 function initials(name: string) {
   return (name || 'S').trim().slice(0, 1).toUpperCase();
+}
+
+function experiencePeriod(experience: SiteData['experiences'][number]) {
+  return `${experience.startDate || 'Start'}${experience.isCurrent ? ' - Now' : experience.endDate ? ` - ${experience.endDate}` : ''}`;
 }
 
 function SectionTitle({ label, title, copy }: { label: string; title: string; copy?: string }) {
@@ -99,8 +103,8 @@ export function TemplateJakarta({ data }: { data: SiteData }) {
   const socials = sortByOrder(data.socialLinks);
   const heroImage = (data.config.heroImages ?? []).filter(Boolean)[0] || data.user.avatarUrl || fallbackHero;
   const featuredProject = projects.find((project) => project.isFeatured) || projects[0];
-  const [activeStep, setActiveStep] = useState(1);
   const [previewImage, setPreviewImage] = useState<{ src: string; alt: string } | null>(null);
+  const [selectedExperience, setSelectedExperience] = useState<SiteData['experiences'][number] | null>(null);
   const [showAllSkills, setShowAllSkills] = useState(false);
   const [activeSection, setActiveSection] = useState('home');
   const [isScrolled, setIsScrolled] = useState(false);
@@ -158,22 +162,6 @@ export function TemplateJakarta({ data }: { data: SiteData }) {
     };
   }, []);
 
-  function selectStep(step: number) {
-    setActiveStep(step);
-    if (step === 4 && 'speechSynthesis' in window) {
-      window.speechSynthesis.cancel();
-      const utterance = new SpeechSynthesisUtterance('Portfolio is ready to publish.');
-      utterance.lang = 'en-US';
-      window.speechSynthesis.speak(utterance);
-    }
-  }
-
-  const stepCopy = [
-    { title: 'Profile', desc: 'Start from your identity, location, avatar, and a clear portfolio positioning statement.' },
-    { title: 'Projects', desc: 'Add selected works, rich covers, galleries, roles, tools, and measurable outcomes.' },
-    { title: 'Live Preview', desc: 'Switch layouts and templates while the right side updates immediately.' },
-    { title: 'Publish', desc: 'Generate an online access link that keeps the same motion, style, and responsive behavior.' }
-  ];
   const portfolioMetrics = [
     { label: 'Projects', value: projects.length, tone: 'bg-indigo-500' },
     { label: 'Skills', value: skills.length, tone: 'bg-violet-500' },
@@ -363,44 +351,39 @@ export function TemplateJakarta({ data }: { data: SiteData }) {
 
       {data.config.showExperience && experiences.length ? (
         <section id="experience" className="bg-[#0B0F19] py-24 text-white" style={{ order: sectionOrder.experience }}>
-          <div className="mx-auto grid max-w-7xl grid-cols-1 gap-10 px-8 lg:grid-cols-[0.9fr_1.1fr]">
-            <div className="jakarta-reveal">
+          <div className="mx-auto grid max-w-7xl grid-cols-1 gap-10 px-8 lg:grid-cols-[0.82fr_1.18fr]">
+            <div className="jakarta-reveal min-w-0">
               <span className="text-xs font-extrabold uppercase tracking-[0.24em] text-indigo-300">{experienceCopy.label}</span>
-              <h2 className="mt-4 text-4xl font-extrabold tracking-tight">{experienceCopy.title}</h2>
-              {experienceCopy.description ? <p className="mt-4 text-sm leading-7 text-slate-400">{experienceCopy.description}</p> : null}
-              <div className="mt-8 space-y-3">
-                {stepCopy.map((step, index) => (
-                  <button key={step.title} type="button" onClick={() => selectStep(index + 1)} className={`flex w-full items-center justify-between rounded-xl border-l-2 px-4 py-3 text-left text-sm font-semibold transition ${activeStep === index + 1 ? 'border-indigo-400 bg-white/5 text-white' : 'border-transparent text-slate-400 hover:bg-white/5'}`}>
-                    <span>{String(index + 1).padStart(2, '0')}. {step.title}</span>
-                    <ChevronRight className={`h-4 w-4 ${activeStep === index + 1 ? 'opacity-100' : 'opacity-0'}`} />
-                  </button>
+              <h2 className="mt-4 max-w-[12ch] text-4xl font-extrabold tracking-tight md:text-5xl">{experienceCopy.title}</h2>
+              {experienceCopy.description ? <p className="mt-4 max-w-md text-sm leading-7 text-slate-400">{experienceCopy.description}</p> : null}
+              <div className="mt-8 grid grid-cols-2 gap-3" aria-label="Portfolio content overview">
+                {portfolioMetrics.map((metric) => (
+                  <div key={metric.label} className="rounded-2xl border border-white/10 bg-white/[.05] p-4">
+                    <span className={`mb-4 block h-1.5 w-8 rounded-full ${metric.tone}`} />
+                    <span className="block text-2xl font-extrabold text-white">{metric.value}</span>
+                    <span className="mt-1 block text-[10px] font-bold uppercase tracking-[0.18em] text-slate-400">{metric.label}</span>
+                  </div>
                 ))}
               </div>
             </div>
-            <div className="jakarta-reveal rounded-[2rem] border border-white/10 bg-white/[.03] p-6">
-              <div className="grid grid-cols-2 gap-3" aria-label="Portfolio content overview">
-                {portfolioMetrics.map((metric) => (
-                  <button key={metric.label} type="button" onClick={() => setActiveStep(metric.label === 'Projects' ? 2 : metric.label === 'Skills' ? 1 : metric.label === 'Videos' ? 3 : 4)} className="group rounded-2xl border border-white/10 bg-white/[.05] p-5 text-left transition hover:-translate-y-0.5 hover:bg-white/[.08]">
-                    <span className={`mb-5 block h-2 w-8 rounded-full ${metric.tone}`} />
-                    <span className="block text-3xl font-extrabold text-white">{metric.value}</span>
-                    <span className="mt-1 block text-xs font-bold uppercase tracking-[0.18em] text-slate-400 group-hover:text-slate-200">{metric.label}</span>
-                  </button>
-                ))}
-              </div>
-              <div className="mt-6 rounded-2xl bg-white p-6 text-[#0B0F19]">
-                <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">Current Step</p>
-                <h3 className="mt-2 text-2xl font-extrabold">{stepCopy[activeStep - 1].title}</h3>
-                <p className="mt-3 text-sm leading-7 text-slate-500">{stepCopy[activeStep - 1].desc}</p>
-              </div>
-              <div className="mt-6 grid gap-4">
-                {experiences.slice(0, 4).map((experience) => (
-                  <article key={experience.id || experience.company} className="rounded-2xl border border-white/10 bg-white/[.04] p-5">
-                    <div className="flex items-start justify-between gap-4">
-                      <div><h3 className="font-bold text-white">{experience.position}</h3><p className="mt-1 text-xs font-bold uppercase tracking-[0.16em] text-indigo-300">{experience.company}</p></div>
-                      <span className="text-xs font-semibold text-slate-400">{experience.startDate}{experience.isCurrent ? ' - Now' : experience.endDate ? ` - ${experience.endDate}` : ''}</span>
+            <div className="jakarta-reveal min-w-0 rounded-[2rem] border border-white/10 bg-white/[.03] p-5 md:p-6">
+              <div className="grid gap-4">
+                {experiences.slice(0, 4).map((experience, index) => (
+                  <button key={experience.id || experience.company} type="button" onClick={() => setSelectedExperience(experience)} className="group relative overflow-hidden rounded-2xl border border-white/10 bg-white/[.04] p-5 text-left transition hover:-translate-y-0.5 hover:border-indigo-300/45 hover:bg-white/[.07]">
+                    <div className="absolute left-0 top-0 h-full w-1 bg-indigo-400/70" />
+                    <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                      <div className="min-w-0">
+                        <p className="text-[10px] font-extrabold uppercase tracking-[0.2em] text-indigo-300">{String(index + 1).padStart(2, '0')} / {experience.type}</p>
+                        <h3 className="mt-2 break-words text-lg font-extrabold leading-snug text-white">{experience.position || 'Experience'}</h3>
+                        {experience.company ? <p className="mt-1 break-words text-xs font-bold uppercase tracking-[0.16em] text-slate-400">{experience.company}</p> : null}
+                      </div>
+                      <span className="shrink-0 rounded-full border border-white/10 bg-white/[.05] px-3 py-1 text-xs font-semibold text-slate-300">
+                        {experiencePeriod(experience)}
+                      </span>
                     </div>
-                    {experience.description ? <p className="mt-3 whitespace-pre-line text-sm leading-7 text-slate-400">{experience.description}</p> : null}
-                  </article>
+                    {experience.description ? <p className="mt-4 line-clamp-2 break-words text-sm leading-6 text-slate-400">{experience.description}</p> : null}
+                    <span className="mt-4 inline-flex text-xs font-extrabold text-indigo-300 transition group-hover:text-white">查看详情</span>
+                  </button>
                 ))}
               </div>
             </div>
@@ -457,6 +440,21 @@ export function TemplateJakarta({ data }: { data: SiteData }) {
         <div className="fixed inset-0 z-[80] flex items-center justify-center bg-slate-950/90 p-4 backdrop-blur-md" role="dialog" aria-modal="true" onClick={() => setPreviewImage(null)}>
           <button type="button" className="absolute right-6 top-6 rounded-full bg-white px-4 py-2 text-xs font-extrabold text-slate-900" onClick={() => setPreviewImage(null)}>Close</button>
           <img src={previewImage.src} alt={previewImage.alt} className="max-h-[86vh] max-w-[92vw] rounded-3xl object-contain shadow-2xl" onClick={(event) => event.stopPropagation()} />
+        </div>
+      ) : null}
+      {selectedExperience ? (
+        <div className="fixed inset-0 z-[80] flex items-center justify-center bg-slate-950/70 p-4 backdrop-blur-md" role="dialog" aria-modal="true" onClick={() => setSelectedExperience(null)}>
+          <div className="max-h-[86vh] w-full max-w-2xl overflow-y-auto rounded-[2rem] border border-slate-100 bg-white p-6 text-[#0B0F19] shadow-2xl md:p-8" onClick={(event) => event.stopPropagation()}>
+            <div className="mb-6 flex items-start justify-between gap-4">
+              <div className="min-w-0">
+                <p className="text-xs font-extrabold uppercase tracking-[0.22em] text-indigo-600">{selectedExperience.type} / {experiencePeriod(selectedExperience)}</p>
+                <h3 className="mt-3 break-words text-3xl font-extrabold tracking-tight">{selectedExperience.position || 'Experience'}</h3>
+                {selectedExperience.company ? <p className="mt-2 break-words text-sm font-bold uppercase tracking-[0.16em] text-slate-400">{selectedExperience.company}</p> : null}
+              </div>
+              <button type="button" className="shrink-0 rounded-full bg-slate-100 px-4 py-2 text-xs font-extrabold text-slate-700 transition hover:bg-slate-200" onClick={() => setSelectedExperience(null)}>Close</button>
+            </div>
+            {selectedExperience.description ? <p className="whitespace-pre-line break-words text-sm leading-7 text-slate-600">{selectedExperience.description}</p> : <p className="text-sm leading-7 text-slate-500">暂无详细描述。</p>}
+          </div>
         </div>
       ) : null}
       {showAllSkills ? (
