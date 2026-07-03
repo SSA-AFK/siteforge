@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { defaultSiteData } from '@siteforge/shared';
+import type { SiteData, TemplateId } from '@siteforge/shared';
 import { renderStaticHtml } from './renderStaticHtml.js';
 
 describe('renderStaticHtml', () => {
@@ -29,6 +30,118 @@ describe('renderStaticHtml', () => {
 
   it('rejects unsupported templates', () => {
     expect(() => renderStaticHtml(defaultSiteData, 'unknown')).toThrow('Unsupported template');
+  });
+
+  it('renders every published template from privacy-filtered public data without leaking hidden fields', () => {
+    const privateTokens = [
+      'private-email@example.com',
+      'https://private.example/avatar.png',
+      'Private Street Address',
+      'https://private.example/hero.jpg',
+      'https://private.example/project',
+      'https://github.com/private/repo',
+      'Private case-study body',
+      'https://private.example/cover.jpg',
+      'https://private.example/gallery.jpg',
+      'Confidential Studio',
+      'Internal delivery details',
+      'Private Award',
+      'https://private.example/video.mp4',
+      'https://private.example/video-thumb.jpg',
+      'https://private.example/social'
+    ];
+    const source: SiteData = {
+      ...defaultSiteData,
+      user: {
+        ...defaultSiteData.user,
+        email: privateTokens[0],
+        avatarUrl: privateTokens[1],
+        location: privateTokens[2]
+      },
+      config: {
+        ...defaultSiteData.config,
+        heroImages: [privateTokens[3]],
+        showAwards: true,
+        showVideos: true
+      },
+      projects: defaultSiteData.projects.map((project, index) => ({
+        ...project,
+        coverImage: index === 0 ? privateTokens[7] : project.coverImage,
+        images: index === 0 ? [{ id: 1, imageUrl: privateTokens[8], caption: 'Private gallery', displayOrder: 0, isCover: false }] : project.images,
+        content: privateTokens[6],
+        projectUrl: privateTokens[4],
+        githubUrl: privateTokens[5]
+      })),
+      experiences: defaultSiteData.experiences.map((experience) => ({
+        ...experience,
+        company: privateTokens[9],
+        description: privateTokens[10]
+      })),
+      awards: [
+        {
+          id: 1,
+          title: privateTokens[11],
+          issuer: 'Private Issuer',
+          description: 'Private award detail',
+          displayOrder: 0
+        }
+      ],
+      socialLinks: [{ id: 1, platform: 'Private Social', url: privateTokens[14], displayOrder: 0 }],
+      videos: [
+        {
+          id: 1,
+          title: 'Private Video',
+          platform: 'custom',
+          videoUrl: privateTokens[12],
+          thumbnailUrl: privateTokens[13],
+          description: 'Private video detail',
+          displayOrder: 0,
+          isFeatured: true
+        }
+      ]
+    };
+    const publicData: SiteData = {
+      ...source,
+      user: {
+        ...source.user,
+        email: '',
+        avatarUrl: '',
+        location: ''
+      },
+      config: {
+        ...source.config,
+        heroImages: [],
+        showAwards: false,
+        showVideos: false
+      },
+      projects: source.projects.map((project) => ({
+        ...project,
+        coverImage: '',
+        images: [],
+        content: '',
+        projectUrl: '',
+        githubUrl: ''
+      })),
+      experiences: source.experiences.map((experience) => ({
+        ...experience,
+        company: 'Company hidden',
+        description: ''
+      })),
+      awards: [],
+      socialLinks: [],
+      videos: []
+    };
+    const templates: TemplateId[] = ['snowly', 'elena', 'aura', 'solace', 'jakarta', 'aqua'];
+
+    for (const template of templates) {
+      const html = renderStaticHtml(publicData, template);
+
+      expect(html).toContain(publicData.user.displayName);
+      expect(html).toContain(publicData.projects[0].title);
+      for (const token of privateTokens) {
+        expect(html).not.toContain(token);
+      }
+    }
   });
 
   it('exports project list layout when configured', () => {
