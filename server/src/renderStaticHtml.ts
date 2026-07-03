@@ -608,7 +608,9 @@ function renderElenaHtml(data: SiteData) {
       ${experience.description ? `<p>${escapeHtmlWithBreaks(experience.description)}</p>` : ''}
     </article>`).join('');
 
-  const skillStrip = skills.slice(0, 5).map((skill) => `<div><span>◆</span>${escapeHtml(skill.name)}</div>`).join('');
+  const heroSkills = skills.slice(0, 4);
+  const hiddenHeroSkillCount = Math.max(0, skills.length - heroSkills.length);
+  const skillStrip = `${heroSkills.map((skill) => `<div><span>◆</span>${escapeHtml(skill.name)}</div>`).join('')}${hiddenHeroSkillCount ? `<a href="#skills">+${hiddenHeroSkillCount}</a>` : ''}`;
   const skillCards = skills.map((skill, index) => `
     <article class="tilt-card skill-card fade-up-element" style="transition-delay:${index * 70}ms">
       <div class="skill-card-glow"></div>
@@ -677,7 +679,9 @@ function renderElenaHtml(data: SiteData) {
     .tilt-card::after { content: ""; position: absolute; inset: -1px; border-radius: inherit; padding: 1px; background: radial-gradient(120px circle at var(--mouse-x,0) var(--mouse-y,0), rgba(0,230,153,.22), transparent 72%); -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0); -webkit-mask-composite: xor; mask-composite: exclude; pointer-events: none; opacity: 0; transition: opacity .35s; }
     .tilt-card:hover::after { opacity: .55; }
     .hero-tags { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 56px; color: var(--accent); font-size: 11px; font-weight: 800; letter-spacing: .2em; text-transform: uppercase; }
-    .hero-tags div { border: 1px solid rgba(255,255,255,.1); border-radius: 999px; background: rgba(9,34,27,.45); padding: 9px 16px; backdrop-filter: blur(18px); }
+    .hero-tags div, .hero-tags a { border: 1px solid rgba(255,255,255,.1); border-radius: 999px; background: rgba(9,34,27,.45); padding: 9px 16px; backdrop-filter: blur(18px); }
+    .hero-tags a { border-color: rgba(0,230,153,.22); background: rgba(0,230,153,.1); color: var(--accent); }
+    .hero-tags a:hover { background: var(--accent); color: black; }
     .hero-tags span { opacity: .45; margin-right: 8px; }
     .portrait { width: 92%; height: 540px; margin-left: auto; }
     .portrait img { width: 100%; height: 100%; object-fit: cover; filter: brightness(1.1) saturate(1.05); transition: transform .7s ease; }

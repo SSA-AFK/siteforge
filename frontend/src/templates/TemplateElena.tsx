@@ -181,6 +181,8 @@ export function TemplateElena({ data }: { data: SiteData }) {
   const { user, config } = data;
   const projects = [...data.projects].sort((a, b) => a.displayOrder - b.displayOrder);
   const skills = [...data.skills].sort((a, b) => a.displayOrder - b.displayOrder);
+  const heroSkills = skills.slice(0, 4);
+  const hiddenHeroSkillCount = Math.max(0, skills.length - heroSkills.length);
   const previewSkills = skills.slice(0, 6);
   const hiddenSkillCount = Math.max(0, skills.length - previewSkills.length);
   const awards = [...(data.awards ?? [])].filter((award) => award.title.trim()).sort((a, b) => a.displayOrder - b.displayOrder);
@@ -281,9 +283,10 @@ export function TemplateElena({ data }: { data: SiteData }) {
           </div>
           {config.showSkills && skills.length ? (
             <div className="flex flex-wrap items-center gap-3 pt-8 text-xs font-semibold uppercase tracking-[0.2em] text-[#00E699]">
-              {skills.slice(0, 5).map((skill) => (
+              {heroSkills.map((skill) => (
                 <div key={skill.id || skill.name} className="rounded-full border border-white/10 bg-[#09221b]/45 px-4 py-2 backdrop-blur-xl"><span className="mr-2 opacity-40">◆</span>{skill.name}</div>
               ))}
+              {hiddenHeroSkillCount ? <button type="button" onClick={() => setShowAllSkills(true)} className="rounded-full border border-[#00E699]/20 bg-[#00E699]/10 px-4 py-2 text-[#00E699] backdrop-blur-xl transition hover:bg-[#00E699] hover:text-black">+{hiddenHeroSkillCount}</button> : null}
             </div>
           ) : null}
         </div>
