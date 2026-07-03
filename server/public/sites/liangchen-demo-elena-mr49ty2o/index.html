@@ -1,0 +1,564 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>梁辰 - Interactive Portfolio</title>
+  <meta name="description" content="Built with SiteForge" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Plus+Jakarta+Sans:wght@300;400;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root { --bg: #04130f; --panel: #09221b; --accent: #00E699; --muted: #899E97; }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; overflow-x: hidden; background: radial-gradient(circle at 28% 18%, rgba(0,230,153,.18), transparent 34%), linear-gradient(135deg, #04130f 0%, #061811 48%, #020807 100%); color: white; font-family: Inter, system-ui, sans-serif; }
+    a { color: inherit; text-decoration: none; }
+    .font-display, h1, h2, h3 { font-family: 'Plus Jakarta Sans', Inter, sans-serif; }
+    .glow { position: absolute; border-radius: 999px; filter: blur(140px); background: radial-gradient(circle, rgba(0,230,153,.14), rgba(4,19,15,0) 70%); pointer-events: none; }
+    .container { max-width: 1180px; margin: 0 auto; padding-left: 24px; padding-right: 24px; }
+    header { position: relative; z-index: 5; display: flex; align-items: center; justify-content: space-between; padding: 24px; max-width: 1180px; margin: 0 auto; }
+    .brand { color: var(--accent); font-family: 'Plus Jakarta Sans'; font-size: 20px; font-weight: 900; letter-spacing: -.03em; }
+    nav { display: flex; gap: 40px; color: var(--muted); font-size: 11px; font-weight: 800; letter-spacing: .18em; }
+    nav a:hover { color: var(--accent); }
+    .talk { border-radius: 999px; background: white; color: black; padding: 10px 20px; font-size: 11px; font-weight: 800; letter-spacing: .16em; transition: background .25s ease; }
+    .talk:hover { background: var(--accent); }
+    .noise-layer, .grid-layer { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
+    .grid-layer { opacity: .06; background-image: linear-gradient(rgba(255,255,255,.22) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.22) 1px, transparent 1px); background-size: 48px 48px; }
+    .noise-layer { opacity: .045; background-image: radial-gradient(circle at center, white 1px, transparent 1px); background-size: 18px 18px; }
+    .hero { position: relative; z-index: 1; min-height: 85vh; display: grid; grid-template-columns: 8fr 4fr; gap: 64px; align-items: center; padding-top: 48px; padding-bottom: 96px; }
+    .hero-copy { min-height: 560px; display: flex; flex-direction: column; justify-content: center; }
+    .identity-label { margin: 0 0 20px; color: var(--accent); font-family: 'Plus Jakarta Sans'; font-size: clamp(14px, 1.4vw, 18px); font-weight: 500; letter-spacing: .32em; text-transform: uppercase; }
+    .hero h1 { max-width: 880px; margin: 0; font-size: clamp(50px, 7vw, 86px); line-height: 1.04; letter-spacing: -.04em; font-weight: 800; }
+    .hero h1 span { color: var(--accent); }
+    .hero p, .muted { color: var(--muted); line-height: 1.75; }
+    .button { display: inline-flex; align-items: center; justify-content: center; gap: 12px; min-width: 210px; margin-top: 28px; border-radius: 999px; background: var(--accent); color: black; padding: 16px 32px; font-size: 11px; font-weight: 900; letter-spacing: .2em; transition: box-shadow .25s ease, transform .25s ease; }
+    .button:hover { transform: translateY(-2px); box-shadow: 0 18px 38px rgba(0,230,153,.24); }
+    .tilt-card { position: relative; border: 1px solid rgba(255,255,255,.06); border-radius: 28px; background: rgba(9,34,27,.42); box-shadow: 0 26px 80px rgba(0,0,0,.24); backdrop-filter: blur(25px); transform-style: preserve-3d; transition: transform .5s cubic-bezier(.16,1,.3,1), border-color .4s; overflow: hidden; }
+    .tilt-card::after { content: ""; position: absolute; inset: -1px; border-radius: inherit; padding: 1px; background: radial-gradient(120px circle at var(--mouse-x,0) var(--mouse-y,0), rgba(0,230,153,.22), transparent 72%); -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0); -webkit-mask-composite: xor; mask-composite: exclude; pointer-events: none; opacity: 0; transition: opacity .35s; }
+    .tilt-card:hover::after { opacity: .55; }
+    .hero-tags { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 56px; color: var(--accent); font-size: 11px; font-weight: 800; letter-spacing: .2em; text-transform: uppercase; }
+    .hero-tags div { border: 1px solid rgba(255,255,255,.1); border-radius: 999px; background: rgba(9,34,27,.45); padding: 9px 16px; backdrop-filter: blur(18px); }
+    .hero-tags span { opacity: .45; margin-right: 8px; }
+    .portrait { width: 92%; height: 540px; margin-left: auto; }
+    .portrait img { width: 100%; height: 100%; object-fit: cover; filter: brightness(1.1) saturate(1.05); transition: transform .7s ease; }
+    .portrait:hover img { transform: scale(1.05); }
+    .portrait::before { content: ""; position: absolute; inset: 0; z-index: 1; background: linear-gradient(90deg, rgba(4,19,15,.85), rgba(4,19,15,.28), transparent), linear-gradient(0deg, rgba(4,19,15,.85), transparent), rgba(0,230,153,.05); opacity: .8; mix-blend-mode: soft-light; }
+    .portrait::after { z-index: 2; }
+    .caption { position: absolute; z-index: 3; left: 24px; bottom: 24px; width: min(280px, calc(100% - 48px)); padding: 20px; border-radius: 20px; border: 1px solid rgba(255,255,255,.1); background: rgba(9,34,27,.55); box-shadow: 0 24px 70px rgba(0,0,0,.25); backdrop-filter: blur(24px); }
+    .caption strong { color: var(--accent); font-size: 11px; letter-spacing: .2em; }
+    .strip { margin: 0 -24px 64px; border-top: 1px solid rgba(255,255,255,.06); border-bottom: 1px solid rgba(255,255,255,.06); background: rgba(9,34,27,.22); padding: 28px 0; }
+    .strip .container { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 16px; color: var(--accent); font-size: 11px; font-weight: 900; letter-spacing: .2em; text-transform: uppercase; }
+    .strip span { opacity: .45; margin-right: 8px; }
+    section { position: relative; z-index: 1; padding: 80px 0; }
+    .section-head { margin-bottom: 48px; }
+    .eyebrow { color: var(--accent); font-size: 11px; font-weight: 900; letter-spacing: .22em; text-transform: uppercase; }
+    h2 { margin: 18px 0 0; font-size: clamp(34px, 5vw, 56px); line-height: 1.08; letter-spacing: -.035em; }
+    h2 span { color: var(--muted); font-weight: 300; }
+    .project-grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 32px; }
+    .project-grid.list { grid-template-columns: 1fr; }
+    .project-card { grid-column: span 4; min-height: 460px; padding: 32px; display: flex; flex-direction: column; justify-content: space-between; }
+    .project-card.wide { grid-column: span 8; }
+    .project-grid.list .project-card { grid-column: auto; }
+    .card-top { display: flex; justify-content: space-between; gap: 16px; position: relative; z-index: 2; }
+    .card-top h3 { margin: 0; font-size: 26px; }
+    .card-top p, .project-description { color: var(--muted); font-size: 13px; line-height: 1.7; }
+    .card-top span { flex: 0 0 auto; border: 1px solid rgba(255,255,255,.1); border-radius: 999px; background: var(--bg); padding: 6px 12px; font-family: monospace; font-size: 12px; }
+    .project-meta { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+    .project-meta .featured-badge { border-color: rgba(0,230,153,.25); background: rgba(0,230,153,.1); color: var(--accent); font-family: Inter, system-ui, sans-serif; font-size: 10px; font-weight: 900; letter-spacing: .18em; text-transform: uppercase; }
+    .project-media { position: relative; z-index: 2; height: 320px; margin-top: 40px; border: 1px solid rgba(255,255,255,.06); border-radius: 20px; overflow: hidden; background: rgba(0,0,0,.3); }
+    .project-media img { width: 100%; height: 100%; object-fit: cover; filter: brightness(1.1) saturate(1.1); transition: transform .7s ease; }
+    .project-card:hover img { transform: scale(1.05); }
+    .project-media::after { content: ""; position: absolute; inset: 0; background: linear-gradient(0deg, rgba(4,19,15,.7), transparent); opacity: .55; }
+    .empty-media { height: 100%; display: grid; place-items: center; color: var(--muted); font-size: 11px; font-weight: 900; letter-spacing: .2em; text-transform: uppercase; }
+    .project-gallery { position: relative; z-index: 2; display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 12px; margin-top: 18px; }
+    .project-gallery-item { overflow: hidden; border: 1px solid rgba(255,255,255,.06); border-radius: 16px; background: rgba(0,0,0,.26); }
+    .project-gallery-item img { width: 100%; height: 112px; object-fit: cover; display: block; filter: brightness(1.1) saturate(1.1); transition: transform .55s ease, filter .55s ease; }
+    .project-gallery-item:hover img { filter: brightness(1.16) saturate(1.14); transform: scale(1.05); }
+    .project-gallery-item span { display: block; padding: 8px 10px; color: var(--muted); font-size: 11px; font-weight: 700; }
+    .video-grid { display: grid; grid-template-columns: repeat(12, minmax(0,1fr)); gap: 32px; }
+    .video-card { grid-column: span 4; }
+    .video-card.wide { grid-column: span 8; }
+    .video-media { position: relative; z-index: 2; height: 320px; overflow: hidden; border-bottom: 1px solid rgba(255,255,255,.06); background: rgba(0,0,0,.32); }
+    .video-media video, .video-media img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .video-media img { filter: brightness(1.1) saturate(1.1); transition: transform .7s ease, filter .7s ease; }
+    .video-card:hover .video-media img { transform: scale(1.05); }
+    .video-link { position: relative; display: block; height: 100%; }
+    .video-shade { position: absolute; inset: 0; background: linear-gradient(0deg, rgba(4,19,15,.75), transparent); opacity: .6; }
+    .video-badge { position: absolute; left: 20px; top: 20px; border: 1px solid rgba(255,255,255,.1); border-radius: 999px; background: rgba(4,19,15,.8); color: var(--accent); padding: 7px 12px; font-size: 11px; font-weight: 900; letter-spacing: .16em; text-transform: uppercase; }
+    .video-link strong { position: absolute; left: 20px; bottom: 20px; border-radius: 999px; background: var(--accent); color: black; padding: 10px 16px; font-size: 11px; letter-spacing: .16em; }
+    .video-copy { position: relative; z-index: 2; padding: 32px; }
+    .video-copy > span { color: var(--accent); font-size: 11px; font-weight: 900; letter-spacing: .2em; text-transform: uppercase; }
+    .video-copy h3 { margin: 12px 0 8px; font-size: 26px; }
+    .video-copy p { color: var(--muted); line-height: 1.7; }
+    .elena-award-grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 24px; }
+    .elena-award-card { padding: 28px; }
+    .award-card-top { position: relative; z-index: 2; display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 28px; }
+    .award-star { display: grid; width: 48px; height: 48px; place-items: center; border: 1px solid rgba(0,230,153,.2); border-radius: 18px; background: rgba(0,230,153,.12); color: var(--accent); font-size: 18px; font-weight: 900; }
+    .award-date { border: 1px solid rgba(255,255,255,.1); border-radius: 999px; background: var(--bg); color: var(--muted); padding: 6px 12px; font-family: monospace; font-size: 12px; }
+    .award-card-copy { position: relative; z-index: 2; }
+    .award-card-copy p { margin: 0 0 12px; color: var(--accent); font-size: 11px; font-weight: 900; letter-spacing: .2em; text-transform: uppercase; }
+    .award-card-copy h3 { margin: 0; font-size: 26px; line-height: 1.18; }
+    .award-card-copy span { display: block; margin-top: 14px; color: var(--muted); line-height: 1.7; }
+    .process-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 32px; }
+    .process-card, .skill-card { padding: 32px; }
+    .process-card span { color: var(--accent); font-size: 11px; font-weight: 900; letter-spacing: .18em; text-transform: uppercase; }
+    .process-card h3, .skill-card h3 { font-size: 26px; margin: 0; }
+    .process-card strong, .process-card p { color: var(--muted); line-height: 1.7; }
+    .skill-grid-elena { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 24px; }
+    .fluid-panel { height: 260px; border-radius: 20px; border: 1px solid rgba(255,255,255,.06); display: grid; place-items: center; background: linear-gradient(135deg, var(--panel), var(--accent), var(--bg)); background-size: 200% 200%; animation: fluidGlow 12s ease infinite; }
+    .fluid-panel span { color: rgba(255,255,255,.25); font-family: 'Plus Jakarta Sans'; font-size: 24px; font-weight: 900; letter-spacing: .2em; }
+    .skill-card-copy { margin-top: 32px; }
+    .skill-card-title { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+    .skill-card-title span { border: 1px solid rgba(255,255,255,.1); border-radius: 999px; background: var(--bg); color: var(--accent); padding: 6px 12px; font-family: monospace; font-size: 12px; }
+    .skill-category { margin: 12px 0 14px; color: var(--accent); font-size: 11px; font-weight: 900; letter-spacing: .18em; text-transform: uppercase; }
+    .skill-meter { height: 8px; overflow: hidden; border-radius: 999px; background: rgba(255,255,255,.1); }
+    .skill-meter span { display: block; height: 100%; border-radius: inherit; background: var(--accent); }
+    @keyframes fluidGlow { 0%,100% { background-position: 0 50%; } 50% { background-position: 100% 50%; } }
+    .contact-card { padding: 56px; }
+    .contact-grid { display: grid; grid-template-columns: repeat(12, minmax(0,1fr)); gap: 48px; align-items: center; }
+    .contact-copy { grid-column: span 6; }
+    .contact-links { grid-column: span 6; display: grid; gap: 14px; }
+    .social-row { display: flex; align-items: center; justify-content: space-between; border: 1px solid rgba(255,255,255,.1); border-radius: 18px; background: rgba(4,19,15,.6); padding: 16px 20px; transition: border-color .25s ease; }
+    .social-row:hover { border-color: var(--accent); }
+    footer { margin: 0 -24px; border-top: 1px solid rgba(255,255,255,.06); padding: 32px 24px; text-align: center; color: var(--muted); font-size: 12px; }
+    .fade-up-element { opacity: 0; transform: translateY(40px); transition: opacity 1s cubic-bezier(.16,1,.3,1), transform 1s cubic-bezier(.16,1,.3,1); }
+    .fade-up-element.visible { opacity: 1; transform: translateY(0); }
+    @media (max-width: 900px) {
+      nav { display: none; }
+      .hero, .process-grid, .skill-grid-elena, .contact-grid, .video-grid, .elena-award-grid { grid-template-columns: 1fr; }
+      .hero-copy { min-height: auto; }
+      .portrait { width: 100%; height: 460px; }
+      .project-grid { grid-template-columns: 1fr; }
+      .project-card, .project-card.wide, .video-card, .video-card.wide, .contact-copy, .contact-links { grid-column: auto; }
+    }
+  </style>
+</head>
+<body>
+  <div class="grid-layer"></div>
+  <div class="noise-layer"></div>
+  <div class="glow" style="left:-15%; top:0; width:60%; height:700px;"></div>
+  <div class="glow" style="right:-15%; top:1500px; width:50%; height:800px;"></div>
+  <header>
+    <a class="brand" href="#hero">liangchen-demo<span style="color:white">.</span></a>
+    <nav>
+      <a href="#hero" class="scramble-trigger" data-text="HOME">HOME</a>
+      <a href="#works" class="scramble-trigger" data-text="SELECTED WORKS">SELECTED WORKS</a>
+      
+      <a href="#awards" class="scramble-trigger" data-text="AWARDS">AWARDS</a>
+      <a href="#process" class="scramble-trigger" data-text="THE PROCESS">THE PROCESS</a>
+      <a href="#skills" class="scramble-trigger" data-text="SKILLS">SKILLS</a>
+    </nav>
+    <a class="talk" href="#contact">LET'S TALK</a>
+  </header>
+  <main>
+    <section id="hero" class="container hero">
+      <div class="hero-copy fade-up-element">
+        <p class="identity-label">资深前端工程师 / 增长与中后台方向</p>
+        <h1>用<span>创意和技术</span>构建美好数字体验</h1>
+        <p style="max-width:440px">8年互联网前端研发经验，长期负责增长平台、B端中后台、数据可视化和高性能交互场景。熟悉 React、TypeScript、微前端、组件库、工程化和前端质量体系，能够从业务目标拆解技术方案，独立推进跨团队项目落地。最近三年聚焦增长与商业化链路，主导过千万级访问活动平台、低代码运营平台和数据分析工作台建设，擅长把复杂业务抽象为稳定、可复用、可观测的前端系统。</p>
+        <a class="button" href="#works">EXPLORE WORK <span aria-hidden="true">→</span></a>
+        <div class="hero-tags"><div><span>◆</span>React</div><div><span>◆</span>TypeScript</div><div><span>◆</span>Vue</div><div><span>◆</span>Next.js</div><div><span>◆</span>Hooks</div></div>
+      </div>
+      <article class="tilt-card portrait fade-up-element" style="transition-delay:150ms">
+        <img src="http://localhost:4000/uploads/1782788991830-j46cw4-1f8b424b7927eec34fc6ef3c9924879e.jpg" alt="梁辰">
+        <div class="caption">
+          <strong>[ IN ACTION ]</strong>
+          <p class="muted">上海</p>
+        </div>
+      </article>
+    </section>
+    <section id="works" class="container">
+      <div class="section-head fade-up-element"><span class="eyebrow">[ SELECTED PORTFOLIO ]</span><h2>Recent visual codes<br><span>crafted with technical depth</span></h2></div>
+      <div class="project-grid">
+      <article class="tilt-card project-card wide fade-up-element" style="transition-delay:0ms">
+        <div class="card-top">
+          <div>
+            <h3>增长运营低代码活动平台</h3>
+            <p>React / 前端负责人</p>
+          </div>
+          <div class="project-meta">
+            <span class="featured-badge">Featured</span>
+            <span>2025-06</span>
+          </div>
+        </div>
+        <div class="project-media">
+          <div class="empty-media">Select Cover Image</div>
+        </div>
+        <p class="project-description">前端负责人</p>
+        
+      </article>
+      <article class="tilt-card project-card fade-up-element" style="transition-delay:100ms">
+        <div class="card-top">
+          <div>
+            <h3>实时经营数据分析工作台</h3>
+            <p>ECharts / 核心开发</p>
+          </div>
+          <div class="project-meta">
+            
+            <span>2024-01</span>
+          </div>
+        </div>
+        <div class="project-media">
+          <div class="empty-media">Select Cover Image</div>
+        </div>
+        <p class="project-description">核心开发</p>
+        
+      </article>
+      <article class="tilt-card project-card fade-up-element" style="transition-delay:200ms">
+        <div class="card-top">
+          <div>
+            <h3>电商交易中台微前端改造</h3>
+            <p>微前端 / 模块负责人</p>
+          </div>
+          <div class="project-meta">
+            
+            <span>2022-10</span>
+          </div>
+        </div>
+        <div class="project-media">
+          <div class="empty-media">Select Cover Image</div>
+        </div>
+        <p class="project-description">模块负责人</p>
+        
+      </article>
+      <article class="tilt-card project-card fade-up-element" style="transition-delay:0ms">
+        <div class="card-top">
+          <div>
+            <h3>企业级可视化报表设计器</h3>
+            <p>Vue / 前端核心开发</p>
+          </div>
+          <div class="project-meta">
+            
+            <span>2019-12</span>
+          </div>
+        </div>
+        <div class="project-media">
+          <div class="empty-media">Select Cover Image</div>
+        </div>
+        <p class="project-description">前端核心开发</p>
+        
+      </article></div>
+    </section>
+    
+    <section id="awards" class="container"><div class="section-head fade-up-element"><span class="eyebrow">[ RECOGNITION ]</span><h2>Honors and signals<br><span>earned through the work</span></h2></div><div class="elena-award-grid">
+    <article class="tilt-card elena-award-card fade-up-element" style="transition-delay:0ms">
+      <div class="award-card-top">
+        <span class="award-star">★</span>
+        <span class="award-date">2025</span>
+      </div>
+      <div class="award-card-copy">
+        <p>云帆科技</p>
+        <h3>年度技术影响力奖</h3>
+        <span>因增长运营平台稳定性治理、组件体系沉淀和跨团队技术支持获得年度技术影响力奖。</span>
+      </div>
+    </article>
+    <article class="tilt-card elena-award-card fade-up-element" style="transition-delay:100ms">
+      <div class="award-card-top">
+        <span class="award-star">★</span>
+        <span class="award-date">2022</span>
+      </div>
+      <div class="award-card-copy">
+        <p>星河互动</p>
+        <h3>优秀项目交付奖</h3>
+        <span>核心交易中台重构项目提前两周上线，支撑双十一峰值流量并保持核心页面稳定。</span>
+      </div>
+    </article>
+    <article class="tilt-card elena-award-card fade-up-element" style="transition-delay:200ms">
+      <div class="award-card-top">
+        <span class="award-star">★</span>
+        <span class="award-date">2024</span>
+      </div>
+      <div class="award-card-copy">
+        <p>阿里云</p>
+        <h3>阿里云云原生微服务工程师认证</h3>
+        <span>覆盖容器化部署、服务治理、监控告警和云原生应用交付基础能力。</span>
+      </div>
+    </article></div></section>
+    <section id="process" class="container"><div class="section-head fade-up-element" style="text-align:center"><span class="eyebrow">[ THE PROCESS ]</span><h2>Experience built<br><span>around strategic goals</span></h2></div><div class="process-grid">
+    <article class="tilt-card process-card fade-up-element" style="transition-delay:0ms">
+      <span>work / 2023-04 - Now</span>
+      <h3>资深前端工程师</h3>
+      <strong>云帆科技有限公司</strong>
+      <p>- 负责增长运营平台和商业化活动链路前端架构，覆盖活动搭建、投放配置、实时看板、权益发放和风控审核等核心模块。<br />- 主导 React + TypeScript + Vite 技术栈升级，拆分 40+ 业务组件和 12 个领域 hooks，使活动页面平均交付周期从 5 天缩短到 2 天。<br />- 建设前端稳定性治理体系，接入错误监控、性能指标、接口失败率和灰度发布观察面板，核心页面 JS 错误率下降 63%。<br />- 推动运营低代码配置能力落地，支持运营独立完成普通活动页面搭建，季度内节省约 180 人时研发投入。</p>
+    </article>
+    <article class="tilt-card process-card fade-up-element" style="transition-delay:100ms">
+      <span>work / 2020-07 - 2023-03</span>
+      <h3>高级前端工程师</h3>
+      <strong>星河互动网络科技</strong>
+      <p>- 参与电商交易中台、商家后台和数据分析平台建设，负责订单、库存、营销、结算等多个高频业务模块。<br />- 主导中后台组件库治理，统一表单、表格、筛选器、权限按钮、批量操作和空状态规范，减少重复代码约 35%。<br />- 落地微前端改造，将 6 个历史系统逐步迁移为独立子应用，解决发布互相阻塞和权限模型不一致问题。<br />- 负责大促前端保障，优化首屏资源、接口聚合和降级策略，双十一期间核心后台可用性保持在 99.95% 以上。</p>
+    </article>
+    <article class="tilt-card process-card fade-up-element" style="transition-delay:0ms">
+      <span>work / 2016-07 - 2020-06</span>
+      <h3>前端工程师</h3>
+      <strong>明澈数据科技</strong>
+      <p>- 从 0 到 1 参与企业数据可视化 SaaS 平台研发，负责仪表盘、报表设计器、权限管理和客户自定义主题能力。<br />- 使用 Vue、ECharts 和 WebSocket 实现实时指标看板，支持设备监控、销售漏斗、财务分析等多个行业模板。<br />- 建立基础前端工程规范，补齐 ESLint、单元测试、接口 mock 和构建发布脚本，新人上手时间从 2 周缩短到 4 天。<br />- 长期参与客户交付支持，将一线反馈沉淀为通用配置项和组件能力，提升项目复用率和交付稳定性。</p>
+    </article>
+    <article class="tilt-card process-card fade-up-element" style="transition-delay:100ms">
+      <span>education / 2012-09 - 2016-06</span>
+      <h3>本科 / 软件工程</h3>
+      <strong>华东理工大学</strong>
+      <p>- 主修课程：数据结构、操作系统、计算机网络、数据库系统、软件工程、Web 应用开发。<br />- 毕业设计为企业级项目协作平台，负责前后端开发和权限模型设计。</p>
+    </article></div></section>
+    <section id="skills" class="container"><div class="section-head fade-up-element" style="text-align:center"><span class="eyebrow">[ SKILL STACK ]</span><h2>Capabilities shaped by<br><span>hands-on project work</span></h2></div><div class="skill-grid-elena">
+    <article class="tilt-card skill-card fade-up-element" style="transition-delay:0ms">
+      <div class="fluid-panel"><span>前端框架</span></div>
+      <div class="skill-card-copy">
+        <div class="skill-card-title"><h3>React</h3><span>3/5</span></div>
+        <p class="skill-category">前端框架</p>
+        <div class="skill-meter"><span style="width:60%"></span></div>
+      </div>
+    </article>
+    <article class="tilt-card skill-card fade-up-element" style="transition-delay:100ms">
+      <div class="fluid-panel"><span>前端框架</span></div>
+      <div class="skill-card-copy">
+        <div class="skill-card-title"><h3>TypeScript</h3><span>5/5</span></div>
+        <p class="skill-category">前端框架</p>
+        <div class="skill-meter"><span style="width:100%"></span></div>
+      </div>
+    </article>
+    <article class="tilt-card skill-card fade-up-element" style="transition-delay:200ms">
+      <div class="fluid-panel"><span>前端框架</span></div>
+      <div class="skill-card-copy">
+        <div class="skill-card-title"><h3>Vue</h3><span>2/5</span></div>
+        <p class="skill-category">前端框架</p>
+        <div class="skill-meter"><span style="width:40%"></span></div>
+      </div>
+    </article>
+    <article class="tilt-card skill-card fade-up-element" style="transition-delay:300ms">
+      <div class="fluid-panel"><span>前端框架</span></div>
+      <div class="skill-card-copy">
+        <div class="skill-card-title"><h3>Next.js</h3><span>5/5</span></div>
+        <p class="skill-category">前端框架</p>
+        <div class="skill-meter"><span style="width:100%"></span></div>
+      </div>
+    </article>
+    <article class="tilt-card skill-card fade-up-element" style="transition-delay:400ms">
+      <div class="fluid-panel"><span>前端框架</span></div>
+      <div class="skill-card-copy">
+        <div class="skill-card-title"><h3>Hooks</h3><span>3/5</span></div>
+        <p class="skill-category">前端框架</p>
+        <div class="skill-meter"><span style="width:60%"></span></div>
+      </div>
+    </article>
+    <article class="tilt-card skill-card fade-up-element" style="transition-delay:500ms">
+      <div class="fluid-panel"><span>工程化</span></div>
+      <div class="skill-card-copy">
+        <div class="skill-card-title"><h3>Vite</h3><span>5/5</span></div>
+        <p class="skill-category">工程化</p>
+        <div class="skill-meter"><span style="width:100%"></span></div>
+      </div>
+    </article>
+    <article class="tilt-card skill-card fade-up-element" style="transition-delay:600ms">
+      <div class="fluid-panel"><span>工程化</span></div>
+      <div class="skill-card-copy">
+        <div class="skill-card-title"><h3>Webpack</h3><span>5/5</span></div>
+        <p class="skill-category">工程化</p>
+        <div class="skill-meter"><span style="width:100%"></span></div>
+      </div>
+    </article>
+    <article class="tilt-card skill-card fade-up-element" style="transition-delay:700ms">
+      <div class="fluid-panel"><span>工程化</span></div>
+      <div class="skill-card-copy">
+        <div class="skill-card-title"><h3>Monorepo</h3><span>5/5</span></div>
+        <p class="skill-category">工程化</p>
+        <div class="skill-meter"><span style="width:100%"></span></div>
+      </div>
+    </article>
+    <article class="tilt-card skill-card fade-up-element" style="transition-delay:800ms">
+      <div class="fluid-panel"><span>工程化</span></div>
+      <div class="skill-card-copy">
+        <div class="skill-card-title"><h3>CI/CD</h3><span>5/5</span></div>
+        <p class="skill-category">工程化</p>
+        <div class="skill-meter"><span style="width:100%"></span></div>
+      </div>
+    </article>
+    <article class="tilt-card skill-card fade-up-element" style="transition-delay:900ms">
+      <div class="fluid-panel"><span>工程化</span></div>
+      <div class="skill-card-copy">
+        <div class="skill-card-title"><h3>ESLint</h3><span>5/5</span></div>
+        <p class="skill-category">工程化</p>
+        <div class="skill-meter"><span style="width:100%"></span></div>
+      </div>
+    </article>
+    <article class="tilt-card skill-card fade-up-element" style="transition-delay:1000ms">
+      <div class="fluid-panel"><span>工程化</span></div>
+      <div class="skill-card-copy">
+        <div class="skill-card-title"><h3>Vitest</h3><span>5/5</span></div>
+        <p class="skill-category">工程化</p>
+        <div class="skill-meter"><span style="width:100%"></span></div>
+      </div>
+    </article>
+    <article class="tilt-card skill-card fade-up-element" style="transition-delay:1100ms">
+      <div class="fluid-panel"><span>中后台与平台化</span></div>
+      <div class="skill-card-copy">
+        <div class="skill-card-title"><h3>组件库</h3><span>5/5</span></div>
+        <p class="skill-category">中后台与平台化</p>
+        <div class="skill-meter"><span style="width:100%"></span></div>
+      </div>
+    </article>
+    <article class="tilt-card skill-card fade-up-element" style="transition-delay:1200ms">
+      <div class="fluid-panel"><span>中后台与平台化</span></div>
+      <div class="skill-card-copy">
+        <div class="skill-card-title"><h3>权限系统</h3><span>5/5</span></div>
+        <p class="skill-category">中后台与平台化</p>
+        <div class="skill-meter"><span style="width:100%"></span></div>
+      </div>
+    </article>
+    <article class="tilt-card skill-card fade-up-element" style="transition-delay:1300ms">
+      <div class="fluid-panel"><span>中后台与平台化</span></div>
+      <div class="skill-card-copy">
+        <div class="skill-card-title"><h3>低代码</h3><span>5/5</span></div>
+        <p class="skill-category">中后台与平台化</p>
+        <div class="skill-meter"><span style="width:100%"></span></div>
+      </div>
+    </article>
+    <article class="tilt-card skill-card fade-up-element" style="transition-delay:1400ms">
+      <div class="fluid-panel"><span>中后台与平台化</span></div>
+      <div class="skill-card-copy">
+        <div class="skill-card-title"><h3>ECharts</h3><span>5/5</span></div>
+        <p class="skill-category">中后台与平台化</p>
+        <div class="skill-meter"><span style="width:100%"></span></div>
+      </div>
+    </article>
+    <article class="tilt-card skill-card fade-up-element" style="transition-delay:1500ms">
+      <div class="fluid-panel"><span>中后台与平台化</span></div>
+      <div class="skill-card-copy">
+        <div class="skill-card-title"><h3>微前端</h3><span>5/5</span></div>
+        <p class="skill-category">中后台与平台化</p>
+        <div class="skill-meter"><span style="width:100%"></span></div>
+      </div>
+    </article>
+    <article class="tilt-card skill-card fade-up-element" style="transition-delay:1600ms">
+      <div class="fluid-panel"><span>性能与稳定性</span></div>
+      <div class="skill-card-copy">
+        <div class="skill-card-title"><h3>Web Vitals</h3><span>4/5</span></div>
+        <p class="skill-category">性能与稳定性</p>
+        <div class="skill-meter"><span style="width:80%"></span></div>
+      </div>
+    </article>
+    <article class="tilt-card skill-card fade-up-element" style="transition-delay:1700ms">
+      <div class="fluid-panel"><span>性能与稳定性</span></div>
+      <div class="skill-card-copy">
+        <div class="skill-card-title"><h3>错误监控</h3><span>4/5</span></div>
+        <p class="skill-category">性能与稳定性</p>
+        <div class="skill-meter"><span style="width:80%"></span></div>
+      </div>
+    </article>
+    <article class="tilt-card skill-card fade-up-element" style="transition-delay:1800ms">
+      <div class="fluid-panel"><span>性能与稳定性</span></div>
+      <div class="skill-card-copy">
+        <div class="skill-card-title"><h3>资源优化</h3><span>4/5</span></div>
+        <p class="skill-category">性能与稳定性</p>
+        <div class="skill-meter"><span style="width:80%"></span></div>
+      </div>
+    </article>
+    <article class="tilt-card skill-card fade-up-element" style="transition-delay:1900ms">
+      <div class="fluid-panel"><span>性能与稳定性</span></div>
+      <div class="skill-card-copy">
+        <div class="skill-card-title"><h3>缓存策略</h3><span>4/5</span></div>
+        <p class="skill-category">性能与稳定性</p>
+        <div class="skill-meter"><span style="width:80%"></span></div>
+      </div>
+    </article>
+    <article class="tilt-card skill-card fade-up-element" style="transition-delay:2000ms">
+      <div class="fluid-panel"><span>性能与稳定性</span></div>
+      <div class="skill-card-copy">
+        <div class="skill-card-title"><h3>灰度发布</h3><span>4/5</span></div>
+        <p class="skill-category">性能与稳定性</p>
+        <div class="skill-meter"><span style="width:80%"></span></div>
+      </div>
+    </article>
+    <article class="tilt-card skill-card fade-up-element" style="transition-delay:2100ms">
+      <div class="fluid-panel"><span>协作与业务理解</span></div>
+      <div class="skill-card-copy">
+        <div class="skill-card-title"><h3>需求拆解</h3><span>4/5</span></div>
+        <p class="skill-category">协作与业务理解</p>
+        <div class="skill-meter"><span style="width:80%"></span></div>
+      </div>
+    </article>
+    <article class="tilt-card skill-card fade-up-element" style="transition-delay:2200ms">
+      <div class="fluid-panel"><span>协作与业务理解</span></div>
+      <div class="skill-card-copy">
+        <div class="skill-card-title"><h3>技术方案</h3><span>4/5</span></div>
+        <p class="skill-category">协作与业务理解</p>
+        <div class="skill-meter"><span style="width:80%"></span></div>
+      </div>
+    </article>
+    <article class="tilt-card skill-card fade-up-element" style="transition-delay:2300ms">
+      <div class="fluid-panel"><span>协作与业务理解</span></div>
+      <div class="skill-card-copy">
+        <div class="skill-card-title"><h3>项目推进</h3><span>4/5</span></div>
+        <p class="skill-category">协作与业务理解</p>
+        <div class="skill-meter"><span style="width:80%"></span></div>
+      </div>
+    </article>
+    <article class="tilt-card skill-card fade-up-element" style="transition-delay:2400ms">
+      <div class="fluid-panel"><span>协作与业务理解</span></div>
+      <div class="skill-card-copy">
+        <div class="skill-card-title"><h3>Code Review</h3><span>4/5</span></div>
+        <p class="skill-category">协作与业务理解</p>
+        <div class="skill-meter"><span style="width:80%"></span></div>
+      </div>
+    </article></div></section>
+    <section id="contact" class="container">
+      <article class="tilt-card contact-card fade-up-element">
+        <div class="contact-grid">
+          <div class="contact-copy"><span class="eyebrow">[ CONTACT ]</span><h2>Invest in the most<br><span style="color:var(--accent); font-weight:800">important asset you have.</span></h2><p class="muted">If the work resonates, reach out for project collaboration, role opportunities, or a creative conversation.</p><a class="button" href="mailto:liangchen@example.com">EMAIL</a></div>
+          <div class="contact-links"><a class="social-row" href="https://github.com/liangchen-demo"><span>G GitHub</span><span>→</span></a><a class="social-row" href="https://example.com/blog"><span>B Blog</span><span>→</span></a><a class="social-row" href="https://example.com/portfolio"><span>P Portfolio</span><span>→</span></a></div>
+        </div>
+      </article>
+    </section>
+  </main>
+  <footer>© 2026 梁辰. Crafted with SiteForge.</footer>
+  <script>
+    document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
+      anchor.addEventListener('click', (event) => {
+        const target = document.querySelector(anchor.getAttribute('href'));
+        if (target) { event.preventDefault(); target.scrollIntoView({ behavior: 'smooth' }); }
+      });
+    });
+    document.querySelectorAll('.tilt-card').forEach((card) => {
+      card.addEventListener('mousemove', (event) => {
+        const rect = card.getBoundingClientRect();
+        const x = event.clientX - rect.left;
+        const y = event.clientY - rect.top;
+        card.style.setProperty('--mouse-x', x + 'px');
+        card.style.setProperty('--mouse-y', y + 'px');
+        const rotateX = (rect.height / 2 - y) / 42;
+        const rotateY = (x - rect.width / 2) / 42;
+        card.style.transform = 'perspective(1200px) rotateX(' + rotateX + 'deg) rotateY(' + rotateY + 'deg) scale3d(1.003,1.003,1.003)';
+      });
+      card.addEventListener('mouseleave', () => {
+        card.style.transform = 'perspective(1200px) rotateX(0deg) rotateY(0deg) scale3d(1,1,1)';
+      });
+    });
+    const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    document.querySelectorAll('.scramble-trigger').forEach((element) => {
+      const originalText = element.dataset.text || element.textContent || '';
+      element.addEventListener('mouseenter', () => {
+        let iteration = 0;
+        const timer = setInterval(() => {
+          element.textContent = originalText.split('').map((letter, index) => index < iteration ? originalText[index] : letter === ' ' ? ' ' : letters[Math.floor(Math.random() * letters.length)]).join('');
+          if (iteration >= originalText.length) clearInterval(timer);
+          iteration += 1 / 3;
+        }, 30);
+      });
+    });
+    const fadeElements = Array.from(document.querySelectorAll('.fade-up-element'));
+    if ('IntersectionObserver' in window) {
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+            observer.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+      fadeElements.forEach((element) => observer.observe(element));
+    } else {
+      fadeElements.forEach((element) => element.classList.add('visible'));
+    }
+  </script>
+</body>
+</html>

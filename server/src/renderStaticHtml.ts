@@ -284,9 +284,12 @@ export function renderStaticHtml(data: SiteData, templateId: string) {
     .video-thumb div { position: absolute; z-index: 1; left: 22px; right: 22px; bottom: 22px; color: white; }
     .video-thumb h3 { margin: 0 0 8px; font-size: 24px; }
     .video-thumb p { margin: 0; color: rgba(255,255,255,.78); line-height: 1.55; }
-    .skill-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
-    .skill { padding: 22px; }
-    .bar { height: 8px; border-radius: 999px; background: #e2e8f0; overflow: hidden; margin-top: 14px; }
+    .skill-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 20px; }
+    .skill { min-height: 148px; padding: 20px; display: flex; flex-direction: column; justify-content: space-between; }
+    .skill-pill { display: inline-flex; width: max-content; max-width: 100%; border-radius: 999px; background: #f8fafc; padding: 5px 12px; color: #94a3b8; font-size: 11px; font-weight: 900; text-transform: uppercase; }
+    .skill strong { display: block; margin-top: 12px; color: #0f172a; font-size: 18px; line-height: 1.25; }
+    .skill-level { display: flex; align-items: center; justify-content: space-between; margin: 0 0 8px; color: #94a3b8; font-size: 11px; font-weight: 900; text-transform: uppercase; }
+    .bar { height: 8px; border-radius: 999px; background: #e2e8f0; overflow: hidden; }
     .bar span { display: block; height: 100%; background: var(--primary); }
     .timeline { display: grid; gap: 16px; }
     .experience { padding: 24px; transition: transform .2s ease, box-shadow .2s ease; }
@@ -301,17 +304,15 @@ export function renderStaticHtml(data: SiteData, templateId: string) {
     .contact { background: var(--primary); color: white; border-radius: 30px; padding: 52px; display: grid; grid-template-columns: 1fr 1fr; gap: 32px; }
     .contact h2 { color: white; margin-bottom: 18px; }
     .contact a, .contact .row { display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,.12); border-radius: 16px; padding: 16px; font-weight: 800; }
-    .footer-cta { background: var(--primary); color: white; padding: 48px 24px; }
-    .footer-cta-inner { max-width: 1180px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 24px; }
-    .footer-cta-copy { display: flex; align-items: center; gap: 16px; }
-    .footer-cta-icon { width: 56px; height: 56px; border-radius: 18px; display: grid; place-items: center; flex: 0 0 auto; background: rgba(255,255,255,.1); color: #fcd34d; font-size: 26px; }
-    .footer-cta h2 { margin: 0; color: white; font-size: clamp(22px, 4vw, 30px); line-height: 1.1; }
-    .footer-cta p { margin: 6px 0 0; color: rgba(255,255,255,.75); font-size: 13px; }
-    .footer-cta-button { display: flex; align-items: center; gap: 14px; border-radius: 18px; padding: 14px 24px; background: white; color: #0f172a; box-shadow: 0 18px 38px rgba(15,23,42,.18); transition: transform .25s ease, box-shadow .25s ease; }
-    .footer-cta-button:hover { transform: scale(1.05); box-shadow: 0 22px 52px rgba(15,23,42,.24); }
-    .footer-cta-button span { width: 40px; height: 40px; border-radius: 14px; display: grid; place-items: center; background: var(--primary); color: white; }
-    .footer-cta-button small { display: block; color: #94a3b8; font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: .08em; }
-    .footer-cta-button strong { display: block; color: #0f172a; font-size: 14px; }
+    .footer-cta { background: white; color: #0f172a; padding: 64px 24px; border-top: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0; }
+    .footer-cta-inner { max-width: 1180px; margin: 0 auto; display: grid; grid-template-columns: 1fr auto; gap: 32px; align-items: end; }
+    .footer-cta-copy { max-width: 680px; }
+    .footer-cta-copy .eyebrow { display: inline-flex; align-items: center; gap: 8px; border-radius: 999px; background: #f1f5f9; padding: 6px 12px; }
+    .footer-cta h2 { margin: 16px 0 0; color: #0f172a; font-size: clamp(30px, 4vw, 54px); line-height: 1.08; }
+    .footer-cta p { margin: 16px 0 0; color: #64748b; font-size: 14px; line-height: 1.7; }
+    .footer-cta-actions { display: flex; flex-direction: column; gap: 12px; align-items: flex-end; }
+    .footer-cta-button { display: inline-flex; align-items: center; gap: 10px; border: 1px solid #e2e8f0; border-radius: 18px; padding: 13px 20px; background: #f8fafc; color: #0f172a; font-size: 14px; font-weight: 900; box-shadow: 0 10px 28px rgba(15,23,42,.05); transition: transform .25s ease, box-shadow .25s ease, background .25s ease; }
+    .footer-cta-button:hover { transform: translateY(-2px); background: white; box-shadow: 0 16px 36px rgba(15,23,42,.1); }
     .site-footer { padding: 64px 24px 32px; background: #020617; color: #cbd5e1; border-top: 1px solid rgba(88,28,135,.24); }
     .site-footer-grid { max-width: 1180px; margin: 0 auto 48px; display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 48px; }
     .site-footer-col { grid-column: span 4; }
@@ -342,9 +343,11 @@ export function renderStaticHtml(data: SiteData, templateId: string) {
     @media (max-width: 800px) {
       .nav-links { display: none; }
       .hero-card { padding: 32px; }
-      .about-grid, .project-grid, .skill-grid, .award-grid, .video-grid, .contact { grid-template-columns: 1fr; }
+      .about-grid, .project-grid, .award-grid, .video-grid, .contact, .footer-cta-inner { grid-template-columns: 1fr; }
+      .skill-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .project-card.featured, .video-card.featured { grid-column: auto; }
-      .footer-cta-inner, .footer-cta-copy { flex-direction: column; text-align: center; }
+      .footer-cta-inner, .footer-cta-copy { text-align: center; }
+      .footer-cta-actions { align-items: center; }
       .site-footer-grid { grid-template-columns: 1fr; }
       .site-footer-col { grid-column: auto; }
     }
@@ -392,27 +395,21 @@ export function renderStaticHtml(data: SiteData, templateId: string) {
   </section>
   ${projects.length ? `<section id="work" class="work sf-reveal"><div class="container"><div data-aos="fade-up"><span class="eyebrow">${escapeHtml(projectsCopy.label)}</span><h2>${escapeHtml(projectsCopy.title)}</h2>${projectsCopy.description ? `<p class="lead">${escapeHtml(projectsCopy.description)}</p>` : ''}</div><div class="${projectGridClass}">${projects.map((project, index) => projectCard(project, primaryColor, index, data.config.layout !== 'list' && Boolean(project.isFeatured))).join('')}</div></div></section>` : ''}
   ${data.config.showAwards && awards.length ? `<section id="awards" class="awards sf-reveal"><div class="container"><div data-aos="fade-up"><span class="eyebrow">${escapeHtml(awardsCopy.label)}</span><h2>${escapeHtml(awardsCopy.title)}</h2>${awardsCopy.description ? `<p class="lead">${escapeHtml(awardsCopy.description)}</p>` : ''}</div><div class="award-grid">${awards.map((award, index) => awardCard(award, primaryColor, index)).join('')}</div></div></section>` : ''}
-  ${data.config.showSkills && skills.length ? `<section id="skills" class="sf-reveal"><div class="container"><div data-aos="fade-up"><span class="eyebrow">${escapeHtml(skillsCopy.label)}</span><h2>${escapeHtml(skillsCopy.title)}</h2>${skillsCopy.description ? `<p class="lead">${escapeHtml(skillsCopy.description)}</p>` : ''}</div><div class="skill-grid">${skills.map((skill, index) => `<div class="card skill" data-aos="fade-up" style="transition-delay:${(index % 3) * 100}ms"><strong>${escapeHtml(skill.name)}</strong><p>${escapeHtml(skill.category || '')}</p><div class="bar"><span style="width:${skill.proficiency * 20}%"></span></div></div>`).join('')}</div></div></section>` : ''}
+  ${data.config.showSkills && skills.length ? `<section id="skills" class="sf-reveal"><div class="container"><div data-aos="fade-up"><span class="eyebrow">${escapeHtml(skillsCopy.label)}</span><h2>${escapeHtml(skillsCopy.title)}</h2>${skillsCopy.description ? `<p class="lead">${escapeHtml(skillsCopy.description)}</p>` : ''}</div><div class="skill-grid">${skills.map((skill, index) => `<div class="card skill" data-aos="fade-up" style="transition-delay:${(index % 4) * 100}ms"><div><span class="skill-pill">${escapeHtml(skill.category || 'Capability')}</span><strong>${escapeHtml(skill.name)}</strong></div><div><p class="skill-level"><span>Level</span><span>${skill.proficiency}/5</span></p><div class="bar"><span style="width:${skill.proficiency * 20}%"></span></div></div></div>`).join('')}</div></div></section>` : ''}
   ${data.config.showVideos && videos.length ? `<section id="videos" class="work sf-reveal"><div class="container"><div data-aos="fade-up"><span class="eyebrow">${escapeHtml(videosCopy.label)}</span><h2>${escapeHtml(videosCopy.title)}</h2>${videosCopy.description ? `<p class="lead">${escapeHtml(videosCopy.description)}</p>` : ''}</div><div class="video-grid">${videos.map((video, index) => videoCard(video, index)).join('')}</div></div></section>` : ''}
   ${data.config.showExperience && experiences.length ? `<section class="sf-reveal"><div class="container"><div data-aos="fade-up"><span class="eyebrow">${escapeHtml(experienceCopy.label)}</span><h2>${escapeHtml(experienceCopy.title)}</h2>${experienceCopy.description ? `<p class="lead">${escapeHtml(experienceCopy.description)}</p>` : ''}</div><div class="timeline">${experiences.map((experience, index) => `<article class="card experience" data-aos="fade-up" style="transition-delay:${(index % 3) * 100}ms"><div class="experience-top"><div><p class="experience-type">${escapeHtml(experience.type === 'education' ? 'Education' : 'Work')}</p><h3>${escapeHtml(experience.position)}</h3><p class="experience-company">${escapeHtml(experience.company)}</p></div><span class="experience-period">${escapeHtml(experiencePeriod(experience.startDate, experience.endDate, experience.isCurrent))}</span></div>${experience.description ? `<p class="experience-description">${escapeHtmlWithBreaks(experience.description)}</p>` : ''}</article>`).join('')}</div></div></section>` : ''}
   <section id="contact" class="sf-reveal">
     <div class="footer-cta">
       <div class="footer-cta-inner" data-aos="fade-up">
         <div class="footer-cta-copy">
-          <div class="footer-cta-icon">!</div>
-          <div style="display:none">
-            <h2>准备好开启下一次合作？</h2>
-            <p>作品交流、项目合作或职位机会，都可以从这里开始。</p>
-          </div>
-        </div>
-        <div class="footer-cta-text">
+          <span class="eyebrow">☎ ${escapeHtml(contactCopy.label)}</span>
           <h2>${escapeHtml(contactCopy.title)}</h2>
           ${contactCopy.description ? `<p>${escapeHtml(contactCopy.description)}</p>` : ''}
         </div>
-        <a class="footer-cta-button" href="${data.user.email ? `mailto:${escapeHtml(data.user.email)}` : '#contact'}">
-          <span>☎</span>
-          <div><small>Start a conversation</small><strong>${escapeHtml(data.user.email || 'Get in touch')}</strong></div>
-        </a>
+        <div class="footer-cta-actions">
+          ${data.user.email ? `<a class="footer-cta-button" href="mailto:${escapeHtml(data.user.email)}">✉ ${escapeHtml(data.user.email)}</a>` : ''}
+          <div class="footer-socials">${socials.map((link) => `<a href="${escapeHtml(link.url)}" target="_blank" rel="noreferrer">${escapeHtml(link.platform)}</a>`).join('')}</div>
+        </div>
       </div>
     </div>
     <footer class="site-footer">
@@ -613,11 +610,17 @@ function renderElenaHtml(data: SiteData) {
 
   const skillStrip = skills.slice(0, 5).map((skill) => `<div><span>◆</span>${escapeHtml(skill.name)}</div>`).join('');
   const skillCards = skills.map((skill, index) => `
-    <article class="tilt-card skill-card fade-up-element" style="transition-delay:${index * 100}ms">
-      <div class="fluid-panel"><span>${escapeHtml(skill.category || 'CRAFT')}</span></div>
-      <div class="skill-card-copy">
-        <div class="skill-card-title"><h3>${escapeHtml(skill.name || 'Untitled Skill')}</h3><span>${skill.proficiency}/5</span></div>
-        ${skill.category ? `<p class="skill-category">${escapeHtml(skill.category)}</p>` : ''}
+    <article class="tilt-card skill-card fade-up-element" style="transition-delay:${index * 70}ms">
+      <div class="skill-card-glow"></div>
+      <div class="skill-card-main">
+        <div class="skill-card-top">
+          <span class="skill-category-pill">${escapeHtml(skill.category || 'Capability')}</span>
+          <span class="skill-level">${skill.proficiency}/5</span>
+        </div>
+        <h3>${escapeHtml(skill.name || 'Untitled Skill')}</h3>
+      </div>
+      <div class="skill-card-foot">
+        <div class="skill-depth"><span>Depth</span><span>${escapeHtml(skill.category || 'Craft')}</span></div>
         <div class="skill-meter"><span style="width:${skill.proficiency * 20}%"></span></div>
       </div>
     </article>`).join('');
@@ -737,20 +740,24 @@ function renderElenaHtml(data: SiteData) {
     .award-card-copy h3 { margin: 0; font-size: 26px; line-height: 1.18; }
     .award-card-copy span { display: block; margin-top: 14px; color: var(--muted); line-height: 1.7; }
     .process-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 32px; }
-    .process-card, .skill-card { padding: 32px; }
+    .process-card { padding: 32px; }
     .process-card span { color: var(--accent); font-size: 11px; font-weight: 900; letter-spacing: .18em; text-transform: uppercase; }
-    .process-card h3, .skill-card h3 { font-size: 26px; margin: 0; }
+    .process-card h3 { font-size: 26px; margin: 0; }
     .process-card strong, .process-card p { color: var(--muted); line-height: 1.7; }
-    .skill-grid-elena { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 24px; }
-    .fluid-panel { height: 260px; border-radius: 20px; border: 1px solid rgba(255,255,255,.06); display: grid; place-items: center; background: linear-gradient(135deg, var(--panel), var(--accent), var(--bg)); background-size: 200% 200%; animation: fluidGlow 12s ease infinite; }
-    .fluid-panel span { color: rgba(255,255,255,.25); font-family: 'Plus Jakarta Sans'; font-size: 24px; font-weight: 900; letter-spacing: .2em; }
-    .skill-card-copy { margin-top: 32px; }
-    .skill-card-title { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
-    .skill-card-title span { border: 1px solid rgba(255,255,255,.1); border-radius: 999px; background: var(--bg); color: var(--accent); padding: 6px 12px; font-family: monospace; font-size: 12px; }
-    .skill-category { margin: 12px 0 14px; color: var(--accent); font-size: 11px; font-weight: 900; letter-spacing: .18em; text-transform: uppercase; }
-    .skill-meter { height: 8px; overflow: hidden; border-radius: 999px; background: rgba(255,255,255,.1); }
+    .skill-grid-elena { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 16px; }
+    .skill-card { min-height: 164px; padding: 20px; display: flex; flex-direction: column; justify-content: space-between; }
+    .skill-card-glow { position: absolute; inset: 0 0 auto; height: 1px; background: linear-gradient(90deg, transparent, rgba(0,230,153,.7), transparent); opacity: 0; transition: opacity .25s ease; }
+    .skill-card:hover .skill-card-glow { opacity: 1; }
+    .skill-card-main, .skill-card-foot { position: relative; z-index: 2; }
+    .skill-card-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 20px; }
+    .skill-category-pill { border: 1px solid rgba(0,230,153,.2); border-radius: 999px; background: rgba(0,230,153,.1); color: var(--accent); padding: 5px 12px; font-size: 10px; font-weight: 900; letter-spacing: .16em; text-transform: uppercase; }
+    .skill-level { color: var(--muted); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; }
+    .skill-card h3 { margin: 0; color: white; font-size: 20px; line-height: 1.25; transition: color .25s ease; }
+    .skill-card:hover h3 { color: var(--accent); }
+    .skill-card-foot { margin-top: 24px; }
+    .skill-depth { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 8px; color: var(--muted); font-size: 10px; font-weight: 900; letter-spacing: .16em; text-transform: uppercase; }
+    .skill-meter { height: 6px; overflow: hidden; border-radius: 999px; background: rgba(255,255,255,.1); }
     .skill-meter span { display: block; height: 100%; border-radius: inherit; background: var(--accent); }
-    @keyframes fluidGlow { 0%,100% { background-position: 0 50%; } 50% { background-position: 100% 50%; } }
     .contact-card { padding: 56px; }
     .contact-grid { display: grid; grid-template-columns: repeat(12, minmax(0,1fr)); gap: 48px; align-items: center; }
     .contact-copy { grid-column: span 6; }
@@ -1279,6 +1286,7 @@ function renderJakartaHtml(data: SiteData) {
   const featuredProject = projects.find((project) => project.isFeatured) || projects[0];
   const title = data.config.seoTitle || `${data.user.displayName || data.user.username} - Jakarta Portfolio`;
   const description = data.config.seoDescription || data.user.bio || 'Built with SiteForge';
+  const experienceCopy = getSectionCopy(data, 'experience', { label: 'Experience', title: 'Experience becomes a guided story' });
   const layoutClass = data.config.layout === 'list' ? 'list' : '';
   const navLinks = getOrderedSections(data)
     .map((section) => {
@@ -1327,12 +1335,20 @@ function renderJakartaHtml(data: SiteData) {
       <i class="skill-bar"><em style="width:${skill.proficiency * 20}%"></em></i>
       <small>${Array.from({ length: 5 }, (_, index) => `<u class="${index < skill.proficiency ? 'on' : ''}"></u>`).join('')}</small>
     </div>`).join('');
-  const experienceCards = experiences.slice(0, 4).map((experience) => `
-    <article class="experience-card">
-      <div><h3>${escapeHtml(experience.position)}</h3><p>${escapeHtml(experience.company)}</p></div>
-      <span>${escapeHtml(experience.startDate)}${experience.isCurrent ? ' - Now' : experience.endDate ? ` - ${escapeHtml(experience.endDate)}` : ''}</span>
-      ${experience.description ? `<small>${escapeHtmlWithBreaks(experience.description)}</small>` : ''}
-    </article>`).join('');
+  const experienceCards = experiences.slice(0, 4).map((experience, index) => {
+    const period = `${experience.startDate || 'Start'}${experience.isCurrent ? ' - Now' : experience.endDate ? ` - ${experience.endDate}` : ''}`;
+    return `
+    <button class="experience-card" type="button" data-type="${escapeHtml(experience.type)}" data-position="${escapeHtml(experience.position || 'Experience')}" data-company="${escapeHtml(experience.company || '')}" data-period="${escapeHtml(period)}" data-desc="${escapeHtml(experience.description || '')}">
+      <div>
+        <p>${String(index + 1).padStart(2, '0')} / ${escapeHtml(experience.type)}</p>
+        <h3>${escapeHtml(experience.position || 'Experience')}</h3>
+        ${experience.company ? `<strong>${escapeHtml(experience.company)}</strong>` : ''}
+      </div>
+      <span>${escapeHtml(period)}</span>
+      ${experience.description ? `<small>${escapeHtml(experience.description)}</small>` : ''}
+      <em>查看详情</em>
+    </button>`;
+  }).join('');
   const awardCards = awards.map((award, index) => `
     <article class="reveal award-card" style="transition-delay:${(index % 2) * 90}ms">
       <div class="stars">*****</div>
@@ -1345,7 +1361,7 @@ function renderJakartaHtml(data: SiteData) {
     { label: 'Skills', value: skills.length, tone: 'violet' },
     { label: 'Videos', value: videos.length, tone: 'blue' },
     { label: 'Honors', value: awards.length, tone: 'amber' }
-  ].map((metric) => `<button class="metric-card" type="button" data-step="${metric.label === 'Projects' ? 2 : metric.label === 'Skills' ? 1 : metric.label === 'Videos' ? 3 : 4}"><i class="${metric.tone}"></i><b>${metric.value}</b><span>${metric.label}</span></button>`).join('');
+  ].map((metric) => `<div class="metric-card"><i class="${metric.tone}"></i><b>${metric.value}</b><span>${metric.label}</span></div>`).join('');
 
   return `<!doctype html>
 <html lang="zh-CN">
@@ -1364,7 +1380,7 @@ function renderJakartaHtml(data: SiteData) {
     .demo{position:relative;max-width:1024px;margin:80px auto 0;aspect-ratio:16/9;overflow:hidden;border:1px solid rgba(226,232,240,.85);border-radius:32px;background:#f8fafc;box-shadow:0 20px 50px rgba(0,0,0,.04);text-align:left}.demo>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.55;filter:saturate(1.1) contrast(1.05)}.demo:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,255,255,.58),rgba(255,255,255,.28) 42%,rgba(255,255,255,.68)),radial-gradient(circle at 20% 80%,rgba(99,102,241,.18),transparent 36%)}.demo-inner{position:absolute;inset:0;z-index:2;display:flex;flex-direction:column;justify-content:space-between;padding:32px}.demo-status{display:flex;flex-wrap:wrap;gap:24px;color:#94a3b8;font-size:11px;font-weight:900;letter-spacing:.08em}.demo-status span{display:flex;gap:8px;align-items:center}.demo-status i{width:8px;height:8px;border-radius:50%;background:#cbd5e1}.demo-status span:first-child i{background:#6366f1;animation:pulse 1.4s infinite}.demo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;align-items:end}.dark-card,.num-card,.status-card{border-radius:24px;padding:24px;box-shadow:0 15px 30px rgba(0,0,0,.03);transition:transform .25s}.dark-card:hover,.num-card:hover,.status-card:hover{transform:translateY(-4px)}.dark-card{background:#0b0f19;color:white}.dark-card span{color:#ede9fe;font-size:10px;font-weight:900;letter-spacing:.16em}.dark-card h4{font-size:16px}.num-card{position:relative;overflow:hidden;background:white;text-align:center}.num-card span,.status-card h4{color:#94a3b8;font-size:11px;font-weight:900;letter-spacing:.12em;text-transform:uppercase}.num-card b{display:block;margin:20px 0 28px;color:#0b0f19;font-size:34px;line-height:1.1}.num-card small{position:absolute;left:0;right:0;bottom:0;background:#3b82f6;color:white;padding:8px 14px;font-weight:800}.status-card{background:white}.status-card p{display:flex;justify-content:space-between;border-top:1px solid #f8fafc;margin:0;padding:10px 0;color:#334155;font-size:12px;font-weight:800}.status-card p span:last-child{color:#94a3b8}
     section{padding:96px 0}.white{background:white;border-top:1px solid #f1f5f9;border-bottom:1px solid #f1f5f9}.section-title{text-align:center;max-width:760px;margin:0 auto 48px}.section-title h2{margin:12px 0;color:#0b0f19;font-size:40px;line-height:1.12;letter-spacing:-.035em}.section-title p{color:#94a3b8;line-height:1.75}.skill-grid{display:grid;grid-template-columns:repeat(5,1fr);overflow:hidden;border:1px solid #f1f5f9;border-radius:24px;background:#f8fafc}.skill-cell{border-right:1px solid #f1f5f9;border-bottom:1px solid #f1f5f9;background:white;padding:28px 24px;transition:background .25s}.skill-cell:hover{background:#f8fafc}.skill-topline{display:flex;align-items:center;justify-content:space-between;gap:12px}.skill-topline span{min-width:0;color:#334155;font-size:14px;font-weight:900;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.skill-topline b{flex:none;border-radius:999px;background:#eef2ff;color:#4f46e5;padding:5px 10px;font-size:10px;font-weight:900}.skill-cell p{margin:10px 0 0;color:#94a3b8;font-size:11px;font-weight:900;letter-spacing:.16em;text-transform:uppercase;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.skill-bar{display:block;height:6px;border-radius:999px;background:#f1f5f9;overflow:hidden;margin-top:20px}.skill-bar em{display:block;height:100%;border-radius:999px;background:#4f46e5}.skill-cell small{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-top:12px}.skill-cell u{display:block;height:6px;border-radius:999px;background:#f1f5f9;text-decoration:none}.skill-cell u.on{background:#6366f1}
     .project-grid,.video-grid,.award-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:32px}.project-grid.list{grid-template-columns:1fr}.project-card,.video-card,.award-card{overflow:hidden;border:1px solid #f1f5f9;border-radius:32px;background:white;box-shadow:0 1px 2px rgba(15,23,42,.03);transition:transform .45s,box-shadow .45s}.project-card:hover,.video-card:hover{transform:translateY(-4px);box-shadow:0 24px 60px rgba(15,23,42,.08)}.project-card.featured,.video-card.featured{grid-column:span 2}.media,.video-frame{position:relative;display:block;width:100%;aspect-ratio:4/3;border:0;padding:0;overflow:hidden;background:#f8fafc;cursor:pointer}.media.wide,.video-frame.wide{aspect-ratio:21/9}.media img,.video-frame img,.video-frame video{width:100%;height:100%;object-fit:cover;opacity:.9;transition:transform .7s}.project-card:hover img,.video-card:hover img{transform:scale(1.05)}.media-fade{position:absolute;inset:0;background:linear-gradient(to top,white,transparent);opacity:.7}.featured-pill{position:absolute;left:20px;top:20px;border-radius:999px;background:#4f46e5;color:white;padding:7px 12px;font-size:10px;font-weight:900;letter-spacing:.18em;text-transform:uppercase}.featured-pill.light{background:white;color:#4f46e5}.video-frame a{display:block;position:relative;height:100%;background:#020617}.video-frame a i{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);display:grid;place-items:center;width:58px;height:58px;border-radius:50%;background:white;color:#4f46e5;font-size:12px;font-weight:900;font-style:normal}.card-body{padding:28px}.card-head{display:flex;justify-content:space-between;gap:16px}.card-head p,.card-body>p:first-child{margin:0;color:#94a3b8;font-size:11px;font-weight:900;letter-spacing:.18em;text-transform:uppercase}.card-head h3,.card-body h3,.award-card h3{margin:8px 0 0;color:#0b0f19;font-size:26px;line-height:1.18}.card-head>span{height:max-content;border:1px solid #f1f5f9;border-radius:999px;background:#f8fafc;padding:7px 12px;color:#64748b;font-size:12px;font-weight:800}.copy{color:#64748b!important;font-size:14px!important;font-weight:500!important;letter-spacing:0!important;text-transform:none!important;line-height:1.75}.tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:20px}.tags span{border-radius:999px;background:#eef2ff;color:#4f46e5;padding:7px 12px;font-size:12px;font-weight:800}.tags span:nth-child(n+2){background:#f8fafc;color:#64748b}
-    .process{background:#0b0f19;color:white}.process-grid{display:grid;grid-template-columns:.9fr 1.1fr;gap:40px}.process h2{font-size:42px;line-height:1.1}.step-btn{width:100%;display:flex;justify-content:space-between;align-items:center;border:0;border-left:2px solid transparent;border-radius:14px;background:transparent;color:#94a3b8;padding:13px 16px;text-align:left;font-weight:800}.step-btn.active-step{border-left-color:#818cf8;background:rgba(255,255,255,.05);color:white}.panel{border:1px solid rgba(255,255,255,.1);border-radius:32px;background:rgba(255,255,255,.03);padding:24px}.metric-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}.metric-card{border:1px solid rgba(255,255,255,.1);border-radius:18px;background:rgba(255,255,255,.05);color:white;padding:20px;text-align:left;transition:transform .25s,background .25s}.metric-card:hover{transform:translateY(-2px);background:rgba(255,255,255,.08)}.metric-card i{display:block;width:32px;height:8px;border-radius:999px;margin-bottom:18px}.metric-card i.indigo{background:#6366f1}.metric-card i.violet{background:#8b5cf6}.metric-card i.blue{background:#3b82f6}.metric-card i.amber{background:#f59e0b}.metric-card b{display:block;font-size:30px}.metric-card span{display:block;margin-top:5px;color:#94a3b8;font-size:12px;font-weight:900;letter-spacing:.18em;text-transform:uppercase}.step-copy{margin-top:24px;border-radius:22px;background:white;color:#0b0f19;padding:24px}.step-copy p{color:#64748b;line-height:1.7}.experience-card{margin-top:16px;border:1px solid rgba(255,255,255,.1);border-radius:20px;background:rgba(255,255,255,.04);padding:20px}.experience-card div{display:flex;justify-content:space-between;gap:16px}.experience-card h3{margin:0}.experience-card p{margin:4px 0 0;color:#a5b4fc;font-size:12px;font-weight:900;letter-spacing:.16em;text-transform:uppercase}.experience-card span,.experience-card small{color:#94a3b8;font-size:13px;line-height:1.7}
+    .process{background:#0b0f19;color:white}.process-grid{display:grid;grid-template-columns:.82fr 1.18fr;gap:40px}.process h2{max-width:12ch;font-size:42px;line-height:1.1}.panel{border:1px solid rgba(255,255,255,.1);border-radius:32px;background:rgba(255,255,255,.03);padding:24px}.metric-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:32px}.metric-card{border:1px solid rgba(255,255,255,.1);border-radius:18px;background:rgba(255,255,255,.05);color:white;padding:18px;text-align:left}.metric-card i{display:block;width:32px;height:7px;border-radius:999px;margin-bottom:16px}.metric-card i.indigo{background:#6366f1}.metric-card i.violet{background:#8b5cf6}.metric-card i.blue{background:#3b82f6}.metric-card i.amber{background:#f59e0b}.metric-card b{display:block;font-size:28px}.metric-card span{display:block;margin-top:5px;color:#94a3b8;font-size:11px;font-weight:900;letter-spacing:.18em;text-transform:uppercase}.experience-card{position:relative;width:100%;margin-top:16px;border:1px solid rgba(255,255,255,.1);border-radius:20px;background:rgba(255,255,255,.04);color:white;padding:20px;text-align:left;overflow:hidden;cursor:pointer;transition:transform .25s,border-color .25s,background .25s}.experience-card:before{content:"";position:absolute;left:0;top:0;width:4px;height:100%;background:rgba(129,140,248,.72)}.experience-card:hover{transform:translateY(-2px);border-color:rgba(165,180,252,.45);background:rgba(255,255,255,.07)}.experience-card div{min-width:0}.experience-card h3{margin:8px 0 0;color:white;font-size:18px;line-height:1.3;overflow-wrap:anywhere}.experience-card p{margin:0;color:#a5b4fc;font-size:10px;font-weight:900;letter-spacing:.2em;text-transform:uppercase}.experience-card strong{display:block;margin-top:4px;color:#94a3b8;font-size:12px;font-weight:900;letter-spacing:.16em;text-transform:uppercase;overflow-wrap:anywhere}.experience-card span{position:absolute;right:20px;top:20px;border:1px solid rgba(255,255,255,.1);border-radius:999px;background:rgba(255,255,255,.05);padding:5px 11px;color:#cbd5e1;font-size:12px;font-weight:800}.experience-card small{display:-webkit-box;margin-top:14px;color:#94a3b8;font-size:13px;line-height:1.65;overflow:hidden;-webkit-line-clamp:2;-webkit-box-orient:vertical}.experience-card em{display:inline-flex;margin-top:14px;color:#a5b4fc;font-size:12px;font-style:normal;font-weight:900}.experience-modal-card{position:relative;width:min(100%,680px);max-height:86vh;overflow-y:auto;border-radius:32px;background:white;color:#0b0f19;padding:32px;box-shadow:0 24px 80px rgba(0,0,0,.36)}.experience-modal-card p{margin:0;color:#4f46e5;font-size:12px;font-weight:900;letter-spacing:.2em;text-transform:uppercase}.experience-modal-card h3{margin:12px 0 0;font-size:32px;line-height:1.15;overflow-wrap:anywhere}.experience-modal-card strong{display:block;margin-top:8px;color:#94a3b8;font-size:13px;font-weight:900;letter-spacing:.16em;text-transform:uppercase;overflow-wrap:anywhere}.experience-modal-card .modal-desc{margin-top:24px;color:#475569;font-size:14px;line-height:1.8;white-space:pre-line;overflow-wrap:anywhere}.experience-modal-card button{position:absolute;right:20px;top:20px;border:0;border-radius:999px;background:#f1f5f9;color:#334155;padding:9px 14px;font-size:12px;font-weight:900}
     .award-card{padding:32px}.stars{color:#f59e0b;letter-spacing:.1em}.award-card p{color:#4f46e5;font-size:12px;font-weight:900;letter-spacing:.16em;text-transform:uppercase}.award-card small{display:block;color:#64748b;line-height:1.75}.contact-card{overflow:hidden;border-radius:32px;background:#0b0f19;color:white;padding:48px}.contact-grid{display:grid;grid-template-columns:1.2fr .8fr;gap:40px;align-items:end}.contact-card h2{margin:14px 0 0;font-size:42px;line-height:1.1}.contact-card p{color:#94a3b8;line-height:1.75}.contact-actions{display:flex;flex-direction:column;align-items:flex-end;gap:12px}.socials{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end}.socials a{border:1px solid rgba(255,255,255,.12);border-radius:999px;color:#cbd5e1;padding:9px 14px;font-size:12px;font-weight:800}.footer{background:#0b0f19;border-top:1px solid #111827;color:#64748b;padding:64px 0}.footer .container{display:flex;justify-content:space-between;align-items:center;gap:24px}.modal{position:fixed;inset:0;z-index:90;display:none;align-items:center;justify-content:center;background:rgba(2,6,23,.9);backdrop-filter:blur(12px);padding:16px}.modal.open{display:flex}.modal img{max-width:92vw;max-height:86vh;object-fit:contain;border-radius:24px}.modal button{position:absolute;right:24px;top:24px;border:0;border-radius:999px;background:white;color:#0b0f19;padding:10px 16px;font-size:12px;font-weight:900}
     @keyframes pulse{50%{opacity:.45}}@media(max-width:900px){.links{display:none}.hero{padding-top:56px}.demo{aspect-ratio:auto;min-height:720px}.demo-grid,.project-grid,.video-grid,.award-grid,.process-grid,.contact-grid{grid-template-columns:1fr}.project-card.featured,.video-card.featured{grid-column:auto}.media.wide,.video-frame.wide{aspect-ratio:4/3}.skill-grid{grid-template-columns:repeat(2,1fr)}.contact-actions{align-items:flex-start}.socials{justify-content:flex-start}.footer .container{flex-direction:column;text-align:center}}
   </style>
@@ -1379,13 +1395,14 @@ function renderJakartaHtml(data: SiteData) {
       projects: projects.length ? `<section id="projects"><div class="container"><div class="section-title reveal"><p class="eyebrow">Selected Work</p><h2>A polished system for your best projects</h2><p>Project images and gallery assets stay front and center, with featured work promoted into a wider card.</p></div><div class="project-grid ${layoutClass}">${projectCards}</div></div></section>` : '',
       videos: data.config.showVideos && videos.length ? `<section id="videos" class="white"><div class="container"><div class="section-title reveal"><p class="eyebrow">Video Proof</p><h2>Demos, reels, and walkthroughs</h2><p>If a video is marked as featured, it expands into the main demo slot.</p></div><div class="video-grid">${videoCards}</div></div></section>` : '',
       skills: data.config.showSkills && skills.length ? `<section id="skills" class="white"><div class="container"><p class="eyebrow" style="text-align:center;margin-bottom:40px;color:#94a3b8">Tools and capabilities</p><div class="skill-grid">${skillGrid}</div></div></section>` : '',
-      experience: data.config.showExperience && experiences.length ? `<section id="experience" class="process"><div class="container process-grid"><div class="reveal"><p class="eyebrow" style="color:#a5b4fc">How It Works</p><h2>Experience becomes a guided story</h2><div style="margin-top:32px"><button class="step-btn active-step" data-step="1">01. Profile <span>></span></button><button class="step-btn" data-step="2">02. Projects <span>></span></button><button class="step-btn" data-step="3">03. Live Preview <span>></span></button><button class="step-btn" data-step="4">04. Publish <span>></span></button></div></div><div class="panel reveal"><div class="metric-grid">${metricCards}</div><div class="step-copy"><p class="eyebrow">Current Step</p><h3 id="stepTitle">Profile</h3><p id="stepDesc">Start from your identity, location, avatar, and a clear portfolio positioning statement.</p></div>${experienceCards}</div></div></section>` : '',
+      experience: data.config.showExperience && experiences.length ? `<section id="experience" class="process"><div class="container process-grid"><div class="reveal"><p class="eyebrow" style="color:#a5b4fc">${escapeHtml(experienceCopy.label)}</p><h2>${escapeHtml(experienceCopy.title)}</h2>${experienceCopy.description ? `<p style="max-width:420px;color:#94a3b8;line-height:1.75">${escapeHtml(experienceCopy.description)}</p>` : ''}<div class="metric-grid">${metricCards}</div></div><div class="panel reveal">${experienceCards}</div></div></section>` : '',
       awards: data.config.showAwards && awards.length ? `<section id="awards"><div class="container"><div class="section-title reveal"><p class="eyebrow">Recognition</p><h2>Honors and proof points</h2></div><div class="award-grid">${awardCards}</div></div></section>` : '',
       contact: `<section id="contact" class="white"><div class="container"><div class="contact-card reveal"><div class="contact-grid"><div><p class="eyebrow" style="color:#a5b4fc">Contact</p><h2>Ready to start a new conversation?</h2><p>Portfolio reviews, project collaboration, role opportunities, and creative conversations can all start here.</p></div><div class="contact-actions">${data.user.email ? `<a class="button primary" href="mailto:${escapeHtml(data.user.email)}">Contact Me</a>` : ''}${data.user.location ? `<p>${escapeHtml(data.user.location)}</p>` : ''}<div class="socials">${socials.map((social) => `<a href="${escapeHtml(social.url)}">${escapeHtml(social.platform)}</a>`).join('')}</div></div></div></div></div></section>`
     })}
   </main>
   <footer class="footer"><div class="container"><div class="brand"><span class="brand-icon">${escapeHtml((data.user.displayName || data.user.username || 'S').slice(0, 1).toUpperCase())}</span>${escapeHtml(data.user.displayName || 'creator')}</div><p>Copyright 2026 - ${escapeHtml(data.user.displayName || 'Portfolio')}. Built with SiteForge.</p></div></footer>
   <div class="modal" id="imageModal"><button type="button" id="closeImage">Close</button><img id="modalImg" src="" alt=""></div>
+  <div class="modal" id="experienceModal"><div class="experience-modal-card"><button type="button" id="closeExperience">Close</button><p id="experienceMeta"></p><h3 id="experienceTitle"></h3><strong id="experienceCompany"></strong><div class="modal-desc" id="experienceDesc"></div></div></div>
   <script>
     const observer = new IntersectionObserver(function(entries, obs){ entries.forEach(function(entry){ if(entry.isIntersecting){ entry.target.classList.add('active'); obs.unobserve(entry.target); } }); }, { threshold:.1, rootMargin:'0px 0px -50px 0px' });
     document.querySelectorAll('.reveal').forEach(function(el){ observer.observe(el); });
@@ -1401,13 +1418,14 @@ function renderJakartaHtml(data: SiteData) {
       navLinks.forEach(function(link){ link.classList.toggle('active', link.dataset.navSection === visible.target.id); });
     }, { threshold:[.18,.35,.6], rootMargin:'-96px 0px -45% 0px' });
     navSections.forEach(function(section){ navObserver.observe(section); });
-    const steps = {1:['Profile','Start from your identity, location, avatar, and a clear portfolio positioning statement.'],2:['Projects','Add selected works, rich covers, galleries, roles, tools, and measurable outcomes.'],3:['Live Preview','Switch layouts and templates while the right side updates immediately.'],4:['Publish','Generate an online access link that keeps the same motion, style, and responsive behavior.']};
-    document.querySelectorAll('.step-btn').forEach(function(btn){ btn.addEventListener('click', function(){ const step=steps[btn.dataset.step]; document.querySelectorAll('.step-btn').forEach(function(item){ item.classList.remove('active-step'); }); btn.classList.add('active-step'); document.getElementById('stepTitle').textContent=step[0]; document.getElementById('stepDesc').textContent=step[1]; if(btn.dataset.step==='4' && 'speechSynthesis' in window){ speechSynthesis.cancel(); speechSynthesis.speak(new SpeechSynthesisUtterance('Portfolio is ready to publish.')); } }); });
-    document.querySelectorAll('.metric-card').forEach(function(card){ card.addEventListener('click', function(){ const step = card.dataset.step || '1'; const btn = document.querySelector('.step-btn[data-step="' + step + '"]'); if (btn) btn.click(); }); });
     const modal = document.getElementById('imageModal'); const modalImg = document.getElementById('modalImg');
+    const expModal = document.getElementById('experienceModal');
+    document.querySelectorAll('.experience-card').forEach(function(card){ card.addEventListener('click', function(){ document.getElementById('experienceMeta').textContent = (card.dataset.type || 'Experience') + ' / ' + (card.dataset.period || ''); document.getElementById('experienceTitle').textContent = card.dataset.position || 'Experience'; document.getElementById('experienceCompany').textContent = card.dataset.company || ''; document.getElementById('experienceDesc').textContent = card.dataset.desc || '暂无详细描述。'; expModal.classList.add('open'); }); });
     document.addEventListener('click', function(event){ const trigger = event.target.closest && event.target.closest('.image-preview-trigger'); if(trigger){ modalImg.src = trigger.dataset.previewSrc || ''; modalImg.alt = trigger.dataset.previewAlt || ''; modal.classList.add('open'); } });
     document.getElementById('closeImage').addEventListener('click', function(){ modal.classList.remove('open'); modalImg.removeAttribute('src'); });
     modal.addEventListener('click', function(event){ if(event.target === modal){ modal.classList.remove('open'); modalImg.removeAttribute('src'); } });
+    document.getElementById('closeExperience').addEventListener('click', function(){ expModal.classList.remove('open'); });
+    expModal.addEventListener('click', function(event){ if(event.target === expModal){ expModal.classList.remove('open'); } });
   </script>
 </body>
 </html>`;
